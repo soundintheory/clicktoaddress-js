@@ -1,0 +1,443 @@
+function ccEvent(target, event_to_react, function_to_call){
+	target.addEventListener(event_to_react,function_to_call);
+}
+function clickToAddress(config){
+	if(document.getElementById('cc_c2a') != null){
+		throw 'Already initiated';
+	}
+	if(typeof this.preset == 'undefined'){
+		throw 'Incorrect way to initialize this code. use "new ClickToAddress(config);"';
+	}
+	var that = this;
+	this.preset(config);
+
+	this.gfxModeTools = c2a_gfx_modes['mode'+this.gfxMode];
+
+	// get basic html
+	this.gfxModeTools.addHtml(this);
+	// store created element
+	this.searchObj = document.getElementById('cc_c2a');
+	this.resultList = this.searchObj.getElementsByClassName('c2a_results')[0];
+	this.errorObj = this.searchObj.getElementsByClassName('c2a_error')[0];
+	// get countries
+	this.getAvailableCountries(
+		// when ajax returns, select default country
+		function(){
+			that.serviceReady = 1;
+			that.setCountryChange();
+			if(that.getIpLocation && that.ipLocation != ''){
+				var country = that.ipLocation;
+			} else {
+				var country = that.defaultCountry;
+			}
+			that.selectCountry(country);
+		}
+	);
+	if(this.searchObj.getElementsByClassName("cc-history").length){
+		this.setHistoryActions();
+	}
+	// apply events
+	ccEvent(this.searchObj, 'mouseover',function(){
+		that.hover = true;
+	});
+	ccEvent(this.searchObj, 'mouseout',function(){
+		that.hover = false;
+	});
+	ccEvent(document, 'click', function(){
+		that.hide();
+	});
+	ccEvent(document, 'scroll', function(){
+		if(that.visible && that.focused){
+			setTimeout(function(){
+				that.gfxModeTools.reposition(that, that.activeInput);
+			},100);
+			that.hideKeyboard();
+		}
+	});
+	ccEvent(window, 'resize', function(){
+		if(that.visible){
+			setTimeout(function(){
+				that.gfxModeTools.reposition(that, that.activeInput);
+			},100);
+		}
+	});
+	/*	Currently unused code: allows the search to prioritise places closer to the user
+
+	if(config.geocode === true){
+		this.getGeo();
+		var footer = this.searchObj.getElementsByClassName('c2a_footer')[0];
+		footer.innerHTML += '<div class="geo" title="'+this.texts.geocode+'"></div>';
+	}
+	*/
+	this.getStyleSheet();
+
+	if(this.key == 'xxxxx-xxxxx-xxxxx-xxxxx'){
+		this.info('pre-trial');
+	}
+	if(typeof config.dom != 'undefined'){
+		this.attach(config.dom);
+	}
+}
+clickToAddress.prototype.fillData = function(addressData){
+	if(typeof this.activeDom.country != 'undefined'){
+		var options = this.activeDom.country.getElementsByTagName('option');
+		if(options.length){
+			var target_val = '';
+			for(var i=0; i<options.length && target_val == ''; i++){
+				if(options[i].innerHTML == this.validCountries[this.activeCountryId].country_name){
+					target_val = options[i].value;
+					break;
+				}
+				if(options[i].value == this.activeCountry){
+					target_val = options[i].value;
+					break;
+				}
+			}
+			this.activeDom.country.value = target_val;
+		} else {
+			this.activeDom.country.value = this.validCountries[this.activeCountryId].country_name;
+		}
+	}
+
+	if(typeof this.activeDom.line_1 != 'undefined'){
+		this.activeDom.line_1.value = addressData.result.line_1;
+		if(typeof this.activeDom.line_2 != 'undefined'){
+			this.activeDom.line_2.value = addressData.result.line_2;
+		} else {
+			if(addressData.result.line_2 != ''){
+				line_3.push( addressData.result.line_2 );
+			}
+		}
+		if(typeof this.activeDom.company != 'undefined'){
+			this.activeDom.company.value = addressData.result.company_name;
+		} else {
+			if(addressData.result.company_name != ''){
+				this.activeDom.line_1.value = addressData.result.company_name + ', ' + this.activeDom.line_1.value;
+			}
+		}
+		var line_3 = [];
+
+		if(typeof this.activeDom.postcode != 'undefined'){
+			this.activeDom.postcode.value = addressData.result.postal_code;
+		} else {
+			line_3.push(addressData.result.postal_code);
+		}
+
+		if(typeof this.activeDom.town != 'undefined'){
+			if(addressData.result.locality != ''){
+				this.activeDom.town.value = addressData.result.locality;
+			} else {
+				this.activeDom.town.value = addressData.result.dependent_locality;
+			}
+		} else {
+			if(addressData.result.locality != ''){
+				line_3.push(addressData.result.locality);
+			} else {
+				line_3.push(addressData.result.dependent_locality);
+			}
+		}
+
+		if(addressData.result.province != ''){
+			var province_set = {
+				province: addressData.result.province,
+				code: addressData.result.province_code,
+				name: addressData.result.province_name
+			};
+			if(typeof this.onSetCounty == 'function'){
+				this.onSetCounty(this, this.activeDom, province_set);
+			} else if(typeof this.activeDom.county != 'undefined'){
+				this.setCounty(this.activeDom.county,province_set);
+			}/* else {
+				line_3.push( addressData.result.province_name );
+			}*/
+		}
+
+		if(line_3.length){
+			if(typeof this.activeDom.line_2 != 'undefined'){
+				this.activeDom.line_2.value += ', '+line_3.join(', ');
+			} else {
+				this.activeDom.line_1.value += ', '+line_3.join(', ');
+			}
+		}
+
+	}
+	if(typeof this.onResultSelected == 'function'){
+		this.onResultSelected(this, this.activeDom, addressData.result);
+	}
+
+	this.hide(true);
+};
+clickToAddress.prototype.setCounty = function(element, province){
+	var options = element.getElementsByTagName('option');
+	if(options.length){
+		var target_val = province.code;
+		for(var i=0; i<options.length; i++){
+			if(options[i].innerHTML == province.name){
+				target_val = options[i].value;
+				break;
+			}
+		}
+		element.value = target_val;
+	} else {
+		element.value = province.name;
+	}
+}
+clickToAddress.prototype.showResults = function(full){
+	this.resetSelector();
+	var newHtml = '';
+	var limit = this.searchResults.results.length;
+	for(var i=0; i<limit; i++){
+		newHtml += '<li></li>';
+	}
+	this.resultList.innerHTML = newHtml;
+	var listElements = this.resultList.getElementsByTagName('li');
+	this.resultList.scrollTop = 0;
+	var that = this;
+	for(var i=0; i<listElements.length; i++){
+		// add parts
+		var row = this.searchResults.results[i];
+		var content = '<div>';
+		if(typeof row.labels[0] == 'string' && row.labels[0] !== '')
+			content += '<span>'+row.labels[0]+'</span>';
+		if(typeof row.labels[1] == 'string' && row.labels[1] !== '')
+			content += '<span class="light">'+row.labels[1]+'</span>';
+		if(typeof row.count == 'number' && row.count > 1)
+			content += '<span class="light">('+row.count+' more)</span>';
+		content += '</div>';
+		listElements[i].innerHTML = content;
+		listElements[i].setAttribute('title',row.labels.join(', '));
+		// add attributes
+		if(typeof row.count == 'number' && row.count > 1){
+			listElements[i].className = 'cc-filter';
+		}
+		if(typeof row.id == 'number')
+			listElements[i].key=row.id;
+		else
+			listElements[i].key=0;
+		if(typeof row.filters != 'undefined')
+			listElements[i].filters=row.filters;
+		else
+			listElements[i].filters=null;
+
+		if(typeof row.query != 'undefined')
+			listElements[i].query=row.query;
+		else
+			listElements[i].query=null;
+
+		// add events
+		ccEvent(listElements[i], 'click', function(){
+			that.select(this);
+		});
+	}
+
+	if(this.searchResults.results.length === 0){
+		this.resultList.innerHTML = '<li class="deadend">'+this.texts.no_results+'</li>';
+		this.hasContent = false;
+	} else {
+		this.hasContent = true;
+	}
+
+};
+clickToAddress.prototype.select = function(li){
+	this.resetSelector();
+	this.cleanHistory();
+	if(li.key !== 0){
+		this.getAddressDetails(li.key);
+		this.hide();
+		this.loseFocus();
+		return;
+	}
+	if(li.filters !== null || li.query !== null){
+		this.search(this.activeInput.value, li.filters);
+		this.getFocus();
+		if(li.query !== null){
+			this.activeInput.value = li.query;
+		}
+		this.activeFilters = li.filters;
+		return;
+	}
+	if(li.className != 'deadend'){
+		this.search(this.activeInput.value);
+		this.getFocus();
+		return;
+	}
+};
+clickToAddress.prototype.getGeo = function(){
+	var that = this;
+	if (navigator.geolocation) {
+		navigator.geolocation.getCurrentPosition(function(position){
+			that.coords = position.coords;
+			that.showGeo();
+		});
+	}
+};
+clickToAddress.prototype.changeCountry = function(filter){
+	this.hideHistory();
+	this.resetSelector();
+	var newHtml = '';
+	var limit = this.validCountries.length;
+	for(var i=0; i<limit; i++){
+		newHtml += '<li></li>';
+	}
+	this.resultList.innerHTML = newHtml;
+	var listElements = this.resultList.getElementsByTagName('li');
+	this.resultList.scrollTop = 0;
+	var that = this;
+	var skip = 0;
+	for(var i=0; i<listElements.length; i++){
+		// add parts
+		var row = this.validCountries[i+skip];
+		var content = '';
+		if(typeof filter !== 'undefined' && filter !== ''){
+
+			var matchFound = false;
+			for(var j=0; !matchFound && j < Object.keys(row).length; j++){
+				var rowElem = row[Object.keys(row)[j]];
+				if(typeof rowElem != 'array'){
+					var text = rowElem.toString().toLowerCase();
+					if(text.indexOf(filter.toLowerCase()) === 0){
+						matchFound = true;
+					}
+				} else {
+					for(var k=0; !matchFound && k < rowElem.length; k++){
+						var text = rowElem[k].toString().toLowerCase();
+						if(text.indexOf(filter.toLowerCase()) === 0){
+							matchFound = true;
+						}
+					}
+				}
+			}
+			if(matchFound){
+				content = '<span class="cc-flag cc-flag-'+row.short_code+'"></span>'+'<span>'+row.country_name+'</span>';
+			}
+			else{
+				listElements[i].parentNode.removeChild(listElements[i]);
+				i--;
+				skip++;
+			}
+		} else {
+			var content = '<span class="cc-flag cc-flag-'+row.short_code+'"></span>'+'<span>'+row.country_name+'</span>';
+		}
+		if(content != ''){
+			listElements[i].innerHTML = content;
+			listElements[i].setAttribute('countryCode',row.code);
+			that.hasContent = true;
+			// add events
+			ccEvent(listElements[i], 'click', function(){
+				that.selectCountry(this.getAttribute('countryCode'));
+			});
+		}
+	}
+	this.sid = -1;
+	this.getFocus();
+};
+clickToAddress.prototype.selectCountry = function(countryCode){
+	var that = this;
+	this.clear();
+	var countryObj = this.searchObj.getElementsByClassName('country_img')[0];
+	var selectedCountry = {};
+	this.activeCountryId = 0;
+	for(var i=0; i<this.validCountries.length; i++){
+		if(this.validCountries[i].code == countryCode){
+			selectedCountry = this.validCountries[i];
+			this.activeCountryId = i;
+			break;
+		}
+	}
+	countryObj.setAttribute('class','country_img cc-flag cc-flag-'+selectedCountry.short_code);
+	this.activeCountry = countryCode;
+	this.sid = 0;
+	this.getFocus();
+	if(typeof this.activeInput.value != 'undefined' && typeof this.lastSearch != 'undefined'){
+		this.activeInput.value = this.lastSearch;
+		// copied from visual / keyup
+		this.activeFilters = {};
+		this.lastSearch = this.value;
+
+		var timeTrack = new Date().getTime() / 1000;
+		this.sid = timeTrack;
+		setTimeout(function(){
+			if(that.sidCheck(timeTrack)){
+				if(that.activeInput.value !== ''){
+					that.search(that.activeInput.value, that.activeFilters, timeTrack);
+					that.cleanHistory();
+				} else {
+					that.clear();
+				}
+			}
+		},500);
+		this.gfxModeTools.reposition(this, this.activeInput);
+	}
+	this.setHistoryStep();
+	this.setPlaceholder(0);
+	//this.hide(true); not sure why this was here
+};
+clickToAddress.prototype.setCountryChange = function(){
+	// first cull the country list, if limitations are set
+	if(this.enabledCountries.length !== 0){
+		for(var i=0; i<this.validCountries.length; i++){
+			// add parts
+			var row = this.validCountries[i];
+			switch(this.countryMatchWith){
+				case 'iso_2':
+					if(this.enabledCountries.indexOf(row.code) == -1){
+						this.validCountries.splice(i, 1);
+						i--;
+					}
+					break;
+				// match with any text
+				default:
+					var matchFound = false;
+					for(var j=0; !matchFound && j < Object.keys(row).length; j++){
+						var rowElem = row[Object.keys(row)[j]];
+						if(typeof rowElem != 'array'){
+							var text = rowElem.toString().toLowerCase();
+							for(var k=0; k < this.enabledCountries.length; k++){
+								if(text.indexOf(this.enabledCountries[k].toLowerCase()) === 0){
+									matchFound = true;
+								}
+							}
+						} else {
+							for(var k=0; k < this.enabledCountries.length; k++){
+								for(var l=0; l < rowElem.length; l++){
+									if(text.indexOf(this.enabledCountries[k].toLowerCase()) === 0){
+										matchFound = true;
+									}
+								}
+							}
+						}
+					}
+					if(!matchFound){
+						this.validCountries.splice(i, 1);
+						i--;
+					}
+					break;
+			}
+
+		}
+	}
+
+	var countryObj = this.searchObj.getElementsByClassName('country_btn')[0];
+	var that = this;
+	ccEvent(countryObj, 'click', function(){
+		if(that.sid != -1){
+			that.setPlaceholder(1);
+			that.changeCountry();
+			that.activeInput.value = '';
+			that.hasContent = true;
+		} else {
+			that.setPlaceholder(0);
+			that.sid = 0;
+			that.hide(true);
+			that.getFocus();
+			that.hover = true;
+		}
+	});
+};
+// search "id" - timestamp marked
+clickToAddress.prototype.sidCheck = function(sid){
+	return sid == this.sid;
+};
+clickToAddress.prototype.destroy = function(){
+// not implemented right now
+}

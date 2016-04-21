@@ -1,0 +1,470 @@
+@craftyBlue:			#63a2f1;
+@materialRed:			#F44336;
+@materialPink:			#E91E63;
+@materialPurple:		#9C27B0;
+@materialDeepPurple:	#673ab7;
+@materialIndigo:		#3f51b5;
+@materialBlue:			#2196f3;
+@materialLightBlue:		#03a9f4;
+@materialCyan:			#00bcd4;
+@materialTeal:			#009688;
+@materialGreen:			#4caf50;
+@materialLightGreen:	#8bc34a;
+@materialLime:			#cddc39;
+@materialYellow:		#ffeb3b;
+@materialAmber:			#ffc107;
+@materialOrange:		#ff9800;
+@materialDeepOrange:	#ff5722;
+@materialBrown:			#795548;
+@materialGrey:			#9e9e9e;
+@materialBlueGrey:		#607d8b;
+
+#cc_c2a{
+	&.c2a_light{
+		background-color: white;
+		border: 1px solid rgba(34,36,38,.15);
+		box-shadow: 0 1px 2px 0 rgba(34,36,38,.15);
+		&.c2a_mode1{
+			.c2a_footer{
+				border-top: 1px solid rgba(150, 156, 156, 0.4);
+			}
+		}
+
+		ul.c2a_results{
+			&.hasContent{
+				border-top: 1px solid rgba(150, 156, 156, 0.4);
+				border-bottom: 1px solid rgba(150, 156, 156, 0.4);
+			}
+			li{
+				border-top: 1px solid #fafafa;
+				&:not(.deadend):hover, &.active{
+					color: white;
+					span.light{
+						color: white;
+					}
+				}
+				span.light{
+					color: #888;
+				}
+			}
+		}
+		.c2a_footer{
+			.progressBar{
+				&.finish{
+					background-color: white;
+				}
+			}
+		}
+		.c2a_error{
+			background-color: @materialRed;
+			color: white;
+		}
+		.mainbar{
+			.country_btn{
+				&:hover{
+					span{
+						color: white;
+					}
+				}
+			}
+			.cc-history{
+				& > div{
+					&.disabled{
+						cursor: default;
+						color: white !important;
+						background-color: white !important;
+					}
+					&:hover{
+						color: white;
+					}
+				}
+			}
+		}
+
+	}
+}
+
+#cc_c2a{
+	&.c2a_accent_{
+		&default{
+			ul.c2a_results li{
+				&:not(.deadend):hover, &.active{
+					background-color: @craftyBlue;
+				}
+			}
+			.c2a_footer .progressBar{
+				background-color: @craftyBlue;
+			}
+			.mainbar{
+				.country_btn:hover{
+					background-color: @craftyBlue;
+				}
+
+				.cc-history > div:hover{
+					background-color: @craftyBlue;
+				}
+			}
+		}
+		&red{
+			ul.c2a_results li{
+				&:not(.deadend):hover, &.active{
+					background-color: @materialRed;
+				}
+			}
+			.c2a_footer .progressBar{
+				background-color: @materialRed;
+			}
+			.mainbar{
+				.country_btn:hover{
+					background-color: @materialRed;
+				}
+
+				.cc-history > div:hover{
+					background-color: @materialRed;
+				}
+			}
+		}
+		&pink{
+			ul.c2a_results li{
+				&:not(.deadend):hover, &.active{
+					background-color: @materialPink;
+				}
+			}
+			.c2a_footer .progressBar{
+				background-color: @materialPink;
+			}
+			.mainbar{
+				.country_btn:hover{
+					background-color: @materialPink;
+				}
+
+				.cc-history > div:hover{
+					background-color: @materialPink;
+				}
+			}
+		}
+		&purple{
+			ul.c2a_results li{
+				&:not(.deadend):hover, &.active{
+					background-color: @materialPurple;
+				}
+			}
+			.c2a_footer .progressBar{
+				background-color: @materialPurple;
+			}
+			.mainbar{
+				.country_btn:hover{
+					background-color: @materialPurple;
+				}
+
+				.cc-history > div:hover{
+					background-color: @materialPurple;
+				}
+			}
+		}
+		&deepPurple{
+			ul.c2a_results li{
+				&:not(.deadend):hover, &.active{
+					background-color: @materialDeepPurple;
+				}
+			}
+			.c2a_footer .progressBar{
+				background-color: @materialDeepPurple;
+			}
+			.mainbar{
+				.country_btn:hover{
+					background-color: @materialDeepPurple;
+				}
+
+				.cc-history > div:hover{
+					background-color: @materialDeepPurple;
+				}
+			}
+		}
+		&indigo{
+			ul.c2a_results li{
+				&:not(.deadend):hover, &.active{
+					background-color: @materialIndigo;
+				}
+			}
+			.c2a_footer .progressBar{
+				background-color: @materialIndigo;
+			}
+			.mainbar{
+				.country_btn:hover{
+					background-color: @materialIndigo;
+				}
+
+				.cc-history > div:hover{
+					background-color: @materialIndigo;
+				}
+			}
+		}
+		&blue{
+			ul.c2a_results li{
+				&:not(.deadend):hover, &.active{
+					background-color: @materialBlue;
+				}
+			}
+			.c2a_footer .progressBar{
+				background-color: @materialBlue;
+			}
+			.mainbar{
+				.country_btn:hover{
+					background-color: @materialBlue;
+				}
+
+				.cc-history > div:hover{
+					background-color: @materialBlue;
+				}
+			}
+		}
+		&lightBlue{
+			ul.c2a_results li{
+				&:not(.deadend):hover, &.active{
+					background-color: @materialLightBlue;
+				}
+			}
+			.c2a_footer .progressBar{
+				background-color: @materialLightBlue;
+			}
+			.mainbar{
+				.country_btn:hover{
+					background-color: @materialLightBlue;
+				}
+
+				.cc-history > div:hover{
+					background-color: @materialLightBlue;
+				}
+			}
+		}
+		&cyan{
+			ul.c2a_results li{
+				&:not(.deadend):hover, &.active{
+					background-color: @materialCyan;
+				}
+			}
+			.c2a_footer .progressBar{
+				background-color: @materialCyan;
+			}
+			.mainbar{
+				.country_btn:hover{
+					background-color: @materialCyan;
+				}
+
+				.cc-history > div:hover{
+					background-color: @materialCyan;
+				}
+			}
+		}
+		&teal{
+			ul.c2a_results li{
+				&:not(.deadend):hover, &.active{
+					background-color: @materialTeal;
+				}
+			}
+			.c2a_footer .progressBar{
+				background-color: @materialTeal;
+			}
+			.mainbar{
+				.country_btn:hover{
+					background-color: @materialTeal;
+				}
+
+				.cc-history > div:hover{
+					background-color: @materialTeal;
+				}
+			}
+		}
+		&green{
+			ul.c2a_results li{
+				&:not(.deadend):hover, &.active{
+					background-color: @materialGreen;
+				}
+			}
+			.c2a_footer .progressBar{
+				background-color: @materialGreen;
+			}
+			.mainbar{
+				.country_btn:hover{
+					background-color: @materialGreen;
+				}
+
+				.cc-history > div:hover{
+					background-color: @materialGreen;
+				}
+			}
+		}
+		&lightGreen{
+			ul.c2a_results li{
+				&:not(.deadend):hover, &.active{
+					background-color: @materialLightGreen;
+				}
+			}
+			.c2a_footer .progressBar{
+				background-color: @materialLightGreen;
+			}
+			.mainbar{
+				.country_btn:hover{
+					background-color: @materialLightGreen;
+				}
+
+				.cc-history > div:hover{
+					background-color: @materialLightGreen;
+				}
+			}
+		}
+		&lime{
+			ul.c2a_results li{
+				&:not(.deadend):hover, &.active{
+					background-color: @materialLime;
+				}
+			}
+			.c2a_footer .progressBar{
+				background-color: @materialLime;
+			}
+			.mainbar{
+				.country_btn:hover{
+					background-color: @materialLime;
+				}
+
+				.cc-history > div:hover{
+					background-color: @materialLime;
+				}
+			}
+		}
+		&yellow{
+			ul.c2a_results li{
+				&:not(.deadend):hover, &.active{
+					background-color: @materialYellow;
+				}
+			}
+			.c2a_footer .progressBar{
+				background-color: @materialYellow;
+			}
+			.mainbar{
+				.country_btn:hover{
+					background-color: @materialYellow;
+				}
+
+				.cc-history > div:hover{
+					background-color: @materialYellow;
+				}
+			}
+		}
+		&amber{
+			ul.c2a_results li{
+				&:not(.deadend):hover, &.active{
+					background-color: @materialAmber;
+				}
+			}
+			.c2a_footer .progressBar{
+				background-color: @materialAmber;
+			}
+			.mainbar{
+				.country_btn:hover{
+					background-color: @materialAmber;
+				}
+
+				.cc-history > div:hover{
+					background-color: @materialAmber;
+				}
+			}
+		}
+		&orange{
+			ul.c2a_results li{
+				&:not(.deadend):hover, &.active{
+					background-color: @materialOrange;
+				}
+			}
+			.c2a_footer .progressBar{
+				background-color: @materialOrange;
+			}
+			.mainbar{
+				.country_btn:hover{
+					background-color: @materialOrange;
+				}
+
+				.cc-history > div:hover{
+					background-color: @materialOrange;
+				}
+			}
+		}
+		&deepOrange{
+			ul.c2a_results li{
+				&:not(.deadend):hover, &.active{
+					background-color: @materialDeepOrange;
+				}
+			}
+			.c2a_footer .progressBar{
+				background-color: @materialDeepOrange;
+			}
+			.mainbar{
+				.country_btn:hover{
+					background-color: @materialDeepOrange;
+				}
+
+				.cc-history > div:hover{
+					background-color: @materialDeepOrange;
+				}
+			}
+		}
+		&brown{
+			ul.c2a_results li{
+				&:not(.deadend):hover, &.active{
+					background-color: @materialBrown;
+				}
+			}
+			.c2a_footer .progressBar{
+				background-color: @materialBrown;
+			}
+			.mainbar{
+				.country_btn:hover{
+					background-color: @materialBrown;
+				}
+
+				.cc-history > div:hover{
+					background-color: @materialBrown;
+				}
+			}
+		}
+		&grey{
+			ul.c2a_results li{
+				&:not(.deadend):hover, &.active{
+					background-color: @materialGrey;
+				}
+			}
+			.c2a_footer .progressBar{
+				background-color: @materialGrey;
+			}
+			.mainbar{
+				.country_btn:hover{
+					background-color: @materialGrey;
+				}
+
+				.cc-history > div:hover{
+					background-color: @materialGrey;
+				}
+			}
+		}
+		&blueGrey{
+			ul.c2a_results li{
+				&:not(.deadend):hover, &.active{
+					background-color: @materialBlueGrey;
+				}
+			}
+			.c2a_footer .progressBar{
+				background-color: @materialBlueGrey;
+			}
+			.mainbar{
+				.country_btn:hover{
+					background-color: @materialBlueGrey;
+				}
+
+				.cc-history > div:hover{
+					background-color: @materialBlueGrey;
+				}
+			}
+		}
+	}
+}
