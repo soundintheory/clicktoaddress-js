@@ -22,8 +22,8 @@ module.exports = function(grunt) {
 				},
 				options: {
 					report: false,
-					mangle: false,
-					compress: false,
+					mangle: true,
+					compress: true,
 					beautify: true,
 					preserveComments: 'some'
 				}

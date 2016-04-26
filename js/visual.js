@@ -198,7 +198,9 @@ clickToAddress.prototype.attach = function(dom){
 		if(that.sid == -1){
 			that.changeCountry(this.value);
 		} else {
-			that.activeFilters = {};
+			if(this.value.indexOf(that.lastSearch) !== 0){
+				that.activeFilters = {};
+			}
 			that.lastSearch = this.value;
 
 			var timeTrack = new Date().getTime() / 1000;
@@ -207,8 +209,8 @@ clickToAddress.prototype.attach = function(dom){
 			setTimeout(function(){
 				if(that.sidCheck(timeTrack)){
 					if(searchVal !== ''){
-						that.search(searchVal, that.activeFilters, timeTrack);
 						that.cleanHistory();
+						that.search(searchVal, that.activeFilters, timeTrack);
 					} else {
 						that.clear();
 					}

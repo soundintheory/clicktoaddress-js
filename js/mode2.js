@@ -44,12 +44,6 @@ c2a_gfx_modes['mode2'] = {
 
 		topOffset += htmlTop;
 
-		/*
-		if(bodyRect.bottom < that.searchObj.offsetHeight){
-			console.log(bodyRect.bottom + '->' + that.searchObj.offsetHeight);
-			topOffset -= target.offsetHeight + that.searchObj.offsetHeight;
-		}
-		*/
 		that.searchObj.style.left = leftOffset-5+'px';
 		that.searchObj.style.top = topOffset+'px';
 		that.searchObj.style.width = target.offsetWidth+10+'px';

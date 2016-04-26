@@ -34,6 +34,9 @@ clickToAddress.prototype.preset = function(config){
 	this.cache = {};
 	this.cachePos = -1;
 
+	this.scrollPosition = 0;
+	this.scrollLimit = 20;
+
 	this.activeFilters = {};
 	this.lastSearch = '';
 	this.funcStore = {};

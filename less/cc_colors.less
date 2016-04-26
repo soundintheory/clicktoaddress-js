@@ -20,10 +20,25 @@
 @materialBlueGrey:		#607d8b;
 
 #cc_c2a{
+	border: 1px solid rgba(34,36,38,.15);
+	box-shadow: 0 1px 2px 0 rgba(34,36,38,.15);
+
+	.c2a_footer{
+		.progressBar{
+			&.finish{
+				background-color: transparent;
+			}
+		}
+	}
+
+	.c2a_error{
+		background-color: @materialRed;
+		color: white;
+	}
+
+	// themeing
 	&.c2a_light{
 		background-color: white;
-		border: 1px solid rgba(34,36,38,.15);
-		box-shadow: 0 1px 2px 0 rgba(34,36,38,.15);
 		&.c2a_mode1{
 			.c2a_footer{
 				border-top: 1px solid rgba(150, 156, 156, 0.4);
@@ -48,17 +63,6 @@
 				}
 			}
 		}
-		.c2a_footer{
-			.progressBar{
-				&.finish{
-					background-color: white;
-				}
-			}
-		}
-		.c2a_error{
-			background-color: @materialRed;
-			color: white;
-		}
 		.mainbar{
 			.country_btn{
 				&:hover{
@@ -70,6 +74,7 @@
 			.cc-history{
 				& > div{
 					&.disabled{
+						opacity: 0;
 						cursor: default;
 						color: white !important;
 						background-color: white !important;
@@ -80,7 +85,56 @@
 				}
 			}
 		}
+	}
+	&.c2a_dark{
+		background-color: #303030;
+		border: 1px solid rgba(34,36,38,.15);
+		box-shadow: 0 1px 2px 0 rgba(34,36,38,.15);
+		&.c2a_mode1{
+			.c2a_footer{
+				border-top: 1px solid #424242;
+			}
+		}
 
+		ul.c2a_results{
+			&.hasContent{
+				border-top: 1px solid #424242;
+				border-bottom: 1px solid #424242;
+			}
+			li{
+				border-top: 1px solid #424242;
+				color: white;
+				&:not(.deadend):hover, &.active{
+					span.light{
+						color: white;
+					}
+				}
+				span.light{
+					color: rgba(255,255,255,70);
+				}
+			}
+		}
+		.mainbar{
+			.country_btn{
+				span{
+					color: white;
+				}
+			}
+			.cc-history{
+				& > div{
+					&.disabled{
+						opacity: 0;
+						cursor: default;
+						background-color: transparent !important;
+					}
+					&:hover{
+					}
+				}
+			}
+		}
+		.infoBar{
+			color: white;
+		}
 	}
 }
 

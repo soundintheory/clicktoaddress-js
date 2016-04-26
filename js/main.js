@@ -1,6 +1,3 @@
-function ccEvent(target, event_to_react, function_to_call){
-	target.addEventListener(event_to_react,function_to_call);
-}
 function clickToAddress(config){
 	if(document.getElementById('cc_c2a') != null){
 		throw 'Already initiated';
@@ -61,6 +58,14 @@ function clickToAddress(config){
 			},100);
 		}
 	});
+	/* TODO: SCROLL */
+	ccEvent(this.resultList, 'scroll', function(){
+		var scrollTop = parseInt(this.scrollTop);
+		var innerHeight = parseInt(window.getComputedStyle(this, null).getPropertyValue("height"));
+		if(that.sid > -1 && scrollTop + innerHeight == parseInt(this.scrollHeight)){
+			that.showResultsExtra();
+		}
+	});
 	/*	Currently unused code: allows the search to prioritise places closer to the user
 
 	if(config.geocode === true){
@@ -100,6 +105,7 @@ clickToAddress.prototype.fillData = function(addressData){
 	}
 
 	if(typeof this.activeDom.line_1 != 'undefined'){
+		var line_3 = [];
 		this.activeDom.line_1.value = addressData.result.line_1;
 		if(typeof this.activeDom.line_2 != 'undefined'){
 			this.activeDom.line_2.value = addressData.result.line_2;
@@ -115,7 +121,6 @@ clickToAddress.prototype.fillData = function(addressData){
 				this.activeDom.line_1.value = addressData.result.company_name + ', ' + this.activeDom.line_1.value;
 			}
 		}
-		var line_3 = [];
 
 		if(typeof this.activeDom.postcode != 'undefined'){
 			this.activeDom.postcode.value = addressData.result.postal_code;
@@ -168,32 +173,66 @@ clickToAddress.prototype.fillData = function(addressData){
 	this.hide(true);
 };
 clickToAddress.prototype.setCounty = function(element, province){
-	var options = element.getElementsByTagName('option');
-	if(options.length){
-		var target_val = province.code;
-		for(var i=0; i<options.length; i++){
-			if(options[i].innerHTML == province.name){
-				target_val = options[i].value;
-				break;
+	var province_text = province.name;
+	if(province_text == ''){
+		province_text = province.province;
+	}
+	provinceMatchText = removeDiacritics(province_text).toLowerCase();
+	var target_val = province.code;
+	if(target_val == ''){
+		target_val = province.province;
+	}
+	if(element.tagName == 'SELECT'){
+		var options = element.getElementsByTagName('option');
+		if(options.length){
+			var found = 0;
+			for(var i=0; i<options.length; i++){
+				if(removeDiacritics(options[i].innerHTML).toLowerCase() == provinceMatchText){
+					target_val = options[i].value;
+					found++;
+					break;
+				}
 			}
+			if(!found){
+				var bestMatch = {
+					id: 0,
+					rank: 0
+				};
+				for(var i=0; i<options.length; i++){
+					var option_text = removeDiacritics(options[i].innerHTML).toLowerCase();
+					var rank = 0;
+					for(var j=0; j<option_text.length; j++){
+						if(option_text[j] == provinceMatchText[j]){
+							rank++;
+						}
+					}
+					if(rank > bestMatch.rank){
+						bestMatch.rank = rank;
+						bestMatch.id = i;
+					}
+				}
+				target_val = options[bestMatch.id].value;
+			}
+			element.value = target_val;
 		}
-		element.value = target_val;
 	} else {
-		element.value = province.name;
+		element.value = province_text;
 	}
 }
 clickToAddress.prototype.showResults = function(full){
+	this.scrollPosition = 0;
 	this.resetSelector();
+	this.info('clear');
 	var newHtml = '';
-	var limit = this.searchResults.results.length;
-	for(var i=0; i<limit; i++){
+	var limit = this.searchResults.results.length - (this.scrollLimit * this.scrollPosition);
+	for(var i=0; i<limit && i < this.scrollLimit; i++){
 		newHtml += '<li></li>';
 	}
 	this.resultList.innerHTML = newHtml;
 	var listElements = this.resultList.getElementsByTagName('li');
 	this.resultList.scrollTop = 0;
 	var that = this;
-	for(var i=0; i<listElements.length; i++){
+	for(var i=0; i<listElements.length && i < this.scrollLimit; i++){
 		// add parts
 		var row = this.searchResults.results[i];
 		var content = '<div>';
@@ -210,37 +249,97 @@ clickToAddress.prototype.showResults = function(full){
 		if(typeof row.count == 'number' && row.count > 1){
 			listElements[i].className = 'cc-filter';
 		}
+
 		if(typeof row.id == 'number')
-			listElements[i].key=row.id;
+			ccData(listElements[i],'key',row.id);
 		else
-			listElements[i].key=0;
+			ccData(listElements[i],'key',0);
+
 		if(typeof row.filters != 'undefined')
-			listElements[i].filters=row.filters;
+			ccData(listElements[i],'filters',row.filters);
 		else
-			listElements[i].filters=null;
+			ccData(listElements[i],'filters',null);
 
 		if(typeof row.query != 'undefined')
-			listElements[i].query=row.query;
+			ccData(listElements[i],'query',row.query);
 		else
-			listElements[i].query=null;
-
-		// add events
+			ccData(listElements[i],'query',null);
+	}
+	// add events
+	for(var i=0; i<listElements.length; i++){
 		ccEvent(listElements[i], 'click', function(){
 			that.select(this);
 		});
 	}
 
 	if(this.searchResults.results.length === 0){
-		this.resultList.innerHTML = '<li class="deadend">'+this.texts.no_results+'</li>';
+		this.info('no-results');
 		this.hasContent = false;
 	} else {
 		this.hasContent = true;
 	}
 
 };
+clickToAddress.prototype.showResultsExtra = function(){
+	this.scrollPosition++;
+	var currentPosition = (this.scrollLimit * this.scrollPosition);
+	var newHtml = '';
+	var limit = this.searchResults.results.length - currentPosition;
+	for(var i=0; i<limit && i < this.scrollLimit; i++){
+		newHtml += '<li></li>';
+	}
+	this.resultList.innerHTML += newHtml;
+	var listElements = this.resultList.getElementsByTagName('li');
+	var that = this;
+	for(var i=currentPosition; i<listElements.length; i++){
+		// add parts
+		var row = this.searchResults.results[i];
+		var content = '<div>';
+		if(typeof row.labels[0] == 'string' && row.labels[0] !== '')
+			content += '<span>'+row.labels[0]+'</span>';
+		if(typeof row.labels[1] == 'string' && row.labels[1] !== '')
+			content += '<span class="light">'+row.labels[1]+'</span>';
+		if(typeof row.count == 'number' && row.count > 1)
+			content += '<span class="light">('+row.count+' more)</span>';
+		content += '</div>';
+		listElements[i].innerHTML = content;
+		listElements[i].setAttribute('title',row.labels.join(', '));
+		// add attributes
+		if(typeof row.count == 'number' && row.count > 1){
+			listElements[i].className = 'cc-filter';
+		}
+
+		if(typeof row.id == 'number')
+			ccData(listElements[i],'key',row.id);
+		else
+			ccData(listElements[i],'key',0);
+
+		if(typeof row.filters != 'undefined')
+			ccData(listElements[i],'filters',row.filters);
+		else
+			ccData(listElements[i],'filters',null);
+
+		if(typeof row.query != 'undefined')
+			ccData(listElements[i],'query',row.query);
+		else
+			ccData(listElements[i],'query',null);
+	}
+	// add events
+	for(var i=0; i<listElements.length; i++){
+		ccEvent(listElements[i], 'click', function(){
+			that.select(this);
+		});
+	}
+}
+
 clickToAddress.prototype.select = function(li){
 	this.resetSelector();
 	this.cleanHistory();
+
+	li.key = ccData(li, 'key');
+	li.filters = ccData(li, 'filters');
+	li.query = ccData(li, 'query');
+
 	if(li.key !== 0){
 		this.getAddressDetails(li.key);
 		this.hide();

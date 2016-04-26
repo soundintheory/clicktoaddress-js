@@ -29,7 +29,7 @@ clickToAddress.prototype.cacheStore = function(search, obj){
 clickToAddress.prototype.history = function(dir){
 	if(!this.historyTools)
 		return;
-	if(this.cachePos == -1){
+	if(this.cachePos <= -1){
 		this.cachePos = 0;
 	}
 	var searchParams = {};
@@ -74,7 +74,7 @@ clickToAddress.prototype.setHistoryStep = function(){
 	var logo_visible = 0;
 
 	if(	typeof this.cache[this.activeCountry] == 'undefined' ||
-		this.cachePos == Object.keys(this.cache[this.activeCountry]).length -1 ||
+		this.cachePos >= Object.keys(this.cache[this.activeCountry]).length - 1 ||
 		Object.keys(this.cache[this.activeCountry]).length <= 1
 	){
 		backBtn.className = 'back disabled';
@@ -105,11 +105,10 @@ clickToAddress.prototype.hideHistory = function(){
 };
 
 clickToAddress.prototype.cleanHistory = function(){
-	if(this.cachePos == -1 || typeof this.cache[this.activeCountry] == 'undefined'){
+	if(this.cachePos <= 0 || typeof this.cache[this.activeCountry] == 'undefined'){
 		return;
 	}
-	var cacheLength = Object.keys(this.cache[this.activeCountry]).length - 1;
-	var removeAt = cacheLength - this.cachePos;
+	var removeAt = Object.keys(this.cache[this.activeCountry]).length - this.cachePos;
 	this.cache[this.activeCountry].splice(removeAt, this.cachePos);
 	this.cachePos = -1;
 	this.setHistoryStep();

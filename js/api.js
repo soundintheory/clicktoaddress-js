@@ -57,25 +57,23 @@ clickToAddress.prototype.search = function(searchText, filters, timeTrack){
 			that.setProgressBar(1);
 			that.clear();
 			if (this.status >= 200 && this.status < 400){
-				// Success!
-				if(this.status == 204){
-					return;
-				}
-				var data = '';
-				try{
-					data = JSON.parse(this.responseText);
-					that.hideErrors();
-					// return data
-					that.searchResults = data;
-					that.showResults();
-					if(!that.focused){
-						that.activeInput.focus();
+				if(this.status == 200){
+					var data = '';
+					try{
+						data = JSON.parse(this.responseText);
+						that.hideErrors();
+						// return data
+						that.searchResults = data;
+						that.showResults();
+						if(!that.focused){
+							that.activeInput.focus();
+						}
+						// store in cache
+						that.cacheStore(parameters, data);
 					}
-					// store in cache
-					that.cacheStore(parameters, data);
-				}
-				catch(err){
-					that.error(9011, 'JS Client side error.');
+					catch(err){
+						that.error(9011, 'JS Client side error.');
+					}
 				}
 			} else {
 				that.handleApiError(this);
