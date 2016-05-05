@@ -1,4 +1,5 @@
 clickToAddress.prototype.cacheRetrieve = function(search){
+	'use strict';
 	if(typeof this.cache[search.country] == 'undefined'){
 		throw 'cc/cr/01';
 	}
@@ -11,14 +12,17 @@ clickToAddress.prototype.cacheRetrieve = function(search){
 	}
 	throw 'cc/cr/02';
 };
-clickToAddress.prototype.cacheStore = function(search, obj){
+clickToAddress.prototype.cacheStore = function(search, obj, sequence){
+	'use strict';
 	if(typeof this.cache[search.country] == 'undefined'){
 		this.cache[search.country] = [];
 	}
-	this.cache[search.country].push({
+	var splice_pos = Math.abs(binaryIndexOf(this.cache[search.country], sequence));
+	this.cache[search.country].splice(splice_pos, 0, {
 		query: search.query,
 		filters: search.filters,
-		response: obj
+		response: obj,
+		sequence: sequence
 	});
 	if(this.cache[search.country].length > 100){
 		this.cache[search.country].shift();
@@ -27,6 +31,7 @@ clickToAddress.prototype.cacheStore = function(search, obj){
 	this.setHistoryStep();
 };
 clickToAddress.prototype.history = function(dir){
+	'use strict';
 	if(!this.historyTools)
 		return;
 	if(this.cachePos <= -1){
@@ -47,6 +52,7 @@ clickToAddress.prototype.history = function(dir){
 
 };
 clickToAddress.prototype.setHistoryActions = function(){
+	'use strict';
 	if(!this.historyTools)
 		return;
 	var that = this;
@@ -64,6 +70,7 @@ clickToAddress.prototype.setHistoryActions = function(){
 	});
 };
 clickToAddress.prototype.setHistoryStep = function(){
+	'use strict';
 	if(!this.historyTools)
 		return;
 	var backBtn = this.searchObj.getElementsByClassName('back')[0];
@@ -98,6 +105,7 @@ clickToAddress.prototype.setHistoryStep = function(){
 };
 
 clickToAddress.prototype.hideHistory = function(){
+	'use strict';
 	var backBtn = this.searchObj.getElementsByClassName('back')[0];
 	var forwardBtn = this.searchObj.getElementsByClassName('forward')[0];
 	backBtn.className = 'back disabled';
@@ -105,6 +113,7 @@ clickToAddress.prototype.hideHistory = function(){
 };
 
 clickToAddress.prototype.cleanHistory = function(){
+	'use strict';
 	if(this.cachePos <= 0 || typeof this.cache[this.activeCountry] == 'undefined'){
 		return;
 	}

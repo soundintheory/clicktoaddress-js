@@ -1,4 +1,5 @@
 function clickToAddress(config){
+	'use strict';
 	if(document.getElementById('cc_c2a') != null){
 		throw 'Already initiated';
 	}
@@ -62,7 +63,7 @@ function clickToAddress(config){
 	ccEvent(this.resultList, 'scroll', function(){
 		var scrollTop = parseInt(this.scrollTop);
 		var innerHeight = parseInt(window.getComputedStyle(this, null).getPropertyValue("height"));
-		if(that.sid > -1 && scrollTop + innerHeight == parseInt(this.scrollHeight)){
+		if(that.searchStatus.inCountryMode != 1 && scrollTop + innerHeight == parseInt(this.scrollHeight)){
 			that.showResultsExtra();
 		}
 	});
@@ -84,6 +85,7 @@ function clickToAddress(config){
 	}
 }
 clickToAddress.prototype.fillData = function(addressData){
+	'use strict';
 	if(typeof this.activeDom.country != 'undefined'){
 		var options = this.activeDom.country.getElementsByTagName('option');
 		if(options.length){
@@ -173,11 +175,12 @@ clickToAddress.prototype.fillData = function(addressData){
 	this.hide(true);
 };
 clickToAddress.prototype.setCounty = function(element, province){
+	'use strict';
 	var province_text = province.name;
 	if(province_text == ''){
 		province_text = province.province;
 	}
-	provinceMatchText = removeDiacritics(province_text).toLowerCase();
+	var provinceMatchText = removeDiacritics(province_text).toLowerCase();
 	var target_val = province.code;
 	if(target_val == ''){
 		target_val = province.province;
@@ -220,6 +223,7 @@ clickToAddress.prototype.setCounty = function(element, province){
 	}
 }
 clickToAddress.prototype.showResults = function(full){
+	'use strict';
 	this.scrollPosition = 0;
 	this.resetSelector();
 	this.info('clear');
@@ -281,6 +285,7 @@ clickToAddress.prototype.showResults = function(full){
 
 };
 clickToAddress.prototype.showResultsExtra = function(){
+	'use strict';
 	this.scrollPosition++;
 	var currentPosition = (this.scrollLimit * this.scrollPosition);
 	var newHtml = '';
@@ -333,6 +338,7 @@ clickToAddress.prototype.showResultsExtra = function(){
 }
 
 clickToAddress.prototype.select = function(li){
+	'use strict';
 	this.resetSelector();
 	this.cleanHistory();
 
@@ -347,7 +353,10 @@ clickToAddress.prototype.select = function(li){
 		return;
 	}
 	if(li.filters !== null || li.query !== null){
-		this.search(this.activeInput.value, li.filters);
+		this.sequence++;
+		this.searchStatus.lastSearchId = this.sequence;
+		var current_sequence = this.sequence;
+		this.search(this.activeInput.value, li.filters, current_sequence);
 		this.getFocus();
 		if(li.query !== null){
 			this.activeInput.value = li.query;
@@ -356,12 +365,16 @@ clickToAddress.prototype.select = function(li){
 		return;
 	}
 	if(li.className != 'deadend'){
+		this.sequence++;
+		this.searchStatus.lastSearchId = this.sequence;
+
 		this.search(this.activeInput.value);
 		this.getFocus();
 		return;
 	}
 };
 clickToAddress.prototype.getGeo = function(){
+	'use strict';
 	var that = this;
 	if (navigator.geolocation) {
 		navigator.geolocation.getCurrentPosition(function(position){
@@ -371,6 +384,7 @@ clickToAddress.prototype.getGeo = function(){
 	}
 };
 clickToAddress.prototype.changeCountry = function(filter){
+	'use strict';
 	this.hideHistory();
 	this.resetSelector();
 	var newHtml = '';
@@ -427,10 +441,11 @@ clickToAddress.prototype.changeCountry = function(filter){
 			});
 		}
 	}
-	this.sid = -1;
+	this.searchStatus.inCountryMode = 1;
 	this.getFocus();
 };
 clickToAddress.prototype.selectCountry = function(countryCode){
+	'use strict';
 	var that = this;
 	this.clear();
 	var countryObj = this.searchObj.getElementsByClassName('country_img')[0];
@@ -445,7 +460,7 @@ clickToAddress.prototype.selectCountry = function(countryCode){
 	}
 	countryObj.setAttribute('class','country_img cc-flag cc-flag-'+selectedCountry.short_code);
 	this.activeCountry = countryCode;
-	this.sid = 0;
+	that.searchStatus.inCountryMode = 0;
 	this.getFocus();
 	if(typeof this.activeInput.value != 'undefined' && typeof this.lastSearch != 'undefined'){
 		this.activeInput.value = this.lastSearch;
@@ -453,18 +468,19 @@ clickToAddress.prototype.selectCountry = function(countryCode){
 		this.activeFilters = {};
 		this.lastSearch = this.value;
 
-		var timeTrack = new Date().getTime() / 1000;
-		this.sid = timeTrack;
+		this.sequence++;
+		this.searchStatus.lastSearchId = this.sequence;
+		var current_sequence = this.sequence;
 		setTimeout(function(){
-			if(that.sidCheck(timeTrack)){
+			if(that.searchStatus.lastSearchId <= current_sequence){
 				if(that.activeInput.value !== ''){
-					that.search(that.activeInput.value, that.activeFilters, timeTrack);
+					that.search(that.activeInput.value, that.activeFilters, current_sequence);
 					that.cleanHistory();
 				} else {
 					that.clear();
 				}
 			}
-		},500);
+		},200);
 		this.gfxModeTools.reposition(this, this.activeInput);
 	}
 	this.setHistoryStep();
@@ -472,6 +488,7 @@ clickToAddress.prototype.selectCountry = function(countryCode){
 	//this.hide(true); not sure why this was here
 };
 clickToAddress.prototype.setCountryChange = function(){
+	'use strict';
 	// first cull the country list, if limitations are set
 	if(this.enabledCountries.length !== 0){
 		for(var i=0; i<this.validCountries.length; i++){
@@ -519,24 +536,17 @@ clickToAddress.prototype.setCountryChange = function(){
 	var countryObj = this.searchObj.getElementsByClassName('country_btn')[0];
 	var that = this;
 	ccEvent(countryObj, 'click', function(){
-		if(that.sid != -1){
+		if(that.searchStatus.inCountryMode == 0){
 			that.setPlaceholder(1);
 			that.changeCountry();
 			that.activeInput.value = '';
 			that.hasContent = true;
 		} else {
 			that.setPlaceholder(0);
-			that.sid = 0;
+			that.searchStatus.inCountryMode = 0;
 			that.hide(true);
 			that.getFocus();
 			that.hover = true;
 		}
 	});
 };
-// search "id" - timestamp marked
-clickToAddress.prototype.sidCheck = function(sid){
-	return sid == this.sid;
-};
-clickToAddress.prototype.destroy = function(){
-// not implemented right now
-}

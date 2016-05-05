@@ -1,4 +1,5 @@
-clickToAddress.prototype.search = function(searchText, filters, timeTrack){
+clickToAddress.prototype.search = function(searchText, filters, sequence){
+   'use strict';
 	var that = this;
 	if(searchText === ''){
 		return;
@@ -7,7 +8,6 @@ clickToAddress.prototype.search = function(searchText, filters, timeTrack){
 	if(typeof filters == 'undefined'){
 		filters = {};
 	}
-
 	this.setProgressBar(0);
 	var parameters = {
 		key: this.key,
@@ -15,7 +15,8 @@ clickToAddress.prototype.search = function(searchText, filters, timeTrack){
 		filters: filters,
 		country: this.activeCountry,
 		fingerprint: this.fingerprint,
-		integration: this.tag
+		integration: this.tag,
+		sequence: this.sequence
 	};
 	if(typeof this.accessTokenOverride[this.activeCountry] != 'undefined'){
 		parameters.key = this.accessTokenOverride[this.activeCountry];
@@ -47,20 +48,23 @@ clickToAddress.prototype.search = function(searchText, filters, timeTrack){
 	var url = this.baseURL + 'find';
 
 	// Create new XMLHttpRequest
-	request = new XMLHttpRequest();
+	var request = new XMLHttpRequest();
 	request.open('POST', url, true);
 	request.setRequestHeader('Content-Type', 'application/json');
 	request.setRequestHeader('Accept', 'application/json');
 	// Wait for change and then either JSON parse response text or throw exception for HTTP error
 	request.onreadystatechange = function() {
-		if (this.readyState === 4 && (that.sidCheck(timeTrack) || typeof timeTrack == 'undefined')){
-			that.setProgressBar(1);
-			that.clear();
-			if (this.status >= 200 && this.status < 400){
-				if(this.status == 200){
-					var data = '';
-					try{
-						data = JSON.parse(this.responseText);
+		if (this.readyState !== 4){
+			return;
+		}
+		if (this.status >= 200 && this.status < 400){
+			if(this.status == 200){
+				var data = '';
+				try{
+					data = JSON.parse(this.responseText);
+					if(that.searchStatus.lastResponseId <= sequence){
+						that.setProgressBar(1);
+						that.clear();
 						that.hideErrors();
 						// return data
 						that.searchResults = data;
@@ -68,16 +72,17 @@ clickToAddress.prototype.search = function(searchText, filters, timeTrack){
 						if(!that.focused){
 							that.activeInput.focus();
 						}
+						that.searchStatus.lastResponseId = sequence;
 						// store in cache
-						that.cacheStore(parameters, data);
-					}
-					catch(err){
-						that.error(9011, 'JS Client side error.');
+						that.cacheStore(parameters, data, sequence);
 					}
 				}
-			} else {
-				that.handleApiError(this);
+				catch(err){
+					that.error(9011, 'JS Client side error.');
+				}
 			}
+		} else {
+			that.handleApiError(this);
 		}
 	};
 	// Send request
@@ -86,6 +91,7 @@ clickToAddress.prototype.search = function(searchText, filters, timeTrack){
 	request = null;
 };
 clickToAddress.prototype.getAddressDetails = function(id){
+	'use strict';
 	var parameters = {
 		id: id,
 		country: this.activeCountry,
@@ -103,7 +109,7 @@ clickToAddress.prototype.getAddressDetails = function(id){
 	var url = this.baseURL + 'retrieve';
 
 	// Create new XMLHttpRequest
-	request = new XMLHttpRequest();
+	var request = new XMLHttpRequest();
 	request.open('POST', url, true);
 	request.setRequestHeader('Content-Type', 'application/json');
 	request.setRequestHeader('Accept', 'application/json');
@@ -132,6 +138,7 @@ clickToAddress.prototype.getAddressDetails = function(id){
 };
 
 clickToAddress.prototype.getAvailableCountries = function(success_function){
+	'use strict';
 	var parameters = {
 		key: this.key,
 		fingerprint: this.fingerprint,
@@ -141,7 +148,7 @@ clickToAddress.prototype.getAvailableCountries = function(success_function){
 	var url = this.baseURL + 'countries';
 
 	// Create new XMLHttpRequest
-	request = new XMLHttpRequest();
+	var request = new XMLHttpRequest();
 	request.open('POST', url, true);
 	request.setRequestHeader('Content-Type', 'application/json');
 	request.setRequestHeader('Accept', 'application/json');
@@ -181,6 +188,7 @@ clickToAddress.prototype.getAvailableCountries = function(success_function){
 };
 
 clickToAddress.prototype.handleApiError = function(ajax){
+	'use strict';
 	if([401, 402].indexOf(ajax.status) != -1){
 		this.serviceReady = -1;
 	}

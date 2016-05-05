@@ -41,10 +41,10 @@ c2a_gfx_modes['mode1'] = {
 	},
 	reposition: function(that, target){
 		// position to target
-		var elemRect = target.getBoundingClientRect(),
-			bodyRect = document.body.getBoundingClientRect(),
-			topOffset = elemRect.top - bodyRect.top + target.offsetHeight - 3;
-			leftOffset = elemRect.left - bodyRect.left;
+		var elemRect = target.getBoundingClientRect();
+		var htmlRect = document.getElementsByTagName('html')[0].getBoundingClientRect();
+		var topOffset = elemRect.top - htmlRect.top + target.offsetHeight - 3;
+		var	leftOffset = elemRect.left - htmlRect.left;
 		if(document.body.style.paddingLeft !== ''){
 			leftOffset += parseInt(document.body.style.paddingLeft);
 		}
@@ -54,7 +54,7 @@ c2a_gfx_modes['mode1'] = {
 
 		topOffset += htmlTop;
 
-		if(bodyRect.bottom < that.searchObj.offsetHeight){
+		if(htmlRect.bottom < that.searchObj.offsetHeight){
 			topOffset -= target.offsetHeight + that.searchObj.offsetHeight;
 		}
 

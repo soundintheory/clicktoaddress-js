@@ -1,4 +1,5 @@
 clickToAddress.prototype.setPlaceholder = function(country, target){
+	'use strict';
 	if(this.activeInput != 'init'){
 		target = this.activeInput;
 	}
@@ -11,6 +12,7 @@ clickToAddress.prototype.setPlaceholder = function(country, target){
 	}
 }
 clickToAddress.prototype.error = function(code, message){
+	'use strict';
 	if(cc_debug){
 		console.warn('CraftyClicks Debug Error Message: ['+code+'] '+message);
 	}
@@ -26,31 +28,42 @@ clickToAddress.prototype.error = function(code, message){
 	}
 }
 clickToAddress.prototype.hideErrors = function(){
+	'use strict';
 	if(this.serviceReady != -1){
 		this.errorObj.innerHTML = '';
 		this.errorObj.className = 'c2a_error c2a_error_hidden';
 	}
 }
 clickToAddress.prototype.getFocus = function(){
+	'use strict';
 	if(this.activeInput != 'init')
 		this.activeInput.focus();
 	this.focused = true;
 };
 
 clickToAddress.prototype.loseFocus = function(){
+	'use strict';
 	if(this.activeInput != 'init')
 		this.activeInput.blur();
 	this.focused = false;
 };
 clickToAddress.prototype.clear = function(){
+	'use strict';
 	this.resultList.innerHTML = '';
-	this.sid = 0;
+	this.searchStatus = {
+		lastSearchId: 0,
+		lastResponseId: 0,
+		inCountryMode: 0
+	};
 };
 clickToAddress.prototype.show = function(){
+	'use strict';
 	this.searchObj.style.display = 'block';
 	this.visible = true;
+	this.setHistoryStep();
 };
 clickToAddress.prototype.hide = function(force_it){
+	'use strict';
 	if (this.keyboardHideInProgress){
 		this.keyboardHideInProgress = false;
 		return;
@@ -59,14 +72,19 @@ clickToAddress.prototype.hide = function(force_it){
 		this.searchObj.style.display = 'none';
 		this.visible = false;
 		this.hover = false;
+		// return input state, in case it was in country mode
+		if(this.searchStatus.inCountryMode){
+			this.activeInput.value = this.lastSearch;
+		}
 		this.clear();
+		this.cachePos = -1;
 		this.resetSelector();
-
 		this.setPlaceholder(0);
 	}
 	this.hideErrors();
 };
 clickToAddress.prototype.attach = function(dom){
+	'use strict';
 	var domElements = {};
 	var objectArray = [
 		'search',
@@ -188,14 +206,14 @@ clickToAddress.prototype.attach = function(dom){
 				return;
 			}
 			var elem = that.searchObj.getElementsByTagName('LI')[that.selectorPos];
-			if(that.sid == -1){
+			if(that.searchStatus.inCountryMode == 1){
 				that.selectCountry(elem.getAttribute('countryCode'));
 			} else {
 				that.select(elem);
 			}
 			return;
 		}
-		if(that.sid == -1){
+		if(that.searchStatus.inCountryMode == 1){
 			that.changeCountry(this.value);
 		} else {
 			if(this.value.indexOf(that.lastSearch) !== 0){
@@ -203,19 +221,20 @@ clickToAddress.prototype.attach = function(dom){
 			}
 			that.lastSearch = this.value;
 
-			var timeTrack = new Date().getTime() / 1000;
-			that.sid = timeTrack;
+			that.sequence++;
+			that.searchStatus.lastSearchId = that.sequence;
+			var current_sequence_number = that.sequence;
 			var searchVal = this.value;
 			setTimeout(function(){
-				if(that.sidCheck(timeTrack)){
+				if(that.searchStatus.lastSearchId <= current_sequence_number){
 					if(searchVal !== ''){
 						that.cleanHistory();
-						that.search(searchVal, that.activeFilters, timeTrack);
+						that.search(searchVal, that.activeFilters, current_sequence_number);
 					} else {
 						that.clear();
 					}
 				}
-			},250);
+			},200);
 
 			that.activeDom = that.domLib[domLibId];
 			that.gfxModeTools.reposition(that, target);
@@ -235,6 +254,7 @@ clickToAddress.prototype.attach = function(dom){
 	}
 };
 clickToAddress.prototype.onFocus = function(target){
+	'use strict';
 	var that = this;
 	if(that.serviceReady == 0){
 		setTimeout(function(){
@@ -248,14 +268,18 @@ clickToAddress.prototype.onFocus = function(target){
 	that.focused = true;
 	that.show();
 	if(target.value !== '' && !prestate){
-		that.search(target.value);
+		that.sequence++;
+		that.searchStatus.lastSearchId = that.sequence;
+		that.search(target.value, that.activeFilters, that.sequence);
 	}
 }
 clickToAddress.prototype.resetSelector = function(){
+	'use strict';
 	this.hasContent = false;
 	this.selectorPos = -1;
 };
 clickToAddress.prototype.moveSelector = function(goDown){
+	'use strict';
 	if(!this.visible){
 		return;
 	}
@@ -288,9 +312,11 @@ clickToAddress.prototype.moveSelector = function(goDown){
 };
 
 clickToAddress.prototype.showGeo = function(){
+	'use strict';
 	this.searchObj.getElementsByClassName('geo')[0].style.display = 'block';
 };
 clickToAddress.prototype.hideKeyboard = function(){
+	'use strict';
 	// this code is for phones to hide the keyboard.
 	var that = this;
 	that.keyboardHideInProgress = true;
@@ -298,12 +324,13 @@ clickToAddress.prototype.hideKeyboard = function(){
 	that.activeInput.setAttribute('disabled', 'true'); // Force keyboard to hide on textarea field.
 	setTimeout(function() {
 		that.activeInput.blur();	//actually close the keyboard
-		// Remove readonly attribute after keyboard is hidden.
+		// Remove attributes after keyboard is hidden.
 		that.activeInput.removeAttribute('readonly');
 		that.activeInput.removeAttribute('disabled');
 	}, 100);
 };
 clickToAddress.prototype.getStyleSheet = function(){
+	'use strict';
 	if(this.cssPath === false){
 		return;
 	}
@@ -321,6 +348,7 @@ clickToAddress.prototype.getStyleSheet = function(){
 	}
 };
 clickToAddress.prototype.setProgressBar = function(state){
+	'use strict';
 	var pgbar = this.searchObj.getElementsByClassName('progressBar')[0];
 	switch(state){
 		case 0:

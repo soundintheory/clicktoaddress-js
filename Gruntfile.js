@@ -22,9 +22,9 @@ module.exports = function(grunt) {
 				},
 				options: {
 					report: false,
-					mangle: true,
-					compress: true,
-					beautify: true,
+					mangle: false,
+					compress: false,
+					beautify: false,
 					preserveComments: 'some'
 				}
 			}

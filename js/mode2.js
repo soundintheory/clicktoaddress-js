@@ -34,10 +34,10 @@ c2a_gfx_modes['mode2'] = {
 		// position to target
 		var topElemHeight = 22;
 
-		var elemRect = target.getBoundingClientRect(),
-			bodyRect = document.body.getBoundingClientRect(),
-			topOffset = (elemRect.top - bodyRect.top) - (topElemHeight+10);
-			leftOffset = elemRect.left - bodyRect.left + document.body.style.paddingLeft;
+		var elemRect = target.getBoundingClientRect();
+		var	htmlRect = document.getElementsByTagName('html')[0].getBoundingClientRect();
+		var	topOffset = (elemRect.top - htmlRect.top) - (topElemHeight+10);
+		var	leftOffset = elemRect.left - htmlRect.left + document.body.style.paddingLeft;
 
 		var htmlTop = parseInt( window.getComputedStyle(document.getElementsByTagName('html')[0]).getPropertyValue('margin-top') );
 			htmlTop += parseInt( window.getComputedStyle(document.getElementsByTagName('html')[0]).getPropertyValue('padding-top') );

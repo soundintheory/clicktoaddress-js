@@ -1,4 +1,44 @@
+
+// *
+// * Simple function to set texts
+// *
+clickToAddress.prototype.setupText = function(textCfg){
+	'use strict';
+	this.texts = {
+		default_placeholder: 'Start with post/zip code or street',
+		country_placeholder: 'Type here to search for a country',
+		country_button: 'Change Country',
+		generic_error: 'An error occured. Please enter your address manually',
+		no_results: 'No results found'
+		//geocode: 'Your search results are prioritised based on your location.',
+	};
+	if(typeof textCfg != 'undefined'){
+		var keys = Object.keys(this.texts);
+		for(var i=0; i<keys.length; i++){
+			if(typeof textCfg[keys[i]] != 'undefined' && textCfg[keys[i]] != ''){
+				this.texts[keys[i]] = textCfg[keys[i]];
+			}
+		}
+	}
+};
+
+// *
+// * Simple function to set default values
+// *
+clickToAddress.prototype.setCfg = function(config, name, defaultValue, cfgValue){
+	'use strict';
+	if(typeof cfgValue == 'undefined'){
+		cfgValue = name;
+	}
+	if(typeof config[cfgValue] != 'undefined' && config[cfgValue] !== ''){
+		this[name] = config[cfgValue];
+	} else {
+		this[name] = defaultValue;
+	}
+};
+
 clickToAddress.prototype.preset = function(config){
+	'use strict';
 	// *
 	// * MAIN OBJECTS
 	// * These objects are store internal statuses. Do not modify any variable here.
@@ -29,7 +69,12 @@ clickToAddress.prototype.preset = function(config){
 	// the currently active search input
 	this.activeInput = 'init';
 	// last activity (for timeout purposes)
-	this.sid = 0;
+	this.searchStatus = {
+		lastSearchId: 0,
+		lastResponseId: 0,
+		inCountryMode: 0
+	};
+	this.sequence = 0;
 
 	this.cache = {};
 	this.cachePos = -1;
@@ -83,40 +128,4 @@ clickToAddress.prototype.preset = function(config){
 
 	this.setFingerPrint();
 };
-cc_debug = false;
-
-// *
-// * Simple function to set texts
-// *
-clickToAddress.prototype.setupText = function(textCfg){
-	this.texts = {
-		default_placeholder: 'Start with post/zip code or street',
-		country_placeholder: 'Type here to search for a country',
-		country_button: 'Change Country',
-		generic_error: 'An error occured. Please enter your address manually',
-		no_results: 'No results found'
-		//geocode: 'Your search results are prioritised based on your location.',
-	};
-	if(typeof textCfg != 'undefined'){
-		var keys = Object.keys(this.texts);
-		for(var i=0; i<keys.length; i++){
-			if(typeof textCfg[keys[i]] != 'undefined' && textCfg[keys[i]] != ''){
-				this.texts[keys[i]] = textCfg[keys[i]];
-			}
-		}
-	}
-};
-
-// *
-// * Simple function to set default values
-// *
-clickToAddress.prototype.setCfg = function(config, name, defaultValue, cfgValue){
-	if(typeof cfgValue == 'undefined'){
-		cfgValue = name;
-	}
-	if(typeof config[cfgValue] != 'undefined' && config[cfgValue] !== ''){
-		this[name] = config[cfgValue];
-	} else {
-		this[name] = defaultValue;
-	}
-};
+var cc_debug = false;
