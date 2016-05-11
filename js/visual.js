@@ -249,6 +249,35 @@ clickToAddress.prototype.attach = function(dom){
 		that.focused = false;
 		that.hide();
 	});
+	ccEvent(target, 'c2a-search', function(){
+		that.show();
+		if(that.searchStatus.inCountryMode == 1){
+			that.changeCountry(this.value);
+		} else {
+			if(this.value.indexOf(that.lastSearch) !== 0){
+				that.activeFilters = {};
+			}
+			that.lastSearch = this.value;
+
+			that.sequence++;
+			that.searchStatus.lastSearchId = that.sequence;
+			var current_sequence_number = that.sequence;
+			var searchVal = this.value;
+			setTimeout(function(){
+				if(that.searchStatus.lastSearchId <= current_sequence_number){
+					if(searchVal !== ''){
+						that.cleanHistory();
+						that.search(searchVal, that.activeFilters, current_sequence_number);
+					} else {
+						that.clear();
+					}
+				}
+			},200);
+
+			that.activeDom = that.domLib[domLibId];
+			that.gfxModeTools.reposition(that, target);
+		}
+	})
 	if(target === document.activeElement){
 		this.onFocus(target);
 	}
@@ -371,3 +400,7 @@ clickToAddress.prototype.setProgressBar = function(state){
 			break;
 	}
 };
+clickToAddress.prototype.manualSearch = function(target){
+	var event = new Event('c2a-search');
+	target.dispatchEvent(event);
+}

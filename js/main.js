@@ -250,24 +250,16 @@ clickToAddress.prototype.showResults = function(full){
 		listElements[i].innerHTML = content;
 		listElements[i].setAttribute('title',row.labels.join(', '));
 		// add attributes
-		if(typeof row.count == 'number' && row.count > 1){
-			listElements[i].className = 'cc-filter';
+		if(typeof row.count !== 'undefined' && typeof row.id !== 'undefined' && typeof row.filters !== 'undefined'){
+			if(row.count == 1){
+				ccData(listElements[i],'filters',null);
+				ccData(listElements[i],'id',row.id.toString());
+			} else {
+				listElements[i].className = 'cc-filter';
+				ccData(listElements[i],'filters',row.filters);
+				ccData(listElements[i],'id',null);
+			}
 		}
-
-		if(typeof row.id == 'number')
-			ccData(listElements[i],'key',row.id);
-		else
-			ccData(listElements[i],'key',0);
-
-		if(typeof row.filters != 'undefined')
-			ccData(listElements[i],'filters',row.filters);
-		else
-			ccData(listElements[i],'filters',null);
-
-		if(typeof row.query != 'undefined')
-			ccData(listElements[i],'query',row.query);
-		else
-			ccData(listElements[i],'query',null);
 	}
 	// add events
 	for(var i=0; i<listElements.length; i++){
@@ -310,24 +302,16 @@ clickToAddress.prototype.showResultsExtra = function(){
 		listElements[i].innerHTML = content;
 		listElements[i].setAttribute('title',row.labels.join(', '));
 		// add attributes
-		if(typeof row.count == 'number' && row.count > 1){
-			listElements[i].className = 'cc-filter';
+		if(typeof row.count !== 'undefined' && typeof row.id !== 'undefined' && typeof row.filters !== 'undefined'){
+			if(row.count == 1){
+				ccData(listElements[i],'filters',null);
+				ccData(listElements[i],'id',row.id.toString());
+			} else {
+				listElements[i].className = 'cc-filter';
+				ccData(listElements[i],'filters',row.filters);
+				ccData(listElements[i],'id',null);
+			}
 		}
-
-		if(typeof row.id == 'number')
-			ccData(listElements[i],'key',row.id);
-		else
-			ccData(listElements[i],'key',0);
-
-		if(typeof row.filters != 'undefined')
-			ccData(listElements[i],'filters',row.filters);
-		else
-			ccData(listElements[i],'filters',null);
-
-		if(typeof row.query != 'undefined')
-			ccData(listElements[i],'query',row.query);
-		else
-			ccData(listElements[i],'query',null);
 	}
 	// add events
 	for(var i=0; i<listElements.length; i++){
@@ -342,25 +326,21 @@ clickToAddress.prototype.select = function(li){
 	this.resetSelector();
 	this.cleanHistory();
 
-	li.key = ccData(li, 'key');
+	li.key = ccData(li, 'id');
 	li.filters = ccData(li, 'filters');
-	li.query = ccData(li, 'query');
 
-	if(li.key !== 0){
+	if(li.key !== null){
 		this.getAddressDetails(li.key);
 		this.hide();
 		this.loseFocus();
 		return;
 	}
-	if(li.filters !== null || li.query !== null){
+	if(li.filters !== null){
 		this.sequence++;
 		this.searchStatus.lastSearchId = this.sequence;
 		var current_sequence = this.sequence;
 		this.search(this.activeInput.value, li.filters, current_sequence);
 		this.getFocus();
-		if(li.query !== null){
-			this.activeInput.value = li.query;
-		}
 		this.activeFilters = li.filters;
 		return;
 	}
@@ -402,21 +382,20 @@ clickToAddress.prototype.changeCountry = function(filter){
 		var row = this.validCountries[i+skip];
 		var content = '';
 		if(typeof filter !== 'undefined' && filter !== ''){
-
 			var matchFound = false;
 			for(var j=0; !matchFound && j < Object.keys(row).length; j++){
 				var rowElem = row[Object.keys(row)[j]];
-				if(typeof rowElem != 'array'){
-					var text = rowElem.toString().toLowerCase();
-					if(text.indexOf(filter.toLowerCase()) === 0){
-						matchFound = true;
-					}
-				} else {
+				if(typeof rowElem == 'object' && Array.isArray(rowElem)){
 					for(var k=0; !matchFound && k < rowElem.length; k++){
 						var text = rowElem[k].toString().toLowerCase();
 						if(text.indexOf(filter.toLowerCase()) === 0){
 							matchFound = true;
 						}
+					}
+				} else {
+					var text = rowElem.toString().toLowerCase();
+					if(text.indexOf(filter.toLowerCase()) === 0){
+						matchFound = true;
 					}
 				}
 			}
@@ -495,8 +474,8 @@ clickToAddress.prototype.setCountryChange = function(){
 			// add parts
 			var row = this.validCountries[i];
 			switch(this.countryMatchWith){
-				case 'iso_2':
-					if(this.enabledCountries.indexOf(row.code) == -1){
+				case 'iso_3':
+					if(this.enabledCountries.indexOf(row.iso_3166_1_alpha_3) == -1){
 						this.validCountries.splice(i, 1);
 						i--;
 					}
