@@ -480,6 +480,12 @@ clickToAddress.prototype.setCountryChange = function(){
 						i--;
 					}
 					break;
+				case 'iso_2':
+					if(this.enabledCountries.indexOf(row.iso_3166_1_alpha_2) == -1){
+						this.validCountries.splice(i, 1);
+						i--;
+					}
+					break;
 				// match with any text
 				default:
 					var matchFound = false;
