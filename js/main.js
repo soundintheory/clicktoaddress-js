@@ -526,6 +526,7 @@ clickToAddress.prototype.setCountryChange = function(){
 			that.changeCountry();
 			that.activeInput.value = '';
 			that.hasContent = true;
+			that.info();
 		} else {
 			that.setPlaceholder(0);
 			that.searchStatus.inCountryMode = 0;

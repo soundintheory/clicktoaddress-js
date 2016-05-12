@@ -73,7 +73,7 @@ clickToAddress.prototype.hide = function(force_it){
 		this.visible = false;
 		this.hover = false;
 		// return input state, in case it was in country mode
-		if(this.searchStatus.inCountryMode){
+		if(this.searchStatus.inCountryMode && typeof this.lastSearch !== 'undefined'){
 			this.activeInput.value = this.lastSearch;
 		}
 		this.clear();
@@ -400,7 +400,16 @@ clickToAddress.prototype.setProgressBar = function(state){
 			break;
 	}
 };
-clickToAddress.prototype.manualSearch = function(target){
-	var event = new Event('c2a-search');
+clickToAddress.prototype.triggerSearch = function(target){
+	'use strict';
+	var that = this;
+	if(that.serviceReady == 0){
+		setTimeout(function(){
+			that.triggerSearch(target);
+		}, 250);
+		return;
+	}
+	var event = document.createEvent('Event');
+	event.initEvent('c2a-search', true, true);
 	target.dispatchEvent(event);
 }

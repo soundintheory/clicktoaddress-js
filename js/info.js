@@ -17,6 +17,7 @@ clickToAddress.prototype.info = function(state, count){
 			break;
 		default:
 			infoBar.className = 'infoBar';
+			infoBar.innerHTML = '';
 			break;
 	}
 }
