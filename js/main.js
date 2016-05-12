@@ -28,6 +28,18 @@ function clickToAddress(config){
 			} else {
 				var country = that.defaultCountry;
 			}
+			if(that.enabledCountries.length && that.validCountries.length){
+				var defaultCountryIsValid = false;
+				for(var i=0; i<that.validCountries.length; i++){
+					if(that.validCountries[i].code == country){
+						defaultCountryIsValid = true;
+						break;
+					}
+				}
+				if(!defaultCountryIsValid){
+					country = that.validCountries[0].code;
+				}
+			}
 			that.selectCountry(country);
 		}
 	);
