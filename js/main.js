@@ -500,6 +500,8 @@ clickToAddress.prototype.setCountryChange = function(){
 					break;
 				// match with any text
 				default:
+					this.error(9020, 'Invalid value for countryMatchWith. Fallback to "text"');
+				case 'text':
 					var matchFound = false;
 					for(var j=0; !matchFound && j < Object.keys(row).length; j++){
 						var rowElem = row[Object.keys(row)[j]];
@@ -528,6 +530,9 @@ clickToAddress.prototype.setCountryChange = function(){
 			}
 
 		}
+	}
+	if(this.validCountries.length == 0){
+		throw 'No valid countries left in the country list!';
 	}
 
 	var countryObj = this.searchObj.getElementsByClassName('country_btn')[0];
