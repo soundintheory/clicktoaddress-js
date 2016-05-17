@@ -124,7 +124,7 @@ clickToAddress.prototype.preset = function(config){
 	this.setupText(config.texts);
 	this.setCfg(config, 'countryMatchWith','iso_3');
 	this.setCfg(config, 'tag', '');
-	this.setCfg(config, 'cssPath', 'cc_c2a.min.css');
+	this.setCfg(config, 'cssPath', 'https://cc-cdn.com/generic/styles/v1/cc_c2a.min.css');
 
 	this.setFingerPrint();
 };

@@ -156,9 +156,9 @@ clickToAddress.prototype.fillData = function(addressData){
 			}
 		}
 
-		if(addressData.result.province != ''){
+		if(addressData.result.province_code != '' || addressData.result.province_name != ''){
 			var province_set = {
-				province: addressData.result.province,
+				preferred: addressData.result.province,
 				code: addressData.result.province_code,
 				name: addressData.result.province_name
 			};
@@ -188,35 +188,48 @@ clickToAddress.prototype.fillData = function(addressData){
 };
 clickToAddress.prototype.setCounty = function(element, province){
 	'use strict';
-	var province_text = province.name;
-	if(province_text == ''){
-		province_text = province.province;
-	}
-	var provinceMatchText = removeDiacritics(province_text).toLowerCase();
-	var target_val = province.code;
-	if(target_val == ''){
-		target_val = province.province;
-	}
 	if(element.tagName == 'SELECT'){
+		var target_val = province.code;
+		if(target_val == ''){
+			target_val = province.name;
+		}
 		var options = element.getElementsByTagName('option');
 		if(options.length){
 			var found = 0;
+
+			var province_name = removeDiacritics(province.name);
+			var province_code = removeDiacritics(province.code);
+
 			for(var i=0; i<options.length; i++){
-				if(removeDiacritics(options[i].innerHTML).toLowerCase() == provinceMatchText){
+
+				var option_content = removeDiacritics(options[i].innerHTML);
+				var option_value = removeDiacritics(options[i].value);
+
+				if(	option_content == province_name ||
+					option_content == province_code ||
+					option_value == province_name ||
+					option_value == province_code )
+				{
 					target_val = options[i].value;
 					found++;
 					break;
 				}
 			}
 			if(!found){
+				var province_text = province.name;
+				if(province_text == ''){
+					province_text = province.code;
+				}
+				var provinceMatchText = removeDiacritics(province_text);
+
 				var bestMatch = {
 					id: 0,
 					rank: 0
 				};
 				for(var i=0; i<options.length; i++){
-					var option_text = removeDiacritics(options[i].innerHTML).toLowerCase();
+					var option_text = removeDiacritics(options[i].innerHTML);
 					var rank = 0;
-					for(var j=0; j<option_text.length; j++){
+					for(var j=0; j < option_text.length && j < provinceMatchText.length; j++){
 						if(option_text[j] == provinceMatchText[j]){
 							rank++;
 						}
@@ -226,12 +239,21 @@ clickToAddress.prototype.setCounty = function(element, province){
 						bestMatch.id = i;
 					}
 				}
-				target_val = options[bestMatch.id].value;
+				if(bestMatch.rank > 0){
+					target_val = options[bestMatch.id].value;
+				}
 			}
 			element.value = target_val;
 		}
 	} else {
-		element.value = province_text;
+		var province_for_input = province.preferred;
+		if(province_for_input == ''){
+			province_for_input = province.name;
+		}
+		if(province_for_input == ''){
+			province_for_input = province.code;
+		}
+		element.value = province_for_input;
 	}
 }
 clickToAddress.prototype.showResults = function(full){

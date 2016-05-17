@@ -241,6 +241,7 @@ clickToAddress.prototype.attach = function(dom){
 		}
 	});
 	ccEvent(target, 'focus', function(){
+		that.activeDom = that.domLib[domLibId];
 		that.onFocus(target);
 	});
 	ccEvent(target, 'blur', function(){

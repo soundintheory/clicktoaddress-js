@@ -108,7 +108,7 @@ function removeDiacritics (str) {
 	for(var i=0; i<changes.length; i++) {
 		str = str.replace(changes[i].letters, changes[i].base);
 	}
-	return str;
+	return str.toLowerCase();
 }
 
 function binaryIndexOf(array, sequence) {
