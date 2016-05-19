@@ -120,5 +120,6 @@ clickToAddress.prototype.cleanHistory = function(){
 	var removeAt = Object.keys(this.cache[this.activeCountry]).length - this.cachePos;
 	this.cache[this.activeCountry].splice(removeAt, this.cachePos);
 	this.cachePos = -1;
+	this.activeFilters = this.cache[this.activeCountry][Object.keys(this.cache[this.activeCountry]).length - 1].filters;
 	this.setHistoryStep();
 };

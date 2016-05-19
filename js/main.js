@@ -75,7 +75,7 @@ function clickToAddress(config){
 	ccEvent(this.resultList, 'scroll', function(){
 		var scrollTop = parseInt(this.scrollTop);
 		var innerHeight = parseInt(window.getComputedStyle(this, null).getPropertyValue("height"));
-		if(that.searchStatus.inCountryMode != 1 && scrollTop + innerHeight == parseInt(this.scrollHeight)){
+		if(that.searchStatus.inCountryMode != 1 && parseInt(this.scrollHeight) != 0 && scrollTop + innerHeight == parseInt(this.scrollHeight)){
 			that.showResultsExtra();
 		}
 	});
@@ -475,11 +475,10 @@ clickToAddress.prototype.selectCountry = function(countryCode){
 	this.activeCountry = countryCode;
 	that.searchStatus.inCountryMode = 0;
 	this.getFocus();
-	if(typeof this.activeInput.value != 'undefined' && typeof this.lastSearch != 'undefined'){
+	if(typeof this.activeInput.value != 'undefined' && typeof this.lastSearch != ''){
 		this.activeInput.value = this.lastSearch;
 		// copied from visual / keyup
 		this.activeFilters = {};
-		this.lastSearch = this.value;
 
 		this.sequence++;
 		this.searchStatus.lastSearchId = this.sequence;
@@ -498,7 +497,6 @@ clickToAddress.prototype.selectCountry = function(countryCode){
 	}
 	this.setHistoryStep();
 	this.setPlaceholder(0);
-	//this.hide(true); not sure why this was here
 };
 clickToAddress.prototype.setCountryChange = function(){
 	'use strict';

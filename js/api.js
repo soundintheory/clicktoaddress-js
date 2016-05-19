@@ -16,6 +16,7 @@ clickToAddress.prototype.search = function(searchText, filters, sequence){
 		country: this.activeCountry,
 		fingerprint: this.fingerprint,
 		integration: this.tag,
+		js_version: this.jsVersion,
 		sequence: this.sequence
 	};
 	if(typeof this.accessTokenOverride[this.activeCountry] != 'undefined'){
@@ -97,6 +98,7 @@ clickToAddress.prototype.getAddressDetails = function(id){
 		country: this.activeCountry,
 		key: this.key,
 		fingerprint: this.fingerprint,
+		js_version: this.jsVersion,
 		integration: this.tag
 	};
 	if(typeof this.accessTokenOverride[this.activeCountry] != 'undefined'){
@@ -124,7 +126,7 @@ clickToAddress.prototype.getAddressDetails = function(id){
 
 					that.cleanHistory();
 				} catch(e){
-					that.error(9011, 'JS Client side error.');
+					that.error(9013, 'JS Client side error.');
 				}
 			} else {
 				that.handleApiError(this);
@@ -142,7 +144,9 @@ clickToAddress.prototype.getAvailableCountries = function(success_function){
 	var parameters = {
 		key: this.key,
 		fingerprint: this.fingerprint,
-		integration: this.tag
+		js_version: this.jsVersion,
+		integration: this.tag,
+		language: this.countryLanguage
 	};
 	// Set up the URL
 	var url = this.baseURL + 'countries';
@@ -169,11 +173,11 @@ clickToAddress.prototype.getAvailableCountries = function(success_function){
 					that.hideErrors();
 					success_function();
 				} catch(e){
-					that.error(9011, 'JS Client side error.');
+					that.error(9015, 'JS Client side error.');
 				}
 			} else {
 				that.handleApiError(this);
-				}
+			}
 		}
 	};
 	// Send request

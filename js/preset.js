@@ -43,6 +43,7 @@ clickToAddress.prototype.preset = function(config){
 	// * MAIN OBJECTS
 	// * These objects are store internal statuses. Do not modify any variable here.
 	// *
+	this.jsVersion = '@@version';
 	this.serviceReady = 0;
 	// set active country
 	this.activeCountry = '';
@@ -122,6 +123,7 @@ clickToAddress.prototype.preset = function(config){
 	this.setCfg(config, 'getIpLocation', true);
 	this.setCfg(config, 'accessTokenOverride', {});
 	this.setupText(config.texts);
+	this.setCfg(config, 'countryLanguage','en');
 	this.setCfg(config, 'countryMatchWith','iso_3');
 	this.setCfg(config, 'tag', '');
 	this.setCfg(config, 'cssPath', 'https://cc-cdn.com/generic/styles/v1/cc_c2a.min.css');
