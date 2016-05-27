@@ -210,11 +210,22 @@ clickToAddress.prototype.setCounty = function(element, province){
 
 				var option_content = removeDiacritics(options[i].innerHTML);
 				var option_value = removeDiacritics(options[i].value);
-
-				if(	option_content == province_name ||
-					option_content == province_code ||
-					option_value == province_name ||
-					option_value == province_code )
+				if(
+					(
+						option_content != '' &&
+						(
+							option_content == province_name ||
+							option_content == province_code
+						)
+					) ||
+					(
+						option_value != '' &&
+						(
+							option_value == province_name ||
+							option_value == province_code
+						)
+					)
+				)
 				{
 					target_val = options[i].value;
 					found++;
