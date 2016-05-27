@@ -56,15 +56,15 @@ clickToAddress.prototype.setHistoryActions = function(){
 	if(!this.historyTools)
 		return;
 	var that = this;
-	var backBtn = this.searchObj.getElementsByClassName('back')[0];
-	var forwardBtn = this.searchObj.getElementsByClassName('forward')[0];
+	var backBtn = this.searchObj.getElementsByClassName('cc-back')[0];
+	var forwardBtn = this.searchObj.getElementsByClassName('cc-forward')[0];
 	ccEvent(backBtn, 'click', function(){
-		if(backBtn.className == 'back'){
+		if(backBtn.className == 'cc-back'){
 			that.history(0);
 		}
 	});
 	ccEvent(forwardBtn, 'click', function(){
-		if(forwardBtn.className == 'forward'){
+		if(forwardBtn.className == 'cc-forward'){
 			that.history(1);
 		}
 	});
@@ -73,25 +73,25 @@ clickToAddress.prototype.setHistoryStep = function(){
 	'use strict';
 	if(!this.historyTools)
 		return;
-	var backBtn = this.searchObj.getElementsByClassName('back')[0];
-	var forwardBtn = this.searchObj.getElementsByClassName('forward')[0];
+	var backBtn = this.searchObj.getElementsByClassName('cc-back')[0];
+	var forwardBtn = this.searchObj.getElementsByClassName('cc-forward')[0];
 
-	backBtn.className = 'back';
-	forwardBtn.className = 'forward';
+	backBtn.className = 'cc-back';
+	forwardBtn.className = 'cc-forward';
 	var logo_visible = 0;
 
 	if(	typeof this.cache[this.activeCountry] == 'undefined' ||
 		this.cachePos >= Object.keys(this.cache[this.activeCountry]).length - 1 ||
 		Object.keys(this.cache[this.activeCountry]).length <= 1
 	){
-		backBtn.className = 'back disabled';
+		backBtn.className = 'cc-back cc-disabled';
 		logo_visible++;
 	}
 	if(	typeof this.cache[this.activeCountry] == 'undefined' ||
 		this.cachePos <= 0 ||
 		Object.keys(this.cache[this.activeCountry]).length <= 1
 	){
-		forwardBtn.className = 'forward disabled';
+		forwardBtn.className = 'cc-forward cc-disabled';
 		logo_visible++;
 	}
 	var logo = this.searchObj.getElementsByClassName('c2a_logo');
@@ -106,10 +106,10 @@ clickToAddress.prototype.setHistoryStep = function(){
 
 clickToAddress.prototype.hideHistory = function(){
 	'use strict';
-	var backBtn = this.searchObj.getElementsByClassName('back')[0];
-	var forwardBtn = this.searchObj.getElementsByClassName('forward')[0];
-	backBtn.className = 'back disabled';
-	forwardBtn.className = 'forward disabled';
+	var backBtn = this.searchObj.getElementsByClassName('cc-back')[0];
+	var forwardBtn = this.searchObj.getElementsByClassName('cc-forward')[0];
+	backBtn.className = 'cc-back cc-disabled';
+	forwardBtn.className = 'cc-forward cc-disabled';
 };
 
 clickToAddress.prototype.cleanHistory = function(){

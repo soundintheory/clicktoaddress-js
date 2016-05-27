@@ -101,7 +101,7 @@ clickToAddress.prototype.preset = function(config){
 		this.baseURL += '/';
 	}
 	// add access token
-	this.setCfg(config, 'key', 'xxxxx-xxxxx-xxxxx-xxxxx', 'accessToken');
+	this.setCfg(config, 'key', '', 'accessToken');
 	// add default country
 	this.setCfg(config, 'defaultCountry', 'gbr');
 	// add enabled countries

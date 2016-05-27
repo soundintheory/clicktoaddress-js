@@ -11,29 +11,6 @@ clickToAddress.prototype.setPlaceholder = function(country, target){
 		target.setAttribute('placeholder', text);
 	}
 }
-clickToAddress.prototype.error = function(code, message){
-	'use strict';
-	if(cc_debug){
-		console.warn('CraftyClicks Debug Error Message: ['+code+'] '+message);
-	}
-	if(this.serviceReady == -1){
-		this.errorObj.innerHTML = message;
-	} else {
-		this.errorObj.innerHTML = this.texts.generic_error;
-	}
-	this.errorObj.className = 'c2a_error';
-
-	if(typeof this.onError != 'undefined'){
-		this.onError(code, message);
-	}
-}
-clickToAddress.prototype.hideErrors = function(){
-	'use strict';
-	if(this.serviceReady != -1){
-		this.errorObj.innerHTML = '';
-		this.errorObj.className = 'c2a_error c2a_error_hidden';
-	}
-}
 clickToAddress.prototype.getFocus = function(){
 	'use strict';
 	if(this.activeInput != 'init')

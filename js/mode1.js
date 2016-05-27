@@ -7,8 +7,8 @@ c2a_gfx_modes['mode1'] = {
 		var cc_dropdown = document.createElement('DIV');
 		cc_dropdown.className = 'c2a_mode'+that.gfxMode+' c2a_'+that.style.ambient+' c2a_accent_'+that.style.accent;
 		cc_dropdown.id = 'cc_c2a';
-		var historyBar = '<div class="cc-history"><div class="back disabled"></div>';
-			historyBar += '<div class="forward disabled"></div></div>';
+		var historyBar = '<div class="cc-history"><div class="cc-back cc-disabled"></div>';
+			historyBar += '<div class="cc-forward cc-disabled"></div></div>';
 
 		var mainbar = '<div class="mainbar">';
 		mainbar += '<div class="country_btn"><div class="country_img"></div><span>'+that.texts.country_button+'</span></div>';
