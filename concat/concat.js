@@ -5,7 +5,7 @@
  * @link        https://craftyclicks.co.uk
  * @copyright   Copyright (c) 2016, Crafty Clicks Limited
  * @license     Licensed under the terms of the MIT license.
- * @version     1.0.1
+ * @version     1.0.2
  */
 
 clickToAddress.prototype.search = function(searchText, filters, sequence){
@@ -89,7 +89,7 @@ clickToAddress.prototype.search = function(searchText, filters, sequence){
 					}
 				}
 				catch(err){
-					that.error(9011, 'JS Client side error.');
+					that.error('JS502');
 				}
 			}
 		} else {
@@ -136,7 +136,7 @@ clickToAddress.prototype.getAddressDetails = function(id){
 
 					that.cleanHistory();
 				} catch(e){
-					that.error(9013, 'JS Client side error.');
+					that.error('JS503');
 				}
 			} else {
 				that.handleApiError(this);
@@ -183,7 +183,7 @@ clickToAddress.prototype.getAvailableCountries = function(success_function){
 					that.hideErrors();
 					success_function();
 				} catch(e){
-					that.error(9015, 'JS Client side error.');
+					that.error('JS505');
 				}
 			} else {
 				that.handleApiError(this);
@@ -196,7 +196,7 @@ clickToAddress.prototype.getAvailableCountries = function(success_function){
 	var xmlHttpTimeout = setTimeout(function(){
 		if(request !== null && request.readyState !== 4){
 			request.abort();
-			that.error(9012, "Server Unavailable. (timeout)");
+			that.error('JS501');
 		}
 	},10000);
 };
@@ -216,7 +216,7 @@ clickToAddress.prototype.handleApiError = function(ajax){
 	if( typeof data.error != 'undefined' && typeof data.error.status == "string" ){
 		this.error(data.error.status, data.error.message);
 	} else {
-		this.error(9010, 'Unknown Server Error.');
+		this.error('JS500');
 	}
 };
 
@@ -278,15 +278,15 @@ clickToAddress.prototype.setHistoryActions = function(){
 	if(!this.historyTools)
 		return;
 	var that = this;
-	var backBtn = this.searchObj.getElementsByClassName('back')[0];
-	var forwardBtn = this.searchObj.getElementsByClassName('forward')[0];
+	var backBtn = this.searchObj.getElementsByClassName('cc-back')[0];
+	var forwardBtn = this.searchObj.getElementsByClassName('cc-forward')[0];
 	ccEvent(backBtn, 'click', function(){
-		if(backBtn.className == 'back'){
+		if(backBtn.className == 'cc-back'){
 			that.history(0);
 		}
 	});
 	ccEvent(forwardBtn, 'click', function(){
-		if(forwardBtn.className == 'forward'){
+		if(forwardBtn.className == 'cc-forward'){
 			that.history(1);
 		}
 	});
@@ -295,25 +295,25 @@ clickToAddress.prototype.setHistoryStep = function(){
 	'use strict';
 	if(!this.historyTools)
 		return;
-	var backBtn = this.searchObj.getElementsByClassName('back')[0];
-	var forwardBtn = this.searchObj.getElementsByClassName('forward')[0];
+	var backBtn = this.searchObj.getElementsByClassName('cc-back')[0];
+	var forwardBtn = this.searchObj.getElementsByClassName('cc-forward')[0];
 
-	backBtn.className = 'back';
-	forwardBtn.className = 'forward';
+	backBtn.className = 'cc-back';
+	forwardBtn.className = 'cc-forward';
 	var logo_visible = 0;
 
 	if(	typeof this.cache[this.activeCountry] == 'undefined' ||
 		this.cachePos >= Object.keys(this.cache[this.activeCountry]).length - 1 ||
 		Object.keys(this.cache[this.activeCountry]).length <= 1
 	){
-		backBtn.className = 'back disabled';
+		backBtn.className = 'cc-back cc-disabled';
 		logo_visible++;
 	}
 	if(	typeof this.cache[this.activeCountry] == 'undefined' ||
 		this.cachePos <= 0 ||
 		Object.keys(this.cache[this.activeCountry]).length <= 1
 	){
-		forwardBtn.className = 'forward disabled';
+		forwardBtn.className = 'cc-forward cc-disabled';
 		logo_visible++;
 	}
 	var logo = this.searchObj.getElementsByClassName('c2a_logo');
@@ -328,10 +328,10 @@ clickToAddress.prototype.setHistoryStep = function(){
 
 clickToAddress.prototype.hideHistory = function(){
 	'use strict';
-	var backBtn = this.searchObj.getElementsByClassName('back')[0];
-	var forwardBtn = this.searchObj.getElementsByClassName('forward')[0];
-	backBtn.className = 'back disabled';
-	forwardBtn.className = 'forward disabled';
+	var backBtn = this.searchObj.getElementsByClassName('cc-back')[0];
+	var forwardBtn = this.searchObj.getElementsByClassName('cc-forward')[0];
+	backBtn.className = 'cc-back cc-disabled';
+	forwardBtn.className = 'cc-forward cc-disabled';
 };
 
 clickToAddress.prototype.cleanHistory = function(){
@@ -344,6 +344,42 @@ clickToAddress.prototype.cleanHistory = function(){
 	this.cachePos = -1;
 	this.activeFilters = this.cache[this.activeCountry][Object.keys(this.cache[this.activeCountry]).length - 1].filters;
 	this.setHistoryStep();
+};
+
+clickToAddress.prototype.error = function(code, message){
+	'use strict';
+	var errors = {
+		// js errors
+		'JS500': 'Unknown Server Error',
+		'JS501': 'API server seems unreachable',
+		'JS502': 'API search request resulted in a JS error.',
+		'JS503': 'API address retrieve request resulted in a JS error.',
+		'JS505': 'API countrylist retrieve request resulted in a JS error.',
+		// js warnings
+		'JS401': 'Invalid value for countryMatchWith. Fallback to "text"'
+	};
+	message = typeof message !== 'undefined' ? message : errors[code];
+	if(cc_debug){
+		console.warn('CraftyClicks Debug Error Message: ['+code+'] '+message);
+	}
+	if(this.serviceReady == -1){
+		this.errorObj.innerHTML = message;
+	} else {
+		this.errorObj.innerHTML = this.texts.generic_error;
+	}
+	this.errorObj.className = 'c2a_error';
+
+	if(typeof this.onError != 'undefined'){
+		this.onError(code, message);
+	}
+};
+
+clickToAddress.prototype.hideErrors = function(){
+	'use strict';
+	if(this.serviceReady != -1){
+		this.errorObj.innerHTML = '';
+		this.errorObj.className = 'c2a_error c2a_error_hidden';
+	}
 };
 
 clickToAddress.prototype.info = function(state, count){
@@ -505,6 +541,11 @@ clickToAddress.prototype.fillData = function(addressData){
 
 	if(typeof this.activeDom.line_1 != 'undefined'){
 		var line_3 = [];
+
+		if(addressData.result.line_1 == '' && addressData.result.company_name != ''){
+			addressData.result.line_1 = addressData.result.company_name;
+		}
+
 		this.activeDom.line_1.value = addressData.result.line_1;
 		if(typeof this.activeDom.line_2 != 'undefined'){
 			this.activeDom.line_2.value = addressData.result.line_2;
@@ -566,6 +607,7 @@ clickToAddress.prototype.fillData = function(addressData){
 
 	}
 	if(typeof this.onResultSelected == 'function'){
+		addressData.result.country = this.validCountries[this.activeCountryId];
 		this.onResultSelected(this, this.activeDom, addressData.result);
 	}
 
@@ -589,11 +631,22 @@ clickToAddress.prototype.setCounty = function(element, province){
 
 				var option_content = removeDiacritics(options[i].innerHTML);
 				var option_value = removeDiacritics(options[i].value);
-
-				if(	option_content == province_name ||
-					option_content == province_code ||
-					option_value == province_name ||
-					option_value == province_code )
+				if(
+					(
+						option_content != '' &&
+						(
+							option_content == province_name ||
+							option_content == province_code
+						)
+					) ||
+					(
+						option_value != '' &&
+						(
+							option_value == province_name ||
+							option_value == province_code
+						)
+					)
+				)
 				{
 					target_val = options[i].value;
 					found++;
@@ -864,7 +917,6 @@ clickToAddress.prototype.selectCountry = function(countryCode){
 		this.activeInput.value = this.lastSearch;
 		// copied from visual / keyup
 		this.activeFilters = {};
-		//this.lastSearch = this.value;
 
 		this.sequence++;
 		this.searchStatus.lastSearchId = this.sequence;
@@ -906,7 +958,7 @@ clickToAddress.prototype.setCountryChange = function(){
 					break;
 				// match with any text
 				default:
-					this.error(9020, 'Invalid value for countryMatchWith. Fallback to "text"');
+					this.error('JS401');
 				case 'text':
 					var matchFound = false;
 					for(var j=0; !matchFound && j < Object.keys(row).length; j++){
@@ -969,8 +1021,8 @@ c2a_gfx_modes['mode1'] = {
 		var cc_dropdown = document.createElement('DIV');
 		cc_dropdown.className = 'c2a_mode'+that.gfxMode+' c2a_'+that.style.ambient+' c2a_accent_'+that.style.accent;
 		cc_dropdown.id = 'cc_c2a';
-		var historyBar = '<div class="cc-history"><div class="back disabled"></div>';
-			historyBar += '<div class="forward disabled"></div></div>';
+		var historyBar = '<div class="cc-history"><div class="cc-back cc-disabled"></div>';
+			historyBar += '<div class="cc-forward cc-disabled"></div></div>';
 
 		var mainbar = '<div class="mainbar">';
 		mainbar += '<div class="country_btn"><div class="country_img"></div><span>'+that.texts.country_button+'</span></div>';
@@ -1039,8 +1091,8 @@ c2a_gfx_modes['mode2'] = {
 		var mainbar = '<div class="mainbar">';
 			mainbar += '<div class="country_btn"><div class="country_img"></div><span>'+that.texts.country_button+'</span></div>';
 		if(that.historyTools === true){
-			mainbar += '<div class="cc-history"><div class="back disabled"></div>';
-			mainbar +='<div class="forward disabled"></div></div>';
+			mainbar += '<div class="cc-history"><div class="cc-back disabled"></div>';
+			mainbar +='<div class="cc-forward disabled"></div></div>';
 		}
 		if(that.showLogo){
 			mainbar += '<div class="c2a_logo"></div>';
@@ -1133,7 +1185,7 @@ clickToAddress.prototype.preset = function(config){
 	// * MAIN OBJECTS
 	// * These objects are store internal statuses. Do not modify any variable here.
 	// *
-	this.jsVersion = '1.0.1';
+	this.jsVersion = '1.0.2';
 	this.serviceReady = 0;
 	// set active country
 	this.activeCountry = '';
@@ -1191,7 +1243,7 @@ clickToAddress.prototype.preset = function(config){
 		this.baseURL += '/';
 	}
 	// add access token
-	this.setCfg(config, 'key', 'xxxxx-xxxxx-xxxxx-xxxxx', 'accessToken');
+	this.setCfg(config, 'key', '', 'accessToken');
 	// add default country
 	this.setCfg(config, 'defaultCountry', 'gbr');
 	// add enabled countries
@@ -1373,29 +1425,6 @@ clickToAddress.prototype.setPlaceholder = function(country, target){
 			text = this.texts.country_placeholder;
 		}
 		target.setAttribute('placeholder', text);
-	}
-}
-clickToAddress.prototype.error = function(code, message){
-	'use strict';
-	if(cc_debug){
-		console.warn('CraftyClicks Debug Error Message: ['+code+'] '+message);
-	}
-	if(this.serviceReady == -1){
-		this.errorObj.innerHTML = message;
-	} else {
-		this.errorObj.innerHTML = this.texts.generic_error;
-	}
-	this.errorObj.className = 'c2a_error';
-
-	if(typeof this.onError != 'undefined'){
-		this.onError(code, message);
-	}
-}
-clickToAddress.prototype.hideErrors = function(){
-	'use strict';
-	if(this.serviceReady != -1){
-		this.errorObj.innerHTML = '';
-		this.errorObj.className = 'c2a_error c2a_error_hidden';
 	}
 }
 clickToAddress.prototype.getFocus = function(){

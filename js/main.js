@@ -120,6 +120,11 @@ clickToAddress.prototype.fillData = function(addressData){
 
 	if(typeof this.activeDom.line_1 != 'undefined'){
 		var line_3 = [];
+
+		if(addressData.result.line_1 == '' && addressData.result.company_name != ''){
+			addressData.result.line_1 = addressData.result.company_name;
+		}
+
 		this.activeDom.line_1.value = addressData.result.line_1;
 		if(typeof this.activeDom.line_2 != 'undefined'){
 			this.activeDom.line_2.value = addressData.result.line_2;
@@ -181,6 +186,7 @@ clickToAddress.prototype.fillData = function(addressData){
 
 	}
 	if(typeof this.onResultSelected == 'function'){
+		addressData.result.country = this.validCountries[this.activeCountryId];
 		this.onResultSelected(this, this.activeDom, addressData.result);
 	}
 
@@ -204,11 +210,22 @@ clickToAddress.prototype.setCounty = function(element, province){
 
 				var option_content = removeDiacritics(options[i].innerHTML);
 				var option_value = removeDiacritics(options[i].value);
-
-				if(	option_content == province_name ||
-					option_content == province_code ||
-					option_value == province_name ||
-					option_value == province_code )
+				if(
+					(
+						option_content != '' &&
+						(
+							option_content == province_name ||
+							option_content == province_code
+						)
+					) ||
+					(
+						option_value != '' &&
+						(
+							option_value == province_name ||
+							option_value == province_code
+						)
+					)
+				)
 				{
 					target_val = options[i].value;
 					found++;
@@ -520,7 +537,7 @@ clickToAddress.prototype.setCountryChange = function(){
 					break;
 				// match with any text
 				default:
-					this.error(9020, 'Invalid value for countryMatchWith. Fallback to "text"');
+					this.error('JS401');
 				case 'text':
 					var matchFound = false;
 					for(var j=0; !matchFound && j < Object.keys(row).length; j++){

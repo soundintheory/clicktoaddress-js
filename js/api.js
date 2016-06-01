@@ -79,7 +79,7 @@ clickToAddress.prototype.search = function(searchText, filters, sequence){
 					}
 				}
 				catch(err){
-					that.error(9011, 'JS Client side error.');
+					that.error('JS502');
 				}
 			}
 		} else {
@@ -126,7 +126,7 @@ clickToAddress.prototype.getAddressDetails = function(id){
 
 					that.cleanHistory();
 				} catch(e){
-					that.error(9013, 'JS Client side error.');
+					that.error('JS503');
 				}
 			} else {
 				that.handleApiError(this);
@@ -173,7 +173,7 @@ clickToAddress.prototype.getAvailableCountries = function(success_function){
 					that.hideErrors();
 					success_function();
 				} catch(e){
-					that.error(9015, 'JS Client side error.');
+					that.error('JS505');
 				}
 			} else {
 				that.handleApiError(this);
@@ -186,7 +186,7 @@ clickToAddress.prototype.getAvailableCountries = function(success_function){
 	var xmlHttpTimeout = setTimeout(function(){
 		if(request !== null && request.readyState !== 4){
 			request.abort();
-			that.error(9012, "Server Unavailable. (timeout)");
+			that.error('JS501');
 		}
 	},10000);
 };
@@ -206,6 +206,6 @@ clickToAddress.prototype.handleApiError = function(ajax){
 	if( typeof data.error != 'undefined' && typeof data.error.status == "string" ){
 		this.error(data.error.status, data.error.message);
 	} else {
-		this.error(9010, 'Unknown Server Error.');
+		this.error('JS500');
 	}
 };

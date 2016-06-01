@@ -11,8 +11,8 @@ c2a_gfx_modes['mode2'] = {
 		var mainbar = '<div class="mainbar">';
 			mainbar += '<div class="country_btn"><div class="country_img"></div><span>'+that.texts.country_button+'</span></div>';
 		if(that.historyTools === true){
-			mainbar += '<div class="cc-history"><div class="back disabled"></div>';
-			mainbar +='<div class="forward disabled"></div></div>';
+			mainbar += '<div class="cc-history"><div class="cc-back disabled"></div>';
+			mainbar +='<div class="cc-forward disabled"></div></div>';
 		}
 		if(that.showLogo){
 			mainbar += '<div class="c2a_logo"></div>';
