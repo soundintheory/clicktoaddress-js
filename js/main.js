@@ -1,32 +1,33 @@
 function clickToAddress(config){
 	'use strict';
-	if(document.getElementById('cc_c2a') != null){
+	var that = this;
+	if(document.getElementById('cc_c2a') !== null){
 		throw 'Already initiated';
 	}
-	if(typeof this.preset == 'undefined'){
+	if(typeof that.preset == 'undefined'){
 		throw 'Incorrect way to initialize this code. use "new ClickToAddress(config);"';
 	}
-	var that = this;
-	this.preset(config);
+	that.preset(config);
 
-	this.gfxModeTools = c2a_gfx_modes['mode'+this.gfxMode];
+	that.gfxModeTools = c2a_gfx_modes['mode'+that.gfxMode];
 
 	// get basic html
-	this.gfxModeTools.addHtml(this);
+	that.gfxModeTools.addHtml(that);
 	// store created element
-	this.searchObj = document.getElementById('cc_c2a');
-	this.resultList = this.searchObj.getElementsByClassName('c2a_results')[0];
-	this.errorObj = this.searchObj.getElementsByClassName('c2a_error')[0];
+	that.searchObj = document.getElementById('cc_c2a');
+	that.resultList = that.searchObj.getElementsByClassName('c2a_results')[0];
+	that.errorObj = that.searchObj.getElementsByClassName('c2a_error')[0];
 	// get countries
-	this.getAvailableCountries(
+	that.getAvailableCountries(
 		// when ajax returns, select default country
 		function(){
 			that.serviceReady = 1;
 			that.setCountryChange();
-			if(that.getIpLocation && that.ipLocation != ''){
-				var country = that.ipLocation;
+			var country = null;
+			if(that.getIpLocation && that.ipLocation !== ''){
+				country = that.ipLocation;
 			} else {
-				var country = that.defaultCountry;
+				country = that.defaultCountry;
 			}
 			if(that.enabledCountries.length && that.validCountries.length){
 				var defaultCountryIsValid = false;
@@ -43,14 +44,14 @@ function clickToAddress(config){
 			that.selectCountry(country);
 		}
 	);
-	if(this.searchObj.getElementsByClassName("cc-history").length){
-		this.setHistoryActions();
+	if(that.searchObj.getElementsByClassName("cc-history").length){
+		that.setHistoryActions();
 	}
 	// apply events
-	ccEvent(this.searchObj, 'mouseover',function(){
+	ccEvent(that.searchObj, 'mouseover',function(){
 		that.hover = true;
 	});
-	ccEvent(this.searchObj, 'mouseout',function(){
+	ccEvent(that.searchObj, 'mouseout',function(){
 		that.hover = false;
 	});
 	ccEvent(document, 'click', function(){
@@ -72,28 +73,28 @@ function clickToAddress(config){
 		}
 	});
 	/* TODO: SCROLL */
-	ccEvent(this.resultList, 'scroll', function(){
+	ccEvent(that.resultList, 'scroll', function(){
 		var scrollTop = parseInt(this.scrollTop);
 		var innerHeight = parseInt(window.getComputedStyle(this, null).getPropertyValue("height"));
-		if(that.searchStatus.inCountryMode != 1 && parseInt(this.scrollHeight) != 0 && scrollTop + innerHeight == parseInt(this.scrollHeight)){
+		if(that.searchStatus.inCountryMode != 1 && parseInt(this.scrollHeight) !== 0 && scrollTop + innerHeight == parseInt(this.scrollHeight)){
 			that.showResultsExtra();
 		}
 	});
 	/*	Currently unused code: allows the search to prioritise places closer to the user
 
 	if(config.geocode === true){
-		this.getGeo();
-		var footer = this.searchObj.getElementsByClassName('c2a_footer')[0];
-		footer.innerHTML += '<div class="geo" title="'+this.texts.geocode+'"></div>';
+		that.getGeo();
+		var footer = that.searchObj.getElementsByClassName('c2a_footer')[0];
+		footer.innerHTML += '<div class="geo" title="'+that.texts.geocode+'"></div>';
 	}
 	*/
-	this.getStyleSheet();
+	that.getStyleSheet();
 
-	if(this.key == 'xxxxx-xxxxx-xxxxx-xxxxx'){
-		this.info('pre-trial');
+	if(that.key == 'xxxxx-xxxxx-xxxxx-xxxxx'){
+		that.info('pre-trial');
 	}
 	if(typeof config.dom != 'undefined'){
-		this.attach(config.dom);
+		that.attach(config.dom);
 	}
 }
 clickToAddress.prototype.fillData = function(addressData){
@@ -102,7 +103,7 @@ clickToAddress.prototype.fillData = function(addressData){
 		var options = this.activeDom.country.getElementsByTagName('option');
 		if(options.length){
 			var target_val = '';
-			for(var i=0; i<options.length && target_val == ''; i++){
+			for(var i=0; i<options.length && target_val === ''; i++){
 				if(options[i].innerHTML == this.validCountries[this.activeCountryId].country_name){
 					target_val = options[i].value;
 					break;
@@ -121,7 +122,7 @@ clickToAddress.prototype.fillData = function(addressData){
 	if(typeof this.activeDom.line_1 != 'undefined'){
 		var line_3 = [];
 
-		if(addressData.result.line_1 == '' && addressData.result.company_name != ''){
+		if(addressData.result.line_1 === '' && addressData.result.company_name !== ''){
 			addressData.result.line_1 = addressData.result.company_name;
 		}
 
@@ -129,14 +130,14 @@ clickToAddress.prototype.fillData = function(addressData){
 		if(typeof this.activeDom.line_2 != 'undefined'){
 			this.activeDom.line_2.value = addressData.result.line_2;
 		} else {
-			if(addressData.result.line_2 != ''){
+			if(addressData.result.line_2 !== ''){
 				line_3.push( addressData.result.line_2 );
 			}
 		}
 		if(typeof this.activeDom.company != 'undefined'){
 			this.activeDom.company.value = addressData.result.company_name;
 		} else {
-			if(addressData.result.company_name != ''){
+			if(addressData.result.company_name !== ''){
 				this.activeDom.line_1.value = addressData.result.company_name + ', ' + this.activeDom.line_1.value;
 			}
 		}
@@ -148,20 +149,20 @@ clickToAddress.prototype.fillData = function(addressData){
 		}
 
 		if(typeof this.activeDom.town != 'undefined'){
-			if(addressData.result.locality != ''){
+			if(addressData.result.locality !== ''){
 				this.activeDom.town.value = addressData.result.locality;
 			} else {
 				this.activeDom.town.value = addressData.result.dependent_locality;
 			}
 		} else {
-			if(addressData.result.locality != ''){
+			if(addressData.result.locality !== ''){
 				line_3.push(addressData.result.locality);
 			} else {
 				line_3.push(addressData.result.dependent_locality);
 			}
 		}
 
-		if(addressData.result.province_code != '' || addressData.result.province_name != ''){
+		if(addressData.result.province_code !== '' || addressData.result.province_name !== ''){
 			var province_set = {
 				preferred: addressData.result.province,
 				code: addressData.result.province_code,
@@ -196,7 +197,7 @@ clickToAddress.prototype.setCounty = function(element, province){
 	'use strict';
 	if(element.tagName == 'SELECT'){
 		var target_val = province.code;
-		if(target_val == ''){
+		if(target_val === ''){
 			target_val = province.name;
 		}
 		var options = element.getElementsByTagName('option');
@@ -212,14 +213,14 @@ clickToAddress.prototype.setCounty = function(element, province){
 				var option_value = removeDiacritics(options[i].value);
 				if(
 					(
-						option_content != '' &&
+						option_content !== '' &&
 						(
 							option_content == province_name ||
 							option_content == province_code
 						)
 					) ||
 					(
-						option_value != '' &&
+						option_value !== '' &&
 						(
 							option_value == province_name ||
 							option_value == province_code
@@ -234,7 +235,7 @@ clickToAddress.prototype.setCounty = function(element, province){
 			}
 			if(!found){
 				var province_text = province.name;
-				if(province_text == ''){
+				if(province_text === ''){
 					province_text = province.code;
 				}
 				var provinceMatchText = removeDiacritics(province_text);
@@ -272,7 +273,7 @@ clickToAddress.prototype.setCounty = function(element, province){
 		}
 		element.value = province_for_input;
 	}
-}
+};
 clickToAddress.prototype.showResults = function(full){
 	'use strict';
 	this.scrollPosition = 0;
@@ -301,15 +302,14 @@ clickToAddress.prototype.showResults = function(full){
 		listElements[i].innerHTML = content;
 		listElements[i].setAttribute('title',row.labels.join(', '));
 		// add attributes
-		if(typeof row.count !== 'undefined' && typeof row.id !== 'undefined' && typeof row.filters !== 'undefined'){
-			if(row.count == 1){
-				ccData(listElements[i],'filters',null);
-				ccData(listElements[i],'id',row.id.toString());
-			} else {
+		if(typeof row.count !== 'undefined' && typeof row.id !== 'undefined'){
+			ccData(listElements[i],'id',row.id.toString());
+			ccData(listElements[i],'count',row.count.toString());
+			if(row.count != 1){
 				listElements[i].className = 'cc-filter';
-				ccData(listElements[i],'filters',row.filters);
-				ccData(listElements[i],'id',null);
 			}
+		} else {
+			throw 'server error';
 		}
 	}
 	// add events
@@ -353,15 +353,14 @@ clickToAddress.prototype.showResultsExtra = function(){
 		listElements[i].innerHTML = content;
 		listElements[i].setAttribute('title',row.labels.join(', '));
 		// add attributes
-		if(typeof row.count !== 'undefined' && typeof row.id !== 'undefined' && typeof row.filters !== 'undefined'){
-			if(row.count == 1){
-				ccData(listElements[i],'filters',null);
-				ccData(listElements[i],'id',row.id.toString());
-			} else {
+		if(typeof row.count !== 'undefined' && typeof row.id !== 'undefined'){
+			ccData(listElements[i],'id',row.id.toString());
+			ccData(listElements[i],'count',row.count.toString());
+			if(row.count != 1){
 				listElements[i].className = 'cc-filter';
-				ccData(listElements[i],'filters',row.filters);
-				ccData(listElements[i],'id',null);
 			}
+		} else {
+			throw 'server error';
 		}
 	}
 	// add events
@@ -377,22 +376,22 @@ clickToAddress.prototype.select = function(li){
 	this.resetSelector();
 	this.cleanHistory();
 
-	li.key = ccData(li, 'id');
-	li.filters = ccData(li, 'filters');
+	li.id = ccData(li, 'id');
+	li.count = ccData(li, 'count');
 
-	if(li.key !== null){
-		this.getAddressDetails(li.key);
+	if(li.count === '1'){
+		this.getAddressDetails(li.id);
 		this.hide();
 		this.loseFocus();
 		return;
 	}
-	if(li.filters !== null){
+	if(li.count !== '1'){
 		this.sequence++;
 		this.searchStatus.lastSearchId = this.sequence;
 		var current_sequence = this.sequence;
-		this.search(this.activeInput.value, li.filters, current_sequence);
+		this.search(this.activeInput.value, li.id, current_sequence);
 		this.getFocus();
-		this.activeFilters = li.filters;
+		this.activeId = li.id;
 		return;
 	}
 	if(li.className != 'deadend'){
@@ -414,6 +413,7 @@ clickToAddress.prototype.getGeo = function(){
 		});
 	}
 };
+// filter stands for the actual search input text here
 clickToAddress.prototype.changeCountry = function(filter){
 	'use strict';
 	this.hideHistory();
@@ -478,7 +478,6 @@ clickToAddress.prototype.selectCountry = function(countryCode){
 	'use strict';
 	var that = this;
 	this.clear();
-	var countryObj = this.searchObj.getElementsByClassName('country_img')[0];
 	var selectedCountry = {};
 	this.activeCountryId = 0;
 	for(var i=0; i<this.validCountries.length; i++){
@@ -488,22 +487,24 @@ clickToAddress.prototype.selectCountry = function(countryCode){
 			break;
 		}
 	}
+	var countryObj = this.searchObj.getElementsByClassName('country_img')[0];
 	countryObj.setAttribute('class','country_img cc-flag cc-flag-'+selectedCountry.short_code);
+	if(!this.countrySelector){
+		this.searchObj.getElementsByClassName('country_btn')[0].getElementsByTagName('span')[0].innerHTML = selectedCountry.country_name;
+	}
 	this.activeCountry = countryCode;
 	that.searchStatus.inCountryMode = 0;
 	this.getFocus();
 	if(typeof this.activeInput.value != 'undefined' && typeof this.lastSearch != ''){
 		this.activeInput.value = this.lastSearch;
-		// copied from visual / keyup
-		this.activeFilters = {};
-
+		this.activeId = '';
 		this.sequence++;
 		this.searchStatus.lastSearchId = this.sequence;
 		var current_sequence = this.sequence;
 		setTimeout(function(){
 			if(that.searchStatus.lastSearchId <= current_sequence){
 				if(that.activeInput.value !== ''){
-					that.search(that.activeInput.value, that.activeFilters, current_sequence);
+					that.search(that.activeInput.value, that.activeId, current_sequence);
 					that.cleanHistory();
 				} else {
 					that.clear();
@@ -572,21 +573,23 @@ clickToAddress.prototype.setCountryChange = function(){
 		throw 'No valid countries left in the country list!';
 	}
 
-	var countryObj = this.searchObj.getElementsByClassName('country_btn')[0];
-	var that = this;
-	ccEvent(countryObj, 'click', function(){
-		if(that.searchStatus.inCountryMode == 0){
-			that.setPlaceholder(1);
-			that.changeCountry();
-			that.activeInput.value = '';
-			that.hasContent = true;
-			that.info();
-		} else {
-			that.setPlaceholder(0);
-			that.searchStatus.inCountryMode = 0;
-			that.hide(true);
-			that.getFocus();
-			that.hover = true;
-		}
-	});
+	if(this.countrySelector){
+		var countryObj = this.searchObj.getElementsByClassName('country_btn')[0];
+		var that = this;
+		ccEvent(countryObj, 'click', function(){
+			if(that.searchStatus.inCountryMode === 0){
+				that.setPlaceholder(1);
+				that.changeCountry();
+				that.activeInput.value = '';
+				that.hasContent = true;
+				that.info();
+			} else {
+				that.setPlaceholder(0);
+				that.searchStatus.inCountryMode = 0;
+				that.hide(true);
+				that.getFocus();
+				that.hover = true;
+			}
+		});
+	}
 };

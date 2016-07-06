@@ -1,16 +1,16 @@
 {
-  "name": "ClickToAddress",
-  "version": "1.0.2",
-  "cssVersion": "1.0.1",
-  "devDependencies": {
-    "grunt": "~0.4.2",
-    "grunt-contrib-concat": "~1.0.0",
-    "grunt-contrib-clean": "~0.5.0",
-    "grunt-contrib-uglify": "~0.2.4",
-    "grunt-contrib-less": "~0.8.1",
-    "grunt-replace": "~1.0.1"
-  },
-  "main": "Gruntfile.js",
-  "author": "Crafty Clicks Ltd.",
-  "license": "MIT Licence"
+	"name": "ClickToAddress",
+	"version": "1.1.0",
+	"cssVersion": "1.1.0",
+	"devDependencies": {
+		"grunt": "~0.4.2",
+		"grunt-contrib-concat": "~1.0.0",
+		"grunt-contrib-clean": "~0.5.0",
+		"grunt-contrib-uglify": "~0.2.4",
+		"grunt-contrib-less": "~0.8.1",
+		"grunt-replace": "~1.0.1"
+	},
+	"main": "Gruntfile.js",
+	"author": "Crafty Clicks Ltd.",
+	"license": "MIT Licence"
 }

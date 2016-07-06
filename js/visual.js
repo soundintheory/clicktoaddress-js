@@ -10,18 +10,20 @@ clickToAddress.prototype.setPlaceholder = function(country, target){
 		}
 		target.setAttribute('placeholder', text);
 	}
-}
+};
 clickToAddress.prototype.getFocus = function(){
 	'use strict';
-	if(this.activeInput != 'init')
+	if(this.activeInput != 'init'){
 		this.activeInput.focus();
+	}
 	this.focused = true;
 };
 
 clickToAddress.prototype.loseFocus = function(){
 	'use strict';
-	if(this.activeInput != 'init')
+	if(this.activeInput != 'init'){
 		this.activeInput.blur();
+	}
 	this.focused = false;
 };
 clickToAddress.prototype.clear = function(){
@@ -38,6 +40,10 @@ clickToAddress.prototype.show = function(){
 	this.searchObj.style.display = 'block';
 	this.visible = true;
 	this.setHistoryStep();
+
+	if(this.activeInput != 'init'){
+		this.activeInput.setAttribute('autocomplete','off');
+	}
 };
 clickToAddress.prototype.hide = function(force_it){
 	'use strict';
@@ -57,6 +63,11 @@ clickToAddress.prototype.hide = function(force_it){
 		this.cachePos = -1;
 		this.resetSelector();
 		this.setPlaceholder(0);
+
+		if(this.activeInput != 'init'){
+			this.activeInput.className = this.activeInput.className.replace(" c2a_active", "");
+			this.activeInput.setAttribute('autocomplete','on');
+		}
 	}
 	this.hideErrors();
 };
@@ -73,43 +84,44 @@ clickToAddress.prototype.attach = function(dom){
 		'county',
 		'country'
 	];
+	var quickGet = null;
 	switch(this.domMode){
 		case 'id':
-			var quickGet = function(dom, obj_name){
+			quickGet = function(dom, obj_name){
 				if(typeof dom[obj_name] == 'string' && dom[obj_name] !== ''){
 					return document.getElementById(dom[obj_name]);
 				}
-			}
+			};
 			for(var i = 0; i < objectArray.length; i++){
 				domElements[objectArray[i]] = quickGet(dom, objectArray[i]);
 			}
 			break;
 		case 'class':
-			var quickGet = function(dom, obj_name){
+			quickGet = function(dom, obj_name){
 				if(typeof dom[obj_name] == 'string' && dom[obj_name] !== ''){
 					return document.getElementsByClassName(dom[obj_name])[0];
 				}
-			}
+			};
 			for(var i = 0; i < objectArray.length; i++){
 				domElements[objectArray[i]] = quickGet(dom, objectArray[i]);
 			}
 			break;
 		case 'name':
-			var quickGet = function(dom, obj_name){
+			quickGet = function(dom, obj_name){
 				if(typeof dom[obj_name] == 'string' && dom[obj_name] !== ''){
 					return document.getElementsByName(dom[obj_name])[0];
 				}
-			}
+			};
 			for(var i = 0; i < objectArray.length; i++){
 				domElements[objectArray[i]] = quickGet(dom, objectArray[i]);
 			}
 			break;
 		case 'object':
-			var quickGet = function(dom, obj_name){
+			quickGet = function(dom, obj_name){
 				if(typeof dom[obj_name] == 'object' && dom[obj_name] !== null){
 					return dom[obj_name];
 				}
-			}
+			};
 			for(var i = 0; i < objectArray.length; i++){
 				domElements[objectArray[i]] = quickGet(dom, objectArray[i]);
 			}
@@ -121,7 +133,6 @@ clickToAddress.prototype.attach = function(dom){
 		throw('ClickToAddress already applied to this element!');
 	}
 	target.setAttribute('cc_applied', 'true');
-	target.setAttribute('autocomplete','off');
 	this.setPlaceholder(0, target);
 	// store the new element's position
 	var domLibId = this.domLib.length;
@@ -129,7 +140,7 @@ clickToAddress.prototype.attach = function(dom){
 
 	var that = this;
 	ccEvent(target, 'keydown', function(e){
-		if(that.serviceReady == 0)
+		if(that.serviceReady === 0)
 			return;
 		// up down
 		if (e.keyCode == 38 || e.keyCode == 40){
@@ -146,7 +157,7 @@ clickToAddress.prototype.attach = function(dom){
 		}
 	});
 	ccEvent(target, 'keyup', function(e){
-		if(that.serviceReady == 0)
+		if(that.serviceReady === 0)
 			return;
 		// escape
 		if (e.keyCode == 27){
@@ -194,7 +205,7 @@ clickToAddress.prototype.attach = function(dom){
 			that.changeCountry(this.value);
 		} else {
 			if(this.value.indexOf(that.lastSearch) !== 0){
-				that.activeFilters = {};
+				that.activeId = '';
 			}
 			that.lastSearch = this.value;
 
@@ -206,7 +217,7 @@ clickToAddress.prototype.attach = function(dom){
 				if(that.searchStatus.lastSearchId <= current_sequence_number){
 					if(searchVal !== ''){
 						that.cleanHistory();
-						that.search(searchVal, that.activeFilters, current_sequence_number);
+						that.search(searchVal, that.activeId, current_sequence_number);
 					} else {
 						that.clear();
 					}
@@ -220,9 +231,13 @@ clickToAddress.prototype.attach = function(dom){
 	ccEvent(target, 'focus', function(){
 		that.activeDom = that.domLib[domLibId];
 		that.onFocus(target);
+
+		if(typeof that.onSearchFocus == 'function'){
+			that.onSearchFocus(that, that.activeDom);
+		}
 	});
 	ccEvent(target, 'blur', function(){
-		if(that.serviceReady == 0)
+		if(that.serviceReady === 0)
 			return;
 		that.focused = false;
 		that.hide();
@@ -233,7 +248,7 @@ clickToAddress.prototype.attach = function(dom){
 			that.changeCountry(this.value);
 		} else {
 			if(this.value.indexOf(that.lastSearch) !== 0){
-				that.activeFilters = {};
+				that.activeId = '';
 			}
 			that.lastSearch = this.value;
 
@@ -245,7 +260,7 @@ clickToAddress.prototype.attach = function(dom){
 				if(that.searchStatus.lastSearchId <= current_sequence_number){
 					if(searchVal !== ''){
 						that.cleanHistory();
-						that.search(searchVal, that.activeFilters, current_sequence_number);
+						that.search(searchVal, that.activeId, current_sequence_number);
 					} else {
 						that.clear();
 					}
@@ -263,7 +278,7 @@ clickToAddress.prototype.attach = function(dom){
 clickToAddress.prototype.onFocus = function(target){
 	'use strict';
 	var that = this;
-	if(that.serviceReady == 0){
+	if(that.serviceReady === 0){
 		setTimeout(function(){
 			that.onFocus(target);
 		}, 250);
@@ -277,7 +292,8 @@ clickToAddress.prototype.onFocus = function(target){
 	if(target.value !== '' && !prestate){
 		that.sequence++;
 		that.searchStatus.lastSearchId = that.sequence;
-		that.search(target.value, that.activeFilters, that.sequence);
+		that.lastSearch = target.value;
+		that.search(target.value, that.activeId, that.sequence);
 	}
 }
 clickToAddress.prototype.resetSelector = function(){
@@ -381,7 +397,7 @@ clickToAddress.prototype.setProgressBar = function(state){
 clickToAddress.prototype.triggerSearch = function(target){
 	'use strict';
 	var that = this;
-	if(that.serviceReady == 0){
+	if(that.serviceReady === 0){
 		setTimeout(function(){
 			that.triggerSearch(target);
 		}, 250);

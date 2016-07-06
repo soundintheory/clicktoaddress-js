@@ -5,7 +5,7 @@ clickToAddress.prototype.cacheRetrieve = function(search){
 	}
 	for(var i=0; i < this.cache[search.country].length; i++){
 		if(	this.cache[search.country][i].query == search.query &&
-			JSON.stringify(this.cache[search.country][i].filters) == JSON.stringify(search.filters)
+			this.cache[search.country][i].id == search.id
 		){
 			return this.cache[search.country][i].response;
 		}
@@ -20,7 +20,7 @@ clickToAddress.prototype.cacheStore = function(search, obj, sequence){
 	var splice_pos = Math.abs(binaryIndexOf(this.cache[search.country], sequence));
 	this.cache[search.country].splice(splice_pos, 0, {
 		query: search.query,
-		filters: search.filters,
+		id: search.id,
 		response: obj,
 		sequence: sequence
 	});
@@ -48,7 +48,7 @@ clickToAddress.prototype.history = function(dir){
 	}
 	this.setHistoryStep();
 	this.activeInput.value = searchParams.query;
-	this.search(searchParams.query, searchParams.filters);
+	this.search(searchParams.query, searchParams.id);
 
 };
 clickToAddress.prototype.setHistoryActions = function(){
@@ -106,6 +106,8 @@ clickToAddress.prototype.setHistoryStep = function(){
 
 clickToAddress.prototype.hideHistory = function(){
 	'use strict';
+	if(!this.historyTools)
+		return;
 	var backBtn = this.searchObj.getElementsByClassName('cc-back')[0];
 	var forwardBtn = this.searchObj.getElementsByClassName('cc-forward')[0];
 	backBtn.className = 'cc-back cc-disabled';
@@ -120,6 +122,6 @@ clickToAddress.prototype.cleanHistory = function(){
 	var removeAt = Object.keys(this.cache[this.activeCountry]).length - this.cachePos;
 	this.cache[this.activeCountry].splice(removeAt, this.cachePos);
 	this.cachePos = -1;
-	this.activeFilters = this.cache[this.activeCountry][Object.keys(this.cache[this.activeCountry]).length - 1].filters;
+	this.activeId = this.cache[this.activeCountry][Object.keys(this.cache[this.activeCountry]).length - 1].id;
 	this.setHistoryStep();
 };

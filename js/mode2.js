@@ -9,8 +9,13 @@ c2a_gfx_modes['mode2'] = {
 		cc_dropdown.id = 'cc_c2a';
 
 		var mainbar = '<div class="mainbar">';
-			mainbar += '<div class="country_btn"><div class="country_img"></div><span>'+that.texts.country_button+'</span></div>';
-		if(that.historyTools === true){
+		var btnClass = 'country_btn';
+		if(that.countrySelector){
+			btnClass += ' country_btn_active';
+		}
+		mainbar += '<div class="'+btnClass+'"><div class="country_img"></div><span>'+that.texts.country_button+'</span></div>';
+
+		if(that.historyTools){
 			mainbar += '<div class="cc-history"><div class="cc-back disabled"></div>';
 			mainbar +='<div class="cc-forward disabled"></div></div>';
 		}
@@ -54,8 +59,6 @@ c2a_gfx_modes['mode2'] = {
 		for(var i=0; i<activeElements.length; i++){
 			activeElements[i].className = activeElements[i].className.replace(" "+activeClass, "");
 		}
-
 		target.className += " "+activeClass;
-
 	}
 };

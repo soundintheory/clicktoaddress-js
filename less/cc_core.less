@@ -118,17 +118,23 @@
 			position: relative;
 			float: left;
 			margin-right: 5px;
-			cursor: pointer;
+			&.country_btn_active{
+				cursor: pointer;
+			}
 			height: 24px;
 			width: 30px;
 			border: 1px solid transparent;
 			.country_img{
 				margin: 6px;
+				float: left;
 			}
-			&:hover{
-				border-radius: 2px;
-			}
+			border-radius: 2px;
 
+			width: auto;
+			span{
+				margin-right: 0.5em;
+				float: left;
+			}
 		}
 		.cc-history{
 			float: right;
@@ -160,53 +166,24 @@
 				display: none;
 			}
 		}
+
+		-webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
+		-moz-box-sizing: border-box;    /* Firefox, other Gecko */
+		box-sizing: border-box;         /* Opera/IE 8+ */
+		position: relative;
 	}
 
 
 	&.c2a_mode1{
 		border-top-left-radius: 0px;
 		border-top-right-radius: 0px;
-		.c2a_footer{
-			.mainbar{
-				-webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
-				-moz-box-sizing: border-box;    /* Firefox, other Gecko */
-				box-sizing: border-box;         /* Opera/IE 8+ */
-
-				position: relative;
-				.country_btn{
-					width: auto;
-					.country_img{
-						float: left;
-					}
-					span{
-						margin-right: 0.5em;
-						float: left;
-					}
-				}
-			}
-		}
 	}
 
 	&.c2a_mode2{
 		.mainbar{
-			-webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
-			-moz-box-sizing: border-box;    /* Firefox, other Gecko */
-			box-sizing: border-box;         /* Opera/IE 8+ */
-
 			padding: 0px 5px;
 			// align flag to left
 			margin-left: 0px;
-			position: relative;
-			.country_btn{
-				width: auto;
-				.country_img{
-					float: left;
-				}
-				span{
-					margin-right: 0.5em;
-					float: left;
-				}
-			}
 		}
 	}
 }

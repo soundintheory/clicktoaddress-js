@@ -83,7 +83,7 @@ clickToAddress.prototype.preset = function(config){
 	this.scrollPosition = 0;
 	this.scrollLimit = 20;
 
-	this.activeFilters = {};
+	this.activeId = '';
 	this.lastSearch = '';
 	this.funcStore = {};
 
@@ -95,7 +95,7 @@ clickToAddress.prototype.preset = function(config){
 	// set gfx mode
 	this.setCfg(config, 'gfxMode', 1);
 	// set URL
-	this.setCfg(config, 'baseURL', 'https://api.craftyclicks.co.uk/address/1.0', 'relay');
+	this.setCfg(config, 'baseURL', 'https://api.craftyclicks.co.uk/address/1.1', 'relay');
 	// add a slash to the end in case it's missing.
 	if(this.baseURL[this.baseURL.length] != '/'){
 		this.baseURL += '/';
@@ -106,6 +106,12 @@ clickToAddress.prototype.preset = function(config){
 	this.setCfg(config, 'defaultCountry', 'gbr');
 	// add enabled countries
 	this.setCfg(config, 'enabledCountries', []);
+	// convert all enabled country texts to uppercase.
+	if(this.enabledCountries.length){
+		for(var eci = 0; eci < this.enabledCountries.length; eci++){
+			this.enabledCountries[eci] = this.enabledCountries[eci].toUpperCase();
+		}
+	}
 
 	this.setCfg(config, 'style', {
 		ambient: 'light',
@@ -116,10 +122,12 @@ clickToAddress.prototype.preset = function(config){
 	this.setCfg(config, 'placeholders', true);
 	this.setCfg(config, 'onResultSelected');
 	this.setCfg(config, 'onCountryChange');			// unused
+	this.setCfg(config, 'onSearchFocus');
 	this.setCfg(config, 'onSetCounty');
 	this.setCfg(config, 'onError');
-	this.setCfg(config, 'showLogo', true);
 	this.setCfg(config, 'historyTools', true);
+	this.setCfg(config, 'countrySelector', true);
+	this.setCfg(config, 'showLogo', true);
 	this.setCfg(config, 'getIpLocation', true);
 	this.setCfg(config, 'accessTokenOverride', {});
 	this.setupText(config.texts);

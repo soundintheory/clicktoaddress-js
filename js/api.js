@@ -1,23 +1,19 @@
-clickToAddress.prototype.search = function(searchText, filters, sequence){
+clickToAddress.prototype.search = function(searchText, id, sequence){
    'use strict';
 	var that = this;
 	if(searchText === ''){
 		return;
 	}
-
-	if(typeof filters == 'undefined'){
-		filters = {};
-	}
 	this.setProgressBar(0);
 	var parameters = {
 		key: this.key,
 		query: searchText,
-		filters: filters,
+		id: id,
 		country: this.activeCountry,
 		fingerprint: this.fingerprint,
 		integration: this.tag,
 		js_version: this.jsVersion,
-		sequence: this.sequence
+		sequence: sequence
 	};
 	if(typeof this.accessTokenOverride[this.activeCountry] != 'undefined'){
 		parameters.key = this.accessTokenOverride[this.activeCountry];
