@@ -5,7 +5,7 @@
  * @link        https://craftyclicks.co.uk
  * @copyright   Copyright (c) 2016, Crafty Clicks Limited
  * @license     Licensed under the terms of the MIT license.
- * @version     1.1.0
+ * @version     1.1.1
  */
 #cc_c2a {
   border: 1px solid rgba(34, 36, 38, 0.15);
@@ -374,6 +374,7 @@
   line-height: 1.25em;
   padding: 0.5em 0.5em 0.5em 1em;
   transition: background-color 0.15s linear;
+  text-align: left;
 }
 #cc_c2a ul.c2a_results li:not(.deadend):hover,
 #cc_c2a ul.c2a_results li.active {

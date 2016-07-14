@@ -1,7 +1,7 @@
 {
 	"name": "ClickToAddress",
-	"version": "1.1.0",
-	"cssVersion": "1.1.0",
+	"version": "1.1.1",
+	"cssVersion": "1.1.1",
 	"devDependencies": {
 		"grunt": "~0.4.2",
 		"grunt-contrib-concat": "~1.0.0",
