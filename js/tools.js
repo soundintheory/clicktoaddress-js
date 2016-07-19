@@ -137,3 +137,24 @@ function binaryIndexOf(array, sequence) {
 
 	return ~maxIndex;
 }
+
+function getCountryCode(c2a, text, matchBy){
+	switch(matchBy){
+		case 'iso_3':
+			for(var i=0; i<c2a.validCountries.length; i++){
+				var row = c2a.validCountries[i];
+				if(row.iso_3166_1_alpha_3 == text){
+					return row.code;
+				}
+			}
+			break;
+		case 'iso_2':
+			for(var i=0; i<c2a.validCountries.length; i++){
+				var row = c2a.validCountries[i];
+				if(row.iso_3166_1_alpha_2 == text){
+					return row.code;
+				}
+			}
+			break;
+	}
+}

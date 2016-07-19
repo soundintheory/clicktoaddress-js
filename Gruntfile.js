@@ -24,6 +24,16 @@ module.exports = function(grunt) {
 			}
 		},
 		less: {
+			clean: {
+				files: {
+					'build/cc_c2a.css': [
+						'concat/concat.less'
+					]
+				},
+				options: {
+					compress: false
+				}
+			},
 			dist: {
 				files: {
 					'build/cc_c2a.min.css': [
@@ -52,9 +62,12 @@ module.exports = function(grunt) {
 			}
 		},
 		clean: {
-			dist: [
+			init: [
 				'build/cc_c2a.min.css',
 				'build/cc_c2a.min.js',
+				'concat/*'
+			],
+			wipe: [
 				'concat/*'
 			]
 		}
@@ -69,10 +82,11 @@ module.exports = function(grunt) {
 
 	// Register tasks
 	grunt.registerTask('default', [
-		'clean',
+		'clean:init',
 		'concat',
 		'replace',
 		'less',
-		'uglify'
+		'uglify',
+		'clean:wipe'
 	]);
 };

@@ -11,9 +11,13 @@ c2a_gfx_modes['mode1'] = {
 			historyBar += '<div class="cc-forward cc-disabled"></div></div>';
 
 		var mainbar = '<div class="mainbar">';
-		mainbar += '<div class="country_btn"><div class="country_img"></div><span>'+that.texts.country_button+'</span></div>';
+		var btnClass = 'country_btn';
+		if(that.countrySelector){
+			btnClass += ' country_btn_active';
+		}
+		mainbar += '<div class="'+btnClass+'"><div class="country_img"></div><span>'+that.texts.country_button+'</span></div>';
 
-		if(that.historyTools === true){
+		if(that.historyTools){
 			mainbar += historyBar;
 		}
 		if(that.showLogo){
@@ -29,7 +33,7 @@ c2a_gfx_modes['mode1'] = {
 		var footerClass = 'c2a_footer',
 			title = '';
 
-		if(this.showLogo){
+		if(that.showLogo){
 			footerHtml += '<div class="c2a_logo"></div>';
 			title = ' title="Provided by Crafty Clicks"';
 		}
@@ -53,13 +57,21 @@ c2a_gfx_modes['mode1'] = {
 			htmlTop += parseInt( window.getComputedStyle(document.getElementsByTagName('html')[0]).getPropertyValue('padding-top') );
 
 		topOffset += htmlTop;
-
+/*
 		if(htmlRect.bottom < that.searchObj.offsetHeight){
 			topOffset -= target.offsetHeight + that.searchObj.offsetHeight;
 		}
-
+*/
 		that.searchObj.style.left = leftOffset + 3 +'px';
 		that.searchObj.style.top = topOffset+'px';
 		that.searchObj.style.width = (target.offsetWidth - 6) +'px';
+
+		var activeClass = 'c2a_active';
+		var activeElements = document.getElementsByClassName(activeClass);
+		for(var i=0; i<activeElements.length; i++){
+			activeElements[i].className = activeElements[i].className.replace(" "+activeClass, "");
+		}
+
+		target.className += " "+activeClass;
 	}
 };

@@ -7,13 +7,15 @@ clickToAddress.prototype.info = function(state, count){
 			infoBar.className += ' infoActive infoTrial';
 			infoBar.innerHTML = '<h5>Access token is needed!</h5><p>To get a trial token, sign up for a <a href="https://account.craftyclicks.co.uk/login/signup">free trial</a>.</p><p>Then find the placeholder accessToken xxxxx-xxxxx-xxxxx-xxxxx in your HTML and replace it with a your own token.</p>';
 			break;
+			/*
 		case 'too-many-results':
 			infoBar.className += ' infoActive infoWarning';
 			infoBar.innerHTML = count+ ' results found. Please provide more address details.';
 			break;
+		*/
 		case 'no-results':
 			infoBar.className += ' infoActive infoWarning';
-			infoBar.innerHTML = 'No results found.';
+			infoBar.innerHTML = this.texts.no_results;
 			break;
 		default:
 			infoBar.className = 'infoBar';
