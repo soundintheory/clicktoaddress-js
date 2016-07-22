@@ -134,10 +134,10 @@ clickToAddress.prototype.fillData = function(addressData){
 				line_3.push( addressData.result.line_2 );
 			}
 		}
-		if(typeof this.activeDom.company != 'undefined'){
-			this.activeDom.company.value = addressData.result.company_name;
-		} else {
-			if(addressData.result.company_name !== ''){
+		if(addressData.result.company_name !== ''){
+			if(typeof this.activeDom.company != 'undefined'){
+				this.activeDom.company.value = addressData.result.company_name;
+			} else {
 				this.activeDom.line_1.value = addressData.result.company_name + ', ' + this.activeDom.line_1.value;
 			}
 		}
