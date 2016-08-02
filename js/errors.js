@@ -21,7 +21,7 @@ clickToAddress.prototype.error = function(code, message){
 	}
 	this.errorObj.className = 'c2a_error';
 
-	if(typeof this.onError != 'undefined'){
+	if(typeof this.onError == 'function'){
 		this.onError(code, message);
 	}
 };

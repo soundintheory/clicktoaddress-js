@@ -26,14 +26,24 @@ clickToAddress.prototype.setupText = function(textCfg){
 // * Simple function to set default values
 // *
 clickToAddress.prototype.setCfg = function(config, name, defaultValue, cfgValue){
+	defaultValue = defaultValue || false;
+	cfgValue = cfgValue || false;
 	'use strict';
-	if(typeof cfgValue == 'undefined'){
+	if(!cfgValue){
 		cfgValue = name;
 	}
 	if(typeof config[cfgValue] != 'undefined' && config[cfgValue] !== ''){
 		this[name] = config[cfgValue];
 	} else {
 		this[name] = defaultValue;
+	}
+};
+
+clickToAddress.prototype.getCfg = function(name){
+	if(typeof this.activeDom.config !== 'undefined' && typeof this.activeDom.config[name] !== 'undefined'){
+		return this.activeDom.config[name];
+	} else {
+		return this[name];
 	}
 };
 
@@ -120,10 +130,10 @@ clickToAddress.prototype.preset = function(config){
 	this.setCfg(config, 'domMode', 'name');
 
 	this.setCfg(config, 'placeholders', true);
-	this.setCfg(config, 'onResultSelected');
+	this.setCfg(config, 'onResultSelected');		// attach supported
 	this.setCfg(config, 'onCountryChange');			// unused
-	this.setCfg(config, 'onSearchFocus');
-	this.setCfg(config, 'onSetCounty');
+	this.setCfg(config, 'onSearchFocus');			// attach supported
+	this.setCfg(config, 'onSetCounty');				// attach supported
 	this.setCfg(config, 'onError');
 	this.setCfg(config, 'historyTools', true);
 	this.setCfg(config, 'countrySelector', true);
@@ -135,6 +145,8 @@ clickToAddress.prototype.preset = function(config){
 	this.setCfg(config, 'countryMatchWith','iso_3');
 	this.setCfg(config, 'tag', '');
 	this.setCfg(config, 'cssPath', 'https://cc-cdn.com/generic/styles/v1/cc_c2a.min.css');
+
+	this.setCfg(config, 'disableAutoSearch', false); // attach supported
 
 	this.setFingerPrint();
 };

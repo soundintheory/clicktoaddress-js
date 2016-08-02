@@ -168,8 +168,8 @@ clickToAddress.prototype.fillData = function(addressData){
 				code: addressData.result.province_code,
 				name: addressData.result.province_name
 			};
-			if(typeof this.onSetCounty == 'function'){
-				this.onSetCounty(this, this.activeDom, province_set);
+			if(typeof this.getCfg('onSetCounty') == 'function'){
+				this.getCfg('onSetCounty')(this, this.activeDom, province_set);
 			} else if(typeof this.activeDom.county != 'undefined'){
 				this.setCounty(this.activeDom.county,province_set);
 			}/* else {
@@ -186,9 +186,9 @@ clickToAddress.prototype.fillData = function(addressData){
 		}
 
 	}
-	if(typeof this.onResultSelected == 'function'){
+	if(typeof this.getCfg('onResultSelected') == 'function'){
 		addressData.result.country = this.validCountries[this.activeCountryId];
-		this.onResultSelected(this, this.activeDom, addressData.result);
+		this.getCfg('onResultSelected')(this, this.activeDom, addressData.result);
 	}
 
 	this.hide(true);
