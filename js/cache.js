@@ -14,6 +14,7 @@ clickToAddress.prototype.cacheRetrieve = function(search){
 };
 clickToAddress.prototype.cacheStore = function(search, obj, sequence){
 	'use strict';
+	var sequence = sequence || 0;
 	if(typeof this.cache[search.country] == 'undefined'){
 		this.cache[search.country] = [];
 	}

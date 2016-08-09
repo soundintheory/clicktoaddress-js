@@ -23,9 +23,9 @@ clickToAddress.prototype.search = function(searchText, id, sequence){
 		parameters.coords.lat = this.coords.latitude;
 		parameters.coords.lng = this.coords.longitude;
 	}
-	// first check cache
-	try{
-		var data = this.cacheRetrieve(parameters);
+	var successFunction = function(that, data){
+		that.setProgressBar(1);
+		that.clear();
 		that.hideErrors();
 		// return data
 		that.searchResults = data;
@@ -33,7 +33,15 @@ clickToAddress.prototype.search = function(searchText, id, sequence){
 		if(!that.focused){
 			that.activeInput.focus();
 		}
-		that.setProgressBar(1);
+		that.searchStatus.lastResponseId = sequence;
+		// store in cache
+		that.cacheStore(parameters, data, sequence);
+	};
+
+	// first check cache
+	try{
+		var data = this.cacheRetrieve(parameters);
+		successFunction(that, data);
 		return;
 	} catch (err) {
 		if(['cc/cr/01', 'cc/cr/02'].indexOf(err) == -1){
@@ -60,18 +68,7 @@ clickToAddress.prototype.search = function(searchText, id, sequence){
 				try{
 					data = JSON.parse(this.responseText);
 					if(that.searchStatus.lastResponseId <= sequence){
-						that.setProgressBar(1);
-						that.clear();
-						that.hideErrors();
-						// return data
-						that.searchResults = data;
-						that.showResults();
-						if(!that.focused){
-							that.activeInput.focus();
-						}
-						that.searchStatus.lastResponseId = sequence;
-						// store in cache
-						that.cacheStore(parameters, data, sequence);
+						successFunction(that, data);
 					}
 				}
 				catch(err){
@@ -89,13 +86,15 @@ clickToAddress.prototype.search = function(searchText, id, sequence){
 };
 clickToAddress.prototype.getAddressDetails = function(id){
 	'use strict';
+	var that = this;
 	var parameters = {
 		id: id,
 		country: this.activeCountry,
 		key: this.key,
 		fingerprint: this.fingerprint,
 		js_version: this.jsVersion,
-		integration: this.tag
+		integration: this.tag,
+		query: 'retrieve' // this parameter is only here for the cache functionality
 	};
 	if(typeof this.accessTokenOverride[this.activeCountry] != 'undefined'){
 		parameters.key = this.accessTokenOverride[this.activeCountry];
@@ -103,6 +102,26 @@ clickToAddress.prototype.getAddressDetails = function(id){
 	if(this.coords != {}){
 		parameters.coords = this.coords;
 	}
+
+	var successFunction = function(that, data){
+		that.fillData(data);
+		that.hideErrors();
+		that.cleanHistory();
+
+		that.cacheStore(parameters, data);
+	};
+
+	// first check cache
+	try{
+		var data = this.cacheRetrieve(parameters);
+		successFunction(that, data);
+		return;
+	} catch (err) {
+		if(['cc/cr/01', 'cc/cr/02'].indexOf(err) == -1){
+			throw err;
+		}
+	}
+
 	// Set up the URL
 	var url = this.baseURL + 'retrieve';
 
@@ -112,15 +131,12 @@ clickToAddress.prototype.getAddressDetails = function(id){
 	request.setRequestHeader('Content-Type', 'application/json');
 	request.setRequestHeader('Accept', 'application/json');
 	// Wait for change and then either JSON parse response text or throw exception for HTTP error
-	var that = this;
 	request.onreadystatechange = function() {
 		if (this.readyState === 4){
 			if (this.status >= 200 && this.status < 400){
 				try{
-					that.fillData(JSON.parse(this.responseText));
-					that.hideErrors();
-
-					that.cleanHistory();
+					var data = JSON.parse(this.responseText);
+					successFunction(that, data);
 				} catch(e){
 					that.error('JS503');
 				}
