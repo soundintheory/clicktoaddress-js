@@ -15,7 +15,7 @@ clickToAddress.prototype.setupText = function(textCfg){
 	if(typeof textCfg != 'undefined'){
 		var keys = Object.keys(this.texts);
 		for(var i=0; i<keys.length; i++){
-			if(typeof textCfg[keys[i]] != 'undefined' && textCfg[keys[i]] != ''){
+			if(typeof textCfg[keys[i]] != 'undefined' && textCfg[keys[i]] !== ''){
 				this.texts[keys[i]] = textCfg[keys[i]];
 			}
 		}
@@ -26,9 +26,9 @@ clickToAddress.prototype.setupText = function(textCfg){
 // * Simple function to set default values
 // *
 clickToAddress.prototype.setCfg = function(config, name, defaultValue, cfgValue){
+	'use strict';
 	defaultValue = defaultValue || false;
 	cfgValue = cfgValue || false;
-	'use strict';
 	if(!cfgValue){
 		cfgValue = name;
 	}
@@ -87,7 +87,10 @@ clickToAddress.prototype.preset = function(config){
 	};
 	this.sequence = 0;
 
-	this.cache = {};
+	this.cache = {
+		finds: {},
+		retrieves: {}
+	};
 	this.cachePos = -1;
 
 	this.scrollPosition = 0;

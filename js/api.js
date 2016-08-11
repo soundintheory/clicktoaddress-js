@@ -1,5 +1,15 @@
 clickToAddress.prototype.search = function(searchText, id, sequence){
-   'use strict';
+	'use strict';
+	/*
+		sequence:
+			-1	: history action (will not be stored in cache)
+			0	: missing
+			1+	: standard search
+		type:
+			0	: find
+			1	: retrieve
+			2	: find (from history, do not cache)
+	*/
 	var that = this;
 	if(searchText === ''){
 		return;
@@ -13,8 +23,12 @@ clickToAddress.prototype.search = function(searchText, id, sequence){
 		fingerprint: this.fingerprint,
 		integration: this.tag,
 		js_version: this.jsVersion,
-		sequence: sequence
+		sequence: sequence,
+		type: 0
 	};
+	if(sequence == -1){
+		parameters.type = 2;
+	}
 	if(typeof this.accessTokenOverride[this.activeCountry] != 'undefined'){
 		parameters.key = this.accessTokenOverride[this.activeCountry];
 	}
@@ -33,7 +47,7 @@ clickToAddress.prototype.search = function(searchText, id, sequence){
 		if(!that.focused){
 			that.activeInput.focus();
 		}
-		that.searchStatus.lastResponseId = sequence;
+		that.searchStatus.lastResponseId = sequence || 0;
 		// store in cache
 		that.cacheStore(parameters, data, sequence);
 	};
@@ -94,7 +108,7 @@ clickToAddress.prototype.getAddressDetails = function(id){
 		fingerprint: this.fingerprint,
 		js_version: this.jsVersion,
 		integration: this.tag,
-		query: 'retrieve' // this parameter is only here for the cache functionality
+		type: 1
 	};
 	if(typeof this.accessTokenOverride[this.activeCountry] != 'undefined'){
 		parameters.key = this.accessTokenOverride[this.activeCountry];
