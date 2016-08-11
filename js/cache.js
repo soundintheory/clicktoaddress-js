@@ -1,34 +1,71 @@
 clickToAddress.prototype.cacheRetrieve = function(search){
 	'use strict';
-	if(typeof this.cache[search.country] == 'undefined'){
-		throw 'cc/cr/01';
-	}
-	for(var i=0; i < this.cache[search.country].length; i++){
-		if(	this.cache[search.country][i].query == search.query &&
-			this.cache[search.country][i].id == search.id
-		){
-			return this.cache[search.country][i].response;
+	if(search.type == 0 || search.type == 2){
+		if(typeof this.cache.finds[search.country] == 'undefined'){
+			throw 'cc/cr/01';
 		}
+		for(var i=0; i < this.cache.finds[search.country].length; i++){
+			if(	this.cache.finds[search.country][i].query == search.query &&
+				this.cache.finds[search.country][i].id == search.id
+			){
+				return this.cache.finds[search.country][i].response;
+			}
+		}
+		throw 'cc/cr/02';
 	}
-	throw 'cc/cr/02';
+	if(search.type == 1){
+		if(typeof this.cache.retrieves[search.country] == 'undefined'){
+			throw 'cc/cr/01';
+		}
+		for(var i=0; i < this.cache.retrieves[search.country].length; i++){
+			if( this.cache.retrieves[search.country][i].id == search.id ){
+				return this.cache.retrieves[search.country][i].response;
+			}
+		}
+		throw 'cc/cr/02';
+	}
+	throw 'cc/cr/03';
 };
 clickToAddress.prototype.cacheStore = function(search, obj, sequence){
 	'use strict';
-	if(typeof this.cache[search.country] == 'undefined'){
-		this.cache[search.country] = [];
-	}
-	var splice_pos = Math.abs(binaryIndexOf(this.cache[search.country], sequence));
-	this.cache[search.country].splice(splice_pos, 0, {
-		query: search.query,
-		id: search.id,
-		response: obj,
-		sequence: sequence
-	});
-	if(this.cache[search.country].length > 100){
-		this.cache[search.country].shift();
+	var sequence = sequence || 0;
+	if(search.type === 0){
+		if(typeof this.cache.finds[search.country] == 'undefined'){
+			this.cache.finds[search.country] = [];
+		}
+		var splice_pos = Math.abs(binaryIndexOf(this.cache.finds[search.country], sequence));
+		this.cache.finds[search.country].splice(splice_pos, 0, {
+			query: search.query,
+			id: search.id,
+			response: obj,
+			sequence: sequence
+		});
+		if(this.cache.finds[search.country].length > 100){
+			this.cache.finds[search.country].shift();
+		}
+		this.setHistoryStep();
+		return;
 	}
 
-	this.setHistoryStep();
+	if(search.type == 1){
+		if(typeof this.cache.retrieves[search.country] == 'undefined'){
+			this.cache.retrieves[search.country] = [];
+		}
+		for(var i=0; i < this.cache.retrieves[search.country].length; i++){
+			if( this.cache.retrieves[search.country][i].id == search.id ){
+				return;
+			}
+		}
+		this.cache.retrieves[search.country].push({
+			id: search.id,
+			response: obj
+		});
+		return;
+	}
+	// this was a history search, do not store (already stored)
+	if(search.type == 2){
+		return;
+	}
 };
 clickToAddress.prototype.history = function(dir){
 	'use strict';
@@ -38,17 +75,18 @@ clickToAddress.prototype.history = function(dir){
 		this.cachePos = 0;
 	}
 	var searchParams = {};
-	var cacheLength = Object.keys(this.cache[this.activeCountry]).length - 1;
+	var cacheLength = Object.keys(this.cache.finds[this.activeCountry]).length - 1;
 	if(dir === 0){
 		this.cachePos++;
-		searchParams = this.cache[this.activeCountry][cacheLength - this.cachePos];
+		searchParams = this.cache.finds[this.activeCountry][cacheLength - this.cachePos];
 	} else {
 		this.cachePos--;
-		searchParams = this.cache[this.activeCountry][cacheLength - this.cachePos];
+		searchParams = this.cache.finds[this.activeCountry][cacheLength - this.cachePos];
 	}
 	this.setHistoryStep();
 	this.activeInput.value = searchParams.query;
-	this.search(searchParams.query, searchParams.id);
+	// let the cache know that this request shouldn't be re-stored (-1)
+	this.search(searchParams.query, searchParams.id, -1);
 
 };
 clickToAddress.prototype.setHistoryActions = function(){
@@ -80,16 +118,16 @@ clickToAddress.prototype.setHistoryStep = function(){
 	forwardBtn.className = 'cc-forward';
 	var logo_visible = 0;
 
-	if(	typeof this.cache[this.activeCountry] == 'undefined' ||
-		this.cachePos >= Object.keys(this.cache[this.activeCountry]).length - 1 ||
-		Object.keys(this.cache[this.activeCountry]).length <= 1
+	if(	typeof this.cache.finds[this.activeCountry] == 'undefined' ||
+		this.cachePos >= Object.keys(this.cache.finds[this.activeCountry]).length - 1 ||
+		Object.keys(this.cache.finds[this.activeCountry]).length <= 1
 	){
 		backBtn.className = 'cc-back cc-disabled';
 		logo_visible++;
 	}
-	if(	typeof this.cache[this.activeCountry] == 'undefined' ||
+	if(	typeof this.cache.finds[this.activeCountry] == 'undefined' ||
 		this.cachePos <= 0 ||
-		Object.keys(this.cache[this.activeCountry]).length <= 1
+		Object.keys(this.cache.finds[this.activeCountry]).length <= 1
 	){
 		forwardBtn.className = 'cc-forward cc-disabled';
 		logo_visible++;
@@ -116,12 +154,17 @@ clickToAddress.prototype.hideHistory = function(){
 
 clickToAddress.prototype.cleanHistory = function(){
 	'use strict';
-	if(this.cachePos <= 0 || typeof this.cache[this.activeCountry] == 'undefined'){
+	if(this.cachePos <= 0 || typeof this.cache.finds[this.activeCountry] == 'undefined'){
 		return;
 	}
-	var removeAt = Object.keys(this.cache[this.activeCountry]).length - this.cachePos;
-	this.cache[this.activeCountry].splice(removeAt, this.cachePos);
+	var removeAt = Object.keys(this.cache.finds[this.activeCountry]).length - this.cachePos;
+	this.cache.finds[this.activeCountry].splice(removeAt, this.cachePos);
 	this.cachePos = -1;
-	this.activeId = this.cache[this.activeCountry][Object.keys(this.cache[this.activeCountry]).length - 1].id;
+	var keys_length = Object.keys(this.cache.finds[this.activeCountry]).length;
+	if(keys_length > 0){
+		this.activeId = this.cache.finds[this.activeCountry][keys_length - 1].id;
+	} else {
+		this.activeId = '';
+	}
 	this.setHistoryStep();
 };

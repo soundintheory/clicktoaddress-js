@@ -22,7 +22,7 @@ clickToAddress.prototype.info = function(state, count){
 			infoBar.innerHTML = '';
 			break;
 	}
-}
+};
 
 
 clickToAddress.prototype.setFingerPrint = function(){
@@ -31,8 +31,8 @@ clickToAddress.prototype.setFingerPrint = function(){
 	var high = 9999999999999999;
 	var value = Math.floor(Math.random() * (high - low + 1) + low);
 	this.fingerprint = value.toString(16);
-}
+};
 clickToAddress.prototype.getFingerPrint = function(){
 	'use strict';
 	return this.fingerprint;
-}
+};

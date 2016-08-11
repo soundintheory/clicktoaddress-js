@@ -15,7 +15,7 @@ clickToAddress.prototype.setupText = function(textCfg){
 	if(typeof textCfg != 'undefined'){
 		var keys = Object.keys(this.texts);
 		for(var i=0; i<keys.length; i++){
-			if(typeof textCfg[keys[i]] != 'undefined' && textCfg[keys[i]] != ''){
+			if(typeof textCfg[keys[i]] != 'undefined' && textCfg[keys[i]] !== ''){
 				this.texts[keys[i]] = textCfg[keys[i]];
 			}
 		}
@@ -27,13 +27,23 @@ clickToAddress.prototype.setupText = function(textCfg){
 // *
 clickToAddress.prototype.setCfg = function(config, name, defaultValue, cfgValue){
 	'use strict';
-	if(typeof cfgValue == 'undefined'){
+	defaultValue = defaultValue || false;
+	cfgValue = cfgValue || false;
+	if(!cfgValue){
 		cfgValue = name;
 	}
 	if(typeof config[cfgValue] != 'undefined' && config[cfgValue] !== ''){
 		this[name] = config[cfgValue];
 	} else {
 		this[name] = defaultValue;
+	}
+};
+
+clickToAddress.prototype.getCfg = function(name){
+	if(typeof this.activeDom.config !== 'undefined' && typeof this.activeDom.config[name] !== 'undefined'){
+		return this.activeDom.config[name];
+	} else {
+		return this[name];
 	}
 };
 
@@ -77,7 +87,10 @@ clickToAddress.prototype.preset = function(config){
 	};
 	this.sequence = 0;
 
-	this.cache = {};
+	this.cache = {
+		finds: {},
+		retrieves: {}
+	};
 	this.cachePos = -1;
 
 	this.scrollPosition = 0;
@@ -120,10 +133,10 @@ clickToAddress.prototype.preset = function(config){
 	this.setCfg(config, 'domMode', 'name');
 
 	this.setCfg(config, 'placeholders', true);
-	this.setCfg(config, 'onResultSelected');
+	this.setCfg(config, 'onResultSelected');		// attach supported
 	this.setCfg(config, 'onCountryChange');			// unused
-	this.setCfg(config, 'onSearchFocus');
-	this.setCfg(config, 'onSetCounty');
+	this.setCfg(config, 'onSearchFocus');			// attach supported
+	this.setCfg(config, 'onSetCounty');				// attach supported
 	this.setCfg(config, 'onError');
 	this.setCfg(config, 'historyTools', true);
 	this.setCfg(config, 'countrySelector', true);
@@ -135,6 +148,8 @@ clickToAddress.prototype.preset = function(config){
 	this.setCfg(config, 'countryMatchWith','iso_3');
 	this.setCfg(config, 'tag', '');
 	this.setCfg(config, 'cssPath', 'https://cc-cdn.com/generic/styles/v1/cc_c2a.min.css');
+
+	this.setCfg(config, 'disableAutoSearch', false); // attach supported
 
 	this.setFingerPrint();
 };

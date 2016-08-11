@@ -71,7 +71,8 @@ clickToAddress.prototype.hide = function(force_it){
 	}
 	this.hideErrors();
 };
-clickToAddress.prototype.attach = function(dom){
+clickToAddress.prototype.attach = function(dom, cfg){
+	var cfg = cfg || {};
 	'use strict';
 	var domElements = {};
 	var objectArray = [
@@ -135,6 +136,7 @@ clickToAddress.prototype.attach = function(dom){
 	target.setAttribute('cc_applied', 'true');
 	this.setPlaceholder(0, target);
 	// store the new element's position
+	domElements.config = cfg;
 	var domLibId = this.domLib.length;
 	this.domLib.push(domElements);
 
@@ -204,6 +206,9 @@ clickToAddress.prototype.attach = function(dom){
 		if(that.searchStatus.inCountryMode == 1){
 			that.changeCountry(this.value);
 		} else {
+			if(that.getCfg('disableAutoSearch')){
+				return;
+			}
 			if(this.value.indexOf(that.lastSearch) !== 0){
 				that.activeId = '';
 			}
@@ -232,8 +237,8 @@ clickToAddress.prototype.attach = function(dom){
 		that.activeDom = that.domLib[domLibId];
 		that.onFocus(target);
 
-		if(typeof that.onSearchFocus == 'function'){
-			that.onSearchFocus(that, that.activeDom);
+		if(typeof that.getCfg('onSearchFocus') == 'function'){
+			that.getCfg('onSearchFocus')(that, that.activeDom);
 		}
 	});
 	ccEvent(target, 'blur', function(){

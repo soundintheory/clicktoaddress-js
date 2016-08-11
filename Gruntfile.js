@@ -6,6 +6,10 @@ module.exports = function(grunt) {
 				src: ['js/**/*.js'],
 				dest: 'concat/concat.js',
 			},
+			js_2: {
+				src: ['concat/concat.js'],
+				dest: 'build/cc_c2a.js',
+			},
 			css: {
 				src: ['less/**/*.less'],
 				dest: 'concat/concat.less',
@@ -64,7 +68,9 @@ module.exports = function(grunt) {
 		clean: {
 			init: [
 				'build/cc_c2a.min.css',
+				'build/cc_c2a.css',
 				'build/cc_c2a.min.js',
+				'build/cc_c2a.js',
 				'concat/*'
 			],
 			wipe: [
