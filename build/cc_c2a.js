@@ -5,10 +5,11 @@
  * @link        https://craftyclicks.co.uk
  * @copyright   Copyright (c) 2016, Crafty Clicks Limited
  * @license     Licensed under the terms of the MIT license.
- * @version     @@version
+ * @version     1.1.2
  */
 
 clickToAddress.prototype.search = function(searchText, id, sequence){
+	'use strict';
 	/*
 		sequence:
 			-1	: history action (will not be stored in cache)
@@ -19,7 +20,6 @@ clickToAddress.prototype.search = function(searchText, id, sequence){
 			1	: retrieve
 			2	: find (from history, do not cache)
 	*/
-	'use strict';
 	var that = this;
 	if(searchText === ''){
 		return;
@@ -1286,7 +1286,7 @@ clickToAddress.prototype.preset = function(config){
 	// * MAIN OBJECTS
 	// * These objects are store internal statuses. Do not modify any variable here.
 	// *
-	this.jsVersion = '@@version';
+	this.jsVersion = '1.1.2';
 	this.serviceReady = 0;
 	// set active country
 	this.activeCountry = '';
