@@ -46,9 +46,15 @@ c2a_gfx_modes['mode1'] = {
 	reposition: function(that, target){
 		// position to target
 		var elemRect = target.getBoundingClientRect();
+		/*	http://stackoverflow.com/questions/3464876/javascript-get-window-x-y-position-for-scroll
 		var htmlRect = document.getElementsByTagName('html')[0].getBoundingClientRect();
-		var topOffset = elemRect.top - htmlRect.top + target.offsetHeight - 3;
-		var	leftOffset = elemRect.left - htmlRect.left;
+		*/
+		var doc = document.documentElement;
+		var docTop = (window.pageYOffset || doc.scrollTop)  - (doc.clientTop || 0);
+		var docLeft = (window.pageXOffset || doc.scrollLeft) - (doc.clientLeft || 0);
+
+		var topOffset = elemRect.top - docTop + target.offsetHeight - 3;
+		var leftOffset = elemRect.left - docLeft;
 		if(document.body.style.paddingLeft !== ''){
 			leftOffset += parseInt(document.body.style.paddingLeft);
 		}

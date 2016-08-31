@@ -40,9 +40,15 @@ c2a_gfx_modes['mode2'] = {
 		var topElemHeight = 22;
 
 		var elemRect = target.getBoundingClientRect();
+		/*	http://stackoverflow.com/questions/3464876/javascript-get-window-x-y-position-for-scroll
 		var	htmlRect = document.getElementsByTagName('html')[0].getBoundingClientRect();
-		var	topOffset = (elemRect.top - htmlRect.top) - (topElemHeight+10);
-		var	leftOffset = elemRect.left - htmlRect.left + document.body.style.paddingLeft;
+		*/
+		var doc = document.documentElement;
+		var docTop = (window.pageYOffset || doc.scrollTop)  - (doc.clientTop || 0);
+		var docLeft = (window.pageXOffset || doc.scrollLeft) - (doc.clientLeft || 0);
+
+		var topOffset = (elemRect.top + docTop) - (topElemHeight+10);
+		var leftOffset = elemRect.left + docLeft + document.body.style.paddingLeft;
 
 		var htmlTop = parseInt( window.getComputedStyle(document.getElementsByTagName('html')[0]).getPropertyValue('margin-top') );
 			htmlTop += parseInt( window.getComputedStyle(document.getElementsByTagName('html')[0]).getPropertyValue('padding-top') );

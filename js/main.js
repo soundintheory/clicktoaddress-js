@@ -474,19 +474,22 @@ clickToAddress.prototype.changeCountry = function(filter){
 	this.searchStatus.inCountryMode = 1;
 	this.getFocus();
 };
-clickToAddress.prototype.selectCountry = function(countryCode){
+clickToAddress.prototype.selectCountry = function(countryCode, skipSearch){
 	'use strict';
+	var skipSearch = skipSearch || false;
 	var that = this;
 	this.clear();
 	var selectedCountry = {};
 	this.activeCountryId = 0;
 	for(var i=0; i<this.validCountries.length; i++){
 		if(this.validCountries[i].code == countryCode){
-			selectedCountry = this.validCountries[i];
 			this.activeCountryId = i;
 			break;
 		}
 	}
+	// safely capture the active country
+	selectedCountry = this.validCountries[this.activeCountryId];
+
 	var countryObj = this.searchObj.getElementsByClassName('country_img')[0];
 	countryObj.setAttribute('class','country_img cc-flag cc-flag-'+selectedCountry.short_code);
 	if(!this.countrySelector){
@@ -495,7 +498,8 @@ clickToAddress.prototype.selectCountry = function(countryCode){
 	this.activeCountry = countryCode;
 	that.searchStatus.inCountryMode = 0;
 	this.getFocus();
-	if(typeof this.activeInput.value != 'undefined' && typeof this.lastSearch != ''){
+
+	if(!skipSearch && typeof this.activeInput.value != 'undefined' && typeof this.lastSearch != ''){
 		this.activeInput.value = this.lastSearch;
 		this.activeId = '';
 		this.sequence++;

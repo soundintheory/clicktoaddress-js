@@ -5,7 +5,7 @@
  * @link        https://craftyclicks.co.uk
  * @copyright   Copyright (c) 2016, Crafty Clicks Limited
  * @license     Licensed under the terms of the MIT license.
- * @version     1.1.2
+ * @version     1.1.3-beta.1
  */
 
 clickToAddress.prototype.search = function(searchText, id, sequence){
@@ -968,19 +968,22 @@ clickToAddress.prototype.changeCountry = function(filter){
 	this.searchStatus.inCountryMode = 1;
 	this.getFocus();
 };
-clickToAddress.prototype.selectCountry = function(countryCode){
+clickToAddress.prototype.selectCountry = function(countryCode, skipSearch){
 	'use strict';
+	var skipSearch = skipSearch || false;
 	var that = this;
 	this.clear();
 	var selectedCountry = {};
 	this.activeCountryId = 0;
 	for(var i=0; i<this.validCountries.length; i++){
 		if(this.validCountries[i].code == countryCode){
-			selectedCountry = this.validCountries[i];
 			this.activeCountryId = i;
 			break;
 		}
 	}
+	// safely capture the active country
+	selectedCountry = this.validCountries[this.activeCountryId];
+
 	var countryObj = this.searchObj.getElementsByClassName('country_img')[0];
 	countryObj.setAttribute('class','country_img cc-flag cc-flag-'+selectedCountry.short_code);
 	if(!this.countrySelector){
@@ -989,7 +992,8 @@ clickToAddress.prototype.selectCountry = function(countryCode){
 	this.activeCountry = countryCode;
 	that.searchStatus.inCountryMode = 0;
 	this.getFocus();
-	if(typeof this.activeInput.value != 'undefined' && typeof this.lastSearch != ''){
+
+	if(!skipSearch && typeof this.activeInput.value != 'undefined' && typeof this.lastSearch != ''){
 		this.activeInput.value = this.lastSearch;
 		this.activeId = '';
 		this.sequence++;
@@ -1136,9 +1140,15 @@ c2a_gfx_modes['mode1'] = {
 	reposition: function(that, target){
 		// position to target
 		var elemRect = target.getBoundingClientRect();
+		/*	http://stackoverflow.com/questions/3464876/javascript-get-window-x-y-position-for-scroll
 		var htmlRect = document.getElementsByTagName('html')[0].getBoundingClientRect();
-		var topOffset = elemRect.top - htmlRect.top + target.offsetHeight - 3;
-		var	leftOffset = elemRect.left - htmlRect.left;
+		*/
+		var doc = document.documentElement;
+		var docTop = (window.pageYOffset || doc.scrollTop)  - (doc.clientTop || 0);
+		var docLeft = (window.pageXOffset || doc.scrollLeft) - (doc.clientLeft || 0);
+
+		var topOffset = elemRect.top - docTop + target.offsetHeight - 3;
+		var leftOffset = elemRect.left - docLeft;
 		if(document.body.style.paddingLeft !== ''){
 			leftOffset += parseInt(document.body.style.paddingLeft);
 		}
@@ -1208,9 +1218,15 @@ c2a_gfx_modes['mode2'] = {
 		var topElemHeight = 22;
 
 		var elemRect = target.getBoundingClientRect();
+		/*	http://stackoverflow.com/questions/3464876/javascript-get-window-x-y-position-for-scroll
 		var	htmlRect = document.getElementsByTagName('html')[0].getBoundingClientRect();
-		var	topOffset = (elemRect.top - htmlRect.top) - (topElemHeight+10);
-		var	leftOffset = elemRect.left - htmlRect.left + document.body.style.paddingLeft;
+		*/
+		var doc = document.documentElement;
+		var docTop = (window.pageYOffset || doc.scrollTop)  - (doc.clientTop || 0);
+		var docLeft = (window.pageXOffset || doc.scrollLeft) - (doc.clientLeft || 0);
+
+		var topOffset = (elemRect.top + docTop) - (topElemHeight+10);
+		var leftOffset = elemRect.left + docLeft + document.body.style.paddingLeft;
 
 		var htmlTop = parseInt( window.getComputedStyle(document.getElementsByTagName('html')[0]).getPropertyValue('margin-top') );
 			htmlTop += parseInt( window.getComputedStyle(document.getElementsByTagName('html')[0]).getPropertyValue('padding-top') );
@@ -1286,7 +1302,7 @@ clickToAddress.prototype.preset = function(config){
 	// * MAIN OBJECTS
 	// * These objects are store internal statuses. Do not modify any variable here.
 	// *
-	this.jsVersion = '1.1.2';
+	this.jsVersion = '1.1.3-beta.1';
 	this.serviceReady = 0;
 	// set active country
 	this.activeCountry = '';
@@ -1623,8 +1639,8 @@ clickToAddress.prototype.hide = function(force_it){
 	this.hideErrors();
 };
 clickToAddress.prototype.attach = function(dom, cfg){
-	var cfg = cfg || {};
 	'use strict';
+	var cfg = cfg || {};
 	var domElements = {};
 	var objectArray = [
 		'search',
@@ -1787,10 +1803,6 @@ clickToAddress.prototype.attach = function(dom, cfg){
 	ccEvent(target, 'focus', function(){
 		that.activeDom = that.domLib[domLibId];
 		that.onFocus(target);
-
-		if(typeof that.getCfg('onSearchFocus') == 'function'){
-			that.getCfg('onSearchFocus')(that, that.activeDom);
-		}
 	});
 	ccEvent(target, 'blur', function(){
 		if(that.serviceReady === 0)
@@ -1826,7 +1838,7 @@ clickToAddress.prototype.attach = function(dom, cfg){
 			that.activeDom = that.domLib[domLibId];
 			that.gfxModeTools.reposition(that, target);
 		}
-	})
+	});
 	if(target === document.activeElement){
 		this.onFocus(target);
 	}
@@ -1845,6 +1857,14 @@ clickToAddress.prototype.onFocus = function(target){
 	that.activeInput = target;
 	that.focused = true;
 	that.show();
+
+	// if it just gained focus, execute custom event
+	if(!prestate){
+		if(typeof that.getCfg('onSearchFocus') == 'function'){
+			that.getCfg('onSearchFocus')(that, that.activeDom);
+		}
+	}
+
 	if(target.value !== '' && !prestate){
 		that.sequence++;
 		that.searchStatus.lastSearchId = that.sequence;
