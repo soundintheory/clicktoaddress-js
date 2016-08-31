@@ -6,7 +6,7 @@ module.exports = function(grunt) {
 				src: ['js/**/*.js'],
 				dest: 'concat/concat.js',
 			},
-			js_2: {
+			js_simple: {
 				src: ['concat/concat.js'],
 				dest: 'build/cc_c2a.js',
 			},
@@ -89,8 +89,10 @@ module.exports = function(grunt) {
 	// Register tasks
 	grunt.registerTask('default', [
 		'clean:init',
-		'concat',
+		'concat:js',
+		'concat:css',
 		'replace',
+		'concat:js_simple',
 		'less',
 		'uglify',
 		'clean:wipe'
