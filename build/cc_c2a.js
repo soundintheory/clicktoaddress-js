@@ -5,7 +5,7 @@
  * @link        https://craftyclicks.co.uk
  * @copyright   Copyright (c) 2016, Crafty Clicks Limited
  * @license     Licensed under the terms of the MIT license.
- * @version     1.1.3-beta.1
+ * @version     1.1.3-beta.2
  */
 
 clickToAddress.prototype.search = function(searchText, id, sequence){
@@ -1147,8 +1147,8 @@ c2a_gfx_modes['mode1'] = {
 		var docTop = (window.pageYOffset || doc.scrollTop)  - (doc.clientTop || 0);
 		var docLeft = (window.pageXOffset || doc.scrollLeft) - (doc.clientLeft || 0);
 
-		var topOffset = elemRect.top - docTop + target.offsetHeight - 3;
-		var leftOffset = elemRect.left - docLeft;
+		var topOffset = (elemRect.top + docTop) + (target.offsetHeight - 5);
+		var leftOffset = elemRect.left + docLeft;
 		if(document.body.style.paddingLeft !== ''){
 			leftOffset += parseInt(document.body.style.paddingLeft);
 		}
@@ -1215,8 +1215,6 @@ c2a_gfx_modes['mode2'] = {
 	},
 	reposition: function(that, target){
 		// position to target
-		var topElemHeight = 22;
-
 		var elemRect = target.getBoundingClientRect();
 		/*	http://stackoverflow.com/questions/3464876/javascript-get-window-x-y-position-for-scroll
 		var	htmlRect = document.getElementsByTagName('html')[0].getBoundingClientRect();
@@ -1225,7 +1223,7 @@ c2a_gfx_modes['mode2'] = {
 		var docTop = (window.pageYOffset || doc.scrollTop)  - (doc.clientTop || 0);
 		var docLeft = (window.pageXOffset || doc.scrollLeft) - (doc.clientLeft || 0);
 
-		var topOffset = (elemRect.top + docTop) - (topElemHeight+10);
+		var topOffset = (elemRect.top + docTop) - (target.offsetHeight);
 		var leftOffset = elemRect.left + docLeft + document.body.style.paddingLeft;
 
 		var htmlTop = parseInt( window.getComputedStyle(document.getElementsByTagName('html')[0]).getPropertyValue('margin-top') );
@@ -1236,7 +1234,7 @@ c2a_gfx_modes['mode2'] = {
 		that.searchObj.style.left = leftOffset-5+'px';
 		that.searchObj.style.top = topOffset+'px';
 		that.searchObj.style.width = target.offsetWidth+10+'px';
-		that.searchObj.getElementsByClassName('mainbar')[0].style.marginBottom = target.offsetHeight+10+'px';
+		that.searchObj.getElementsByClassName('mainbar')[0].style.marginBottom = target.offsetHeight+5+'px';
 
 		var activeClass = 'c2a_active';
 		var activeElements = document.getElementsByClassName(activeClass);
@@ -1265,7 +1263,7 @@ clickToAddress.prototype.setupText = function(textCfg){
 		var keys = Object.keys(this.texts);
 		for(var i=0; i<keys.length; i++){
 			if(typeof textCfg[keys[i]] != 'undefined' && textCfg[keys[i]] !== ''){
-				this.texts[keys[i]] = textCfg[keys[i]];
+				this.texts[keys[i]] = encodeHtmlEntity(textCfg[keys[i]]);
 			}
 		}
 	}
@@ -1302,7 +1300,7 @@ clickToAddress.prototype.preset = function(config){
 	// * MAIN OBJECTS
 	// * These objects are store internal statuses. Do not modify any variable here.
 	// *
-	this.jsVersion = '1.1.3-beta.1';
+	this.jsVersion = '1.1.3-beta.2';
 	this.serviceReady = 0;
 	// set active country
 	this.activeCountry = '';
@@ -1388,7 +1386,12 @@ clickToAddress.prototype.preset = function(config){
 	this.setCfg(config, 'onSetCounty');				// attach supported
 	this.setCfg(config, 'onError');
 	this.setCfg(config, 'historyTools', true);
-	this.setCfg(config, 'countrySelector', true);
+	// if there's only one country enabled, by default disable the country selector
+	if(this.enabledCountries.length === 1){
+		this.setCfg(config, 'countrySelector', false);
+	} else {
+		this.setCfg(config, 'countrySelector', true);
+	}
 	this.setCfg(config, 'showLogo', true);
 	this.setCfg(config, 'getIpLocation', true);
 	this.setCfg(config, 'accessTokenOverride', {});
@@ -1506,11 +1509,8 @@ var defaultDiacriticsRemovalMap = [
 	{'base':'y','letters':/[\u0079\u24E8\uFF59\u1EF3\u00FD\u0177\u1EF9\u0233\u1E8F\u00FF\u1EF7\u1E99\u1EF5\u01B4\u024F\u1EFF]/g},
 	{'base':'z','letters':/[\u007A\u24E9\uFF5A\u017A\u1E91\u017C\u017E\u1E93\u1E95\u01B6\u0225\u0240\u2C6C\uA763]/g}
 ];
-var changes;
 function removeDiacritics (str) {
-	if(!changes) {
-		changes = defaultDiacriticsRemovalMap;
-	}
+	var changes = defaultDiacriticsRemovalMap;
 	for(var i=0; i<changes.length; i++) {
 		str = str.replace(changes[i].letters, changes[i].base);
 	}
@@ -1564,6 +1564,14 @@ function getCountryCode(c2a, text, matchBy){
 			break;
 	}
 }
+
+function encodeHtmlEntity(str) {
+  var buf = [];
+  for (var i=str.length-1;i>=0;i--) {
+    buf.unshift(['&#', str[i].charCodeAt(), ';'].join(''));
+  }
+  return buf.join('');
+};
 
 clickToAddress.prototype.setPlaceholder = function(country, target){
 	'use strict';
@@ -1868,8 +1876,14 @@ clickToAddress.prototype.onFocus = function(target){
 	if(target.value !== '' && !prestate){
 		that.sequence++;
 		that.searchStatus.lastSearchId = that.sequence;
+
+		// if the on focus search matches the last search, do not store it in history
+		var sequence = that.sequence;
+		if(that.lastSearch == target.value){
+			sequence = -1;
+		}
 		that.lastSearch = target.value;
-		that.search(target.value, that.activeId, that.sequence);
+		that.search(target.value, that.activeId, sequence);
 	}
 }
 clickToAddress.prototype.resetSelector = function(){

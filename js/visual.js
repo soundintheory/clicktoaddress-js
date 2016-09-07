@@ -301,8 +301,14 @@ clickToAddress.prototype.onFocus = function(target){
 	if(target.value !== '' && !prestate){
 		that.sequence++;
 		that.searchStatus.lastSearchId = that.sequence;
+
+		// if the on focus search matches the last search, do not store it in history
+		var sequence = that.sequence;
+		if(that.lastSearch == target.value){
+			sequence = -1;
+		}
 		that.lastSearch = target.value;
-		that.search(target.value, that.activeId, that.sequence);
+		that.search(target.value, that.activeId, sequence);
 	}
 }
 clickToAddress.prototype.resetSelector = function(){

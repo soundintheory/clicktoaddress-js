@@ -37,8 +37,6 @@ c2a_gfx_modes['mode2'] = {
 	},
 	reposition: function(that, target){
 		// position to target
-		var topElemHeight = 22;
-
 		var elemRect = target.getBoundingClientRect();
 		/*	http://stackoverflow.com/questions/3464876/javascript-get-window-x-y-position-for-scroll
 		var	htmlRect = document.getElementsByTagName('html')[0].getBoundingClientRect();
@@ -47,7 +45,7 @@ c2a_gfx_modes['mode2'] = {
 		var docTop = (window.pageYOffset || doc.scrollTop)  - (doc.clientTop || 0);
 		var docLeft = (window.pageXOffset || doc.scrollLeft) - (doc.clientLeft || 0);
 
-		var topOffset = (elemRect.top + docTop) - (topElemHeight+10);
+		var topOffset = (elemRect.top + docTop) - (target.offsetHeight);
 		var leftOffset = elemRect.left + docLeft + document.body.style.paddingLeft;
 
 		var htmlTop = parseInt( window.getComputedStyle(document.getElementsByTagName('html')[0]).getPropertyValue('margin-top') );
@@ -58,7 +56,7 @@ c2a_gfx_modes['mode2'] = {
 		that.searchObj.style.left = leftOffset-5+'px';
 		that.searchObj.style.top = topOffset+'px';
 		that.searchObj.style.width = target.offsetWidth+10+'px';
-		that.searchObj.getElementsByClassName('mainbar')[0].style.marginBottom = target.offsetHeight+10+'px';
+		that.searchObj.getElementsByClassName('mainbar')[0].style.marginBottom = target.offsetHeight+5+'px';
 
 		var activeClass = 'c2a_active';
 		var activeElements = document.getElementsByClassName(activeClass);

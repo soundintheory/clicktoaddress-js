@@ -53,8 +53,8 @@ c2a_gfx_modes['mode1'] = {
 		var docTop = (window.pageYOffset || doc.scrollTop)  - (doc.clientTop || 0);
 		var docLeft = (window.pageXOffset || doc.scrollLeft) - (doc.clientLeft || 0);
 
-		var topOffset = elemRect.top - docTop + target.offsetHeight - 3;
-		var leftOffset = elemRect.left - docLeft;
+		var topOffset = (elemRect.top + docTop) + (target.offsetHeight - 5);
+		var leftOffset = elemRect.left + docLeft;
 		if(document.body.style.paddingLeft !== ''){
 			leftOffset += parseInt(document.body.style.paddingLeft);
 		}
