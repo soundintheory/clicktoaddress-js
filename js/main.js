@@ -546,17 +546,21 @@ clickToAddress.prototype.setCountryChange = function(){
 
 				switch(this.countryMatchWith){
 					case 'iso_3':
-						if(this.enabledCountries == row.iso_3166_1_alpha_3){
+						if(enabledCountryTestString == row.iso_3166_1_alpha_3){
 							exactMatch = iVC;
 						}
 						break;
 					case 'iso_2':
-						if(this.enabledCountries == row.iso_3166_1_alpha_2){
+						if(enabledCountryTestString == row.iso_3166_1_alpha_2){
 							exactMatch = iVC;
 						}
 						break;
-					case 'cc_code_3':
-						if(this.enabledCountries == row.code){
+					case 'code':
+						var testArray = [
+							row.code.toUpperCase(),
+							row.short_code.toUpperCase()
+						];
+						if(testArray.indexOf(enabledCountryTestString) !== -1){
 							exactMatch = iVC;
 						}
 						break;
