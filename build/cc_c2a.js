@@ -5,7 +5,7 @@
  * @link        https://craftyclicks.co.uk
  * @copyright   Copyright (c) 2016, Crafty Clicks Limited
  * @license     Licensed under the terms of the MIT license.
- * @version     1.1.3-beta.2
+ * @version     1.1.3-beta.3
  */
 
 clickToAddress.prototype.search = function(searchText, id, sequence){
@@ -517,23 +517,30 @@ function clickToAddress(config){
 		function(){
 			that.serviceReady = 1;
 			that.setCountryChange();
-			var country = null;
-			if(that.getIpLocation && that.ipLocation !== ''){
-				country = that.ipLocation;
-			} else {
-				country = that.defaultCountry;
-			}
-			if(that.enabledCountries.length && that.validCountries.length){
-				var defaultCountryIsValid = false;
-				for(var i=0; i<that.validCountries.length; i++){
-					if(that.validCountries[i].code == country){
-						defaultCountryIsValid = true;
-						break;
+			var isValidCountry = function(country, validCountries){
+				for(var i=0; i < validCountries.length; i++){
+					if( validCountries[i].code == country){
+						return true;
 					}
 				}
-				if(!defaultCountryIsValid){
-					country = that.validCountries[0].code;
+				return false;
+			};
+			var country = null;
+			if(that.enabledCountries.length && that.validCountries.length){
+				// fallback to first valid country
+				country = that.validCountries[0].code;
+
+				// first try to set the country to the default one
+				if(isValidCountry(that.defaultCountry,that.validCountries)){
+					country = that.defaultCountry;
 				}
+				// then, override the default, if the current GeoLocation is available & the country is enabled.
+				if(that.getIpLocation && that.ipLocation !== '' && isValidCountry(that.ipLocation, that.validCountries)){
+					country = that.ipLocation;
+				}
+
+			} else {
+				throw 'Incorrect country configuration.';
 			}
 			that.selectCountry(country);
 		}
@@ -758,11 +765,12 @@ clickToAddress.prototype.setCounty = function(element, province){
 			element.value = target_val;
 		}
 	} else {
+		// set to preferred
 		var province_for_input = province.preferred;
-		if(province_for_input == ''){
+		if(province_for_input === ''){
 			province_for_input = province.name;
 		}
-		if(province_for_input == ''){
+		if(province_for_input === ''){
 			province_for_input = province.code;
 		}
 		element.value = province_for_input;
@@ -1017,57 +1025,90 @@ clickToAddress.prototype.selectCountry = function(countryCode, skipSearch){
 clickToAddress.prototype.setCountryChange = function(){
 	'use strict';
 	// first cull the country list, if limitations are set
+	var finalValidCountries = [];
 	if(this.enabledCountries.length !== 0){
-		for(var i=0; i<this.validCountries.length; i++){
-			// add parts
-			var row = this.validCountries[i];
-			switch(this.countryMatchWith){
-				case 'iso_3':
-					if(this.enabledCountries.indexOf(row.iso_3166_1_alpha_3) == -1){
-						this.validCountries.splice(i, 1);
-						i--;
-					}
-					break;
-				case 'iso_2':
-					if(this.enabledCountries.indexOf(row.iso_3166_1_alpha_2) == -1){
-						this.validCountries.splice(i, 1);
-						i--;
-					}
-					break;
-				// match with any text
-				default:
-					this.error('JS401');
-				case 'text':
-					var matchFound = false;
-					for(var j=0; !matchFound && j < Object.keys(row).length; j++){
-						var rowElem = row[Object.keys(row)[j]];
-						if(typeof rowElem != 'array'){
-							var text = rowElem.toString().toLowerCase();
-							for(var k=0; k < this.enabledCountries.length; k++){
-								if(text.indexOf(this.enabledCountries[k].toLowerCase()) === 0){
-									matchFound = true;
+		for(var iEC=0; iEC<this.enabledCountries.length; iEC++){
+			var enabledCountryTestString = this.enabledCountries[iEC];
+			var exactMatch = null;
+			var partialMatch = [];
+
+			for(var iVC=0; iVC<this.validCountries.length; iVC++){
+				if(finalValidCountries.indexOf(iVC) !== -1){
+					continue;
+				}
+				var row = this.validCountries[iVC];
+
+				switch(this.countryMatchWith){
+					case 'iso_3':
+						if(this.enabledCountries == row.iso_3166_1_alpha_3){
+							exactMatch = iVC;
+						}
+						break;
+					case 'iso_2':
+						if(this.enabledCountries == row.iso_3166_1_alpha_2){
+							exactMatch = iVC;
+						}
+						break;
+					case 'cc_code_3':
+						if(this.enabledCountries == row.code){
+							exactMatch = iVC;
+						}
+						break;
+					// match with any text
+					default:
+						this.error('JS401');
+					case 'text':
+						for(var j=0; !exactMatch && j < Object.keys(row).length; j++){
+							var rowElem = row[Object.keys(row)[j]];
+							if(typeof rowElem == 'string' || typeof rowElem == 'number'){
+								var text = rowElem.toString().toUpperCase();
+
+								if(text.indexOf(enabledCountryTestString) === 0){
+									if(text == enabledCountryTestString){
+										exactMatch = iVC;
+									} else if(partialMatch.indexOf(iVC) == -1){
+										partialMatch.push(iVC);
+									}
 								}
-							}
-						} else {
-							for(var k=0; k < this.enabledCountries.length; k++){
+							} else {
 								for(var l=0; l < rowElem.length; l++){
-									if(text.indexOf(this.enabledCountries[k].toLowerCase()) === 0){
-										matchFound = true;
+									var text = rowElem[l].toString().toUpperCase();
+									if(text.indexOf(enabledCountryTestString) === 0){
+										if(text == enabledCountryTestString){
+											exactMatch = iVC;
+										} else if(partialMatch.indexOf(iVC) == -1){
+											partialMatch.push(iVC);
+										}
 									}
 								}
 							}
 						}
-					}
-					if(!matchFound){
-						this.validCountries.splice(i, 1);
-						i--;
-					}
-					break;
+						break;
+				}
 			}
-
+			// remove exact matches
+			if(exactMatch !== null){
+				finalValidCountries.push(exactMatch);
+			} else if(partialMatch.length > 0){
+				for(var iPM=0; iPM < partialMatch.length; iPM++){
+					finalValidCountries.push(partialMatch[iPM]);
+				}
+			}
+			// reset
+			exactMatch = null;
+			partialMatch = [];
+		}
+		// set the validCountries
+		var offset = 0;
+		for(var iVC = 0; iVC < this.validCountries.length; iVC++){
+			if(finalValidCountries.indexOf(iVC+offset) == -1){
+				this.validCountries.splice(iVC, 1);
+				offset++;
+				iVC--;
+			}
 		}
 	}
-	if(this.validCountries.length == 0){
+	if(this.validCountries.length === 0){
 		throw 'No valid countries left in the country list!';
 	}
 
@@ -1166,6 +1207,13 @@ c2a_gfx_modes['mode1'] = {
 		that.searchObj.style.top = topOffset+'px';
 		that.searchObj.style.width = (target.offsetWidth - 6) +'px';
 
+		// if there's not enough space for the logo, hide it
+		if(elemRect.width < 300){
+			that.searchObj.getElementsByClassName('c2a_logo')[0].style.display = 'none';
+		} else {
+			that.searchObj.getElementsByClassName('c2a_logo')[0].style.display = 'block';
+		}
+
 		var activeClass = 'c2a_active';
 		var activeElements = document.getElementsByClassName(activeClass);
 		for(var i=0; i<activeElements.length; i++){
@@ -1197,6 +1245,7 @@ c2a_gfx_modes['mode2'] = {
 			mainbar += '<div class="cc-history"><div class="cc-back disabled"></div>';
 			mainbar +='<div class="cc-forward disabled"></div></div>';
 		}
+
 		if(that.showLogo){
 			mainbar += '<div class="c2a_logo"></div>';
 		}
@@ -1236,6 +1285,13 @@ c2a_gfx_modes['mode2'] = {
 		that.searchObj.style.width = target.offsetWidth+10+'px';
 		that.searchObj.getElementsByClassName('mainbar')[0].style.marginBottom = target.offsetHeight+5+'px';
 
+		// if there's not enough space for the logo, hide it
+		if(elemRect.width < 300){
+			that.searchObj.getElementsByClassName('c2a_logo')[0].style.display = 'none';
+		} else {
+			that.searchObj.getElementsByClassName('c2a_logo')[0].style.display = 'block';
+		}
+
 		var activeClass = 'c2a_active';
 		var activeElements = document.getElementsByClassName(activeClass);
 		for(var i=0; i<activeElements.length; i++){
@@ -1263,7 +1319,7 @@ clickToAddress.prototype.setupText = function(textCfg){
 		var keys = Object.keys(this.texts);
 		for(var i=0; i<keys.length; i++){
 			if(typeof textCfg[keys[i]] != 'undefined' && textCfg[keys[i]] !== ''){
-				this.texts[keys[i]] = encodeHtmlEntity(textCfg[keys[i]]);
+				this.texts[keys[i]] = textCfg[keys[i]];
 			}
 		}
 	}
@@ -1300,7 +1356,7 @@ clickToAddress.prototype.preset = function(config){
 	// * MAIN OBJECTS
 	// * These objects are store internal statuses. Do not modify any variable here.
 	// *
-	this.jsVersion = '1.1.3-beta.2';
+	this.jsVersion = '1.1.3-beta.3';
 	this.serviceReady = 0;
 	// set active country
 	this.activeCountry = '';
@@ -1563,15 +1619,8 @@ function getCountryCode(c2a, text, matchBy){
 			}
 			break;
 	}
+	return false;
 }
-
-function encodeHtmlEntity(str) {
-  var buf = [];
-  for (var i=str.length-1;i>=0;i--) {
-    buf.unshift(['&#', str[i].charCodeAt(), ';'].join(''));
-  }
-  return buf.join('');
-};
 
 clickToAddress.prototype.setPlaceholder = function(country, target){
 	'use strict';

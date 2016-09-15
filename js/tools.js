@@ -154,4 +154,5 @@ function getCountryCode(c2a, text, matchBy){
 			}
 			break;
 	}
+	return false;
 }

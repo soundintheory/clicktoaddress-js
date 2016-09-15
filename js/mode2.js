@@ -19,6 +19,7 @@ c2a_gfx_modes['mode2'] = {
 			mainbar += '<div class="cc-history"><div class="cc-back disabled"></div>';
 			mainbar +='<div class="cc-forward disabled"></div></div>';
 		}
+
 		if(that.showLogo){
 			mainbar += '<div class="c2a_logo"></div>';
 		}
@@ -57,6 +58,13 @@ c2a_gfx_modes['mode2'] = {
 		that.searchObj.style.top = topOffset+'px';
 		that.searchObj.style.width = target.offsetWidth+10+'px';
 		that.searchObj.getElementsByClassName('mainbar')[0].style.marginBottom = target.offsetHeight+5+'px';
+
+		// if there's not enough space for the logo, hide it
+		if(elemRect.width < 300){
+			that.searchObj.getElementsByClassName('c2a_logo')[0].style.display = 'none';
+		} else {
+			that.searchObj.getElementsByClassName('c2a_logo')[0].style.display = 'block';
+		}
 
 		var activeClass = 'c2a_active';
 		var activeElements = document.getElementsByClassName(activeClass);

@@ -72,6 +72,13 @@ c2a_gfx_modes['mode1'] = {
 		that.searchObj.style.top = topOffset+'px';
 		that.searchObj.style.width = (target.offsetWidth - 6) +'px';
 
+		// if there's not enough space for the logo, hide it
+		if(elemRect.width < 300){
+			that.searchObj.getElementsByClassName('c2a_logo')[0].style.display = 'none';
+		} else {
+			that.searchObj.getElementsByClassName('c2a_logo')[0].style.display = 'block';
+		}
+
 		var activeClass = 'c2a_active';
 		var activeElements = document.getElementsByClassName(activeClass);
 		for(var i=0; i<activeElements.length; i++){
