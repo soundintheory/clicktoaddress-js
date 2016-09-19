@@ -5,7 +5,7 @@
  * @link        https://craftyclicks.co.uk
  * @copyright   Copyright (c) 2016, Crafty Clicks Limited
  * @license     Licensed under the terms of the MIT license.
- * @version     1.1.3-beta.4
+ * @version     1.1.3-beta.5
  */
 
 clickToAddress.prototype.search = function(searchText, id, sequence){
@@ -526,7 +526,7 @@ function clickToAddress(config){
 				return false;
 			};
 			var country = null;
-			if(that.enabledCountries.length && that.validCountries.length){
+			if(that.validCountries.length){
 				// fallback to first valid country
 				country = that.validCountries[0].code;
 
@@ -1192,22 +1192,18 @@ c2a_gfx_modes['mode1'] = {
 		var docTop = (window.pageYOffset || doc.scrollTop)  - (doc.clientTop || 0);
 		var docLeft = (window.pageXOffset || doc.scrollLeft) - (doc.clientLeft || 0);
 
-		var topOffset = (elemRect.top + docTop) + (target.offsetHeight - 5);
-		var leftOffset = elemRect.left + docLeft;
-		if(document.body.style.paddingLeft !== ''){
-			leftOffset += parseInt(document.body.style.paddingLeft);
-		}
+		var topOffset = (elemRect.top + docTop) + (target.offsetHeight - 1);
+		var leftOffset = elemRect.left + docLeft + 3; // 3px gap for nice edgy curl effect
 
-		var htmlTop = parseInt( window.getComputedStyle(document.getElementsByTagName('html')[0]).getPropertyValue('margin-top') );
-			htmlTop += parseInt( window.getComputedStyle(document.getElementsByTagName('html')[0]).getPropertyValue('padding-top') );
-
-		topOffset += htmlTop;
+		var htmlBox = window.getComputedStyle(document.getElementsByTagName('html')[0]);
+		topOffset += parseInt( htmlBox.getPropertyValue('margin-top') ) + parseInt( htmlBox.getPropertyValue('padding-top') );
+		leftOffset += parseInt( htmlBox.getPropertyValue('margin-left') ) + parseInt( htmlBox.getPropertyValue('padding-left') );
 /*
 		if(htmlRect.bottom < that.searchObj.offsetHeight){
 			topOffset -= target.offsetHeight + that.searchObj.offsetHeight;
 		}
 */
-		that.searchObj.style.left = leftOffset + 3 +'px';
+		that.searchObj.style.left = leftOffset +'px';
 		that.searchObj.style.top = topOffset+'px';
 		that.searchObj.style.width = (target.offsetWidth - 6) +'px';
 
@@ -1276,18 +1272,19 @@ c2a_gfx_modes['mode2'] = {
 		var docTop = (window.pageYOffset || doc.scrollTop)  - (doc.clientTop || 0);
 		var docLeft = (window.pageXOffset || doc.scrollLeft) - (doc.clientLeft || 0);
 
-		var topOffset = (elemRect.top + docTop) - (target.offsetHeight);
-		var leftOffset = elemRect.left + docLeft + document.body.style.paddingLeft;
+		var mainBarHeight = that.searchObj.getElementsByClassName('mainbar')[0].clientHeight;
 
-		var htmlTop = parseInt( window.getComputedStyle(document.getElementsByTagName('html')[0]).getPropertyValue('margin-top') );
-			htmlTop += parseInt( window.getComputedStyle(document.getElementsByTagName('html')[0]).getPropertyValue('padding-top') );
+		var topOffset = (elemRect.top + docTop) - (mainBarHeight + 6);
+		var leftOffset = (elemRect.left + docLeft);/* + parseInt( document.body.style.paddingLeft );*/
 
-		topOffset += htmlTop;
+		var htmlBox = window.getComputedStyle(document.getElementsByTagName('html')[0]);
+		topOffset += parseInt( htmlBox.getPropertyValue('margin-top') ) + parseInt( htmlBox.getPropertyValue('padding-top') );
+		leftOffset += parseInt( htmlBox.getPropertyValue('margin-left') ) + parseInt( htmlBox.getPropertyValue('padding-left') );
 
 		that.searchObj.style.left = leftOffset-5+'px';
 		that.searchObj.style.top = topOffset+'px';
 		that.searchObj.style.width = target.offsetWidth+10+'px';
-		that.searchObj.getElementsByClassName('mainbar')[0].style.marginBottom = target.offsetHeight+5+'px';
+		that.searchObj.getElementsByClassName('mainbar')[0].style.marginBottom = target.offsetHeight+6+'px';
 
 		// if there's not enough space for the logo, hide it
 		if(elemRect.width < 300){
@@ -1360,7 +1357,7 @@ clickToAddress.prototype.preset = function(config){
 	// * MAIN OBJECTS
 	// * These objects are store internal statuses. Do not modify any variable here.
 	// *
-	this.jsVersion = '1.1.3-beta.4';
+	this.jsVersion = '1.1.3-beta.5';
 	this.serviceReady = 0;
 	// set active country
 	this.activeCountry = '';
@@ -1914,10 +1911,11 @@ clickToAddress.prototype.onFocus = function(target){
 		return;
 	}
 	var prestate = that.visible;
-	that.gfxModeTools.reposition(that, target);
 	that.activeInput = target;
 	that.focused = true;
 	that.show();
+	
+	that.gfxModeTools.reposition(that, target);
 
 	// if it just gained focus, execute custom event
 	if(!prestate){

@@ -53,22 +53,18 @@ c2a_gfx_modes['mode1'] = {
 		var docTop = (window.pageYOffset || doc.scrollTop)  - (doc.clientTop || 0);
 		var docLeft = (window.pageXOffset || doc.scrollLeft) - (doc.clientLeft || 0);
 
-		var topOffset = (elemRect.top + docTop) + (target.offsetHeight - 5);
-		var leftOffset = elemRect.left + docLeft;
-		if(document.body.style.paddingLeft !== ''){
-			leftOffset += parseInt(document.body.style.paddingLeft);
-		}
+		var topOffset = (elemRect.top + docTop) + (target.offsetHeight - 1);
+		var leftOffset = elemRect.left + docLeft + 3; // 3px gap for nice edgy curl effect
 
-		var htmlTop = parseInt( window.getComputedStyle(document.getElementsByTagName('html')[0]).getPropertyValue('margin-top') );
-			htmlTop += parseInt( window.getComputedStyle(document.getElementsByTagName('html')[0]).getPropertyValue('padding-top') );
-
-		topOffset += htmlTop;
+		var htmlBox = window.getComputedStyle(document.getElementsByTagName('html')[0]);
+		topOffset += parseInt( htmlBox.getPropertyValue('margin-top') ) + parseInt( htmlBox.getPropertyValue('padding-top') );
+		leftOffset += parseInt( htmlBox.getPropertyValue('margin-left') ) + parseInt( htmlBox.getPropertyValue('padding-left') );
 /*
 		if(htmlRect.bottom < that.searchObj.offsetHeight){
 			topOffset -= target.offsetHeight + that.searchObj.offsetHeight;
 		}
 */
-		that.searchObj.style.left = leftOffset + 3 +'px';
+		that.searchObj.style.left = leftOffset +'px';
 		that.searchObj.style.top = topOffset+'px';
 		that.searchObj.style.width = (target.offsetWidth - 6) +'px';
 

@@ -32,7 +32,7 @@ function clickToAddress(config){
 				return false;
 			};
 			var country = null;
-			if(that.enabledCountries.length && that.validCountries.length){
+			if(that.validCountries.length){
 				// fallback to first valid country
 				country = that.validCountries[0].code;
 

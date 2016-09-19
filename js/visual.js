@@ -286,10 +286,11 @@ clickToAddress.prototype.onFocus = function(target){
 		return;
 	}
 	var prestate = that.visible;
-	that.gfxModeTools.reposition(that, target);
 	that.activeInput = target;
 	that.focused = true;
 	that.show();
+	
+	that.gfxModeTools.reposition(that, target);
 
 	// if it just gained focus, execute custom event
 	if(!prestate){
