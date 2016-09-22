@@ -5,7 +5,7 @@
  * @link        https://craftyclicks.co.uk
  * @copyright   Copyright (c) 2016, Crafty Clicks Limited
  * @license     Licensed under the terms of the MIT license.
- * @version     1.1.3
+ * @version     1.1.4
  */
 
 clickToAddress.prototype.search = function(searchText, id, sequence){
@@ -1208,10 +1208,13 @@ c2a_gfx_modes['mode1'] = {
 		that.searchObj.style.width = (target.offsetWidth - 6) +'px';
 
 		// if there's not enough space for the logo, hide it
-		if(elemRect.width < 300){
-			that.searchObj.getElementsByClassName('c2a_logo')[0].style.display = 'none';
-		} else {
-			that.searchObj.getElementsByClassName('c2a_logo')[0].style.display = 'block';
+		var logo = that.searchObj.getElementsByClassName('c2a_logo');
+		if(logo.length){
+			if(elemRect.width < 300){
+				that.searchObj.getElementsByClassName('c2a_logo')[0].style.display = 'none';
+			} else {
+				that.searchObj.getElementsByClassName('c2a_logo')[0].style.display = 'block';
+			}
 		}
 
 		var activeClass = 'c2a_active';
@@ -1287,10 +1290,13 @@ c2a_gfx_modes['mode2'] = {
 		that.searchObj.getElementsByClassName('mainbar')[0].style.marginBottom = target.offsetHeight+6+'px';
 
 		// if there's not enough space for the logo, hide it
-		if(elemRect.width < 300){
-			that.searchObj.getElementsByClassName('c2a_logo')[0].style.display = 'none';
-		} else {
-			that.searchObj.getElementsByClassName('c2a_logo')[0].style.display = 'block';
+		var logo = that.searchObj.getElementsByClassName('c2a_logo');
+		if(logo.length){
+			if(elemRect.width < 300){
+				that.searchObj.getElementsByClassName('c2a_logo')[0].style.display = 'none';
+			} else {
+				that.searchObj.getElementsByClassName('c2a_logo')[0].style.display = 'block';
+			}
 		}
 
 		var activeClass = 'c2a_active';
@@ -1357,7 +1363,7 @@ clickToAddress.prototype.preset = function(config){
 	// * MAIN OBJECTS
 	// * These objects are store internal statuses. Do not modify any variable here.
 	// *
-	this.jsVersion = '1.1.3';
+	this.jsVersion = '1.1.4';
 	this.serviceReady = 0;
 	// set active country
 	this.activeCountry = '';
