@@ -5,7 +5,7 @@
  * @link        https://craftyclicks.co.uk
  * @copyright   Copyright (c) 2016, Crafty Clicks Limited
  * @license     Licensed under the terms of the MIT license.
- * @version     1.1.4
+ * @version     1.1.5
  */
 
 clickToAddress.prototype.search = function(searchText, id, sequence){
@@ -1292,10 +1292,8 @@ c2a_gfx_modes['mode2'] = {
 		// if there's not enough space for the logo, hide it
 		var logo = that.searchObj.getElementsByClassName('c2a_logo');
 		if(logo.length){
-			if(elemRect.width < 300){
-				that.searchObj.getElementsByClassName('c2a_logo')[0].style.display = 'none';
-			} else {
-				that.searchObj.getElementsByClassName('c2a_logo')[0].style.display = 'block';
+			if(elemRect.width < 300 && logo[0].className.indexOf('hidden') == -1){
+				logo[0].className = 'c2a_logo hidden';
 			}
 		}
 
@@ -1363,7 +1361,7 @@ clickToAddress.prototype.preset = function(config){
 	// * MAIN OBJECTS
 	// * These objects are store internal statuses. Do not modify any variable here.
 	// *
-	this.jsVersion = '1.1.4';
+	this.jsVersion = '1.1.5';
 	this.serviceReady = 0;
 	// set active country
 	this.activeCountry = '';
