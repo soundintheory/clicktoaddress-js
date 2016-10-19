@@ -289,7 +289,7 @@ clickToAddress.prototype.onFocus = function(target){
 	that.activeInput = target;
 	that.focused = true;
 	that.show();
-	
+
 	that.gfxModeTools.reposition(that, target);
 
 	// if it just gained focus, execute custom event
@@ -354,6 +354,7 @@ clickToAddress.prototype.showGeo = function(){
 	'use strict';
 	this.searchObj.getElementsByClassName('geo')[0].style.display = 'block';
 };
+/*
 clickToAddress.prototype.hideKeyboard = function(){
 	'use strict';
 	// this code is for phones to hide the keyboard.
@@ -368,6 +369,7 @@ clickToAddress.prototype.hideKeyboard = function(){
 		that.activeInput.removeAttribute('disabled');
 	}, 100);
 };
+*/
 clickToAddress.prototype.getStyleSheet = function(){
 	'use strict';
 	if(this.cssPath === false){

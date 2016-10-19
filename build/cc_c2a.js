@@ -5,7 +5,7 @@
  * @link        https://craftyclicks.co.uk
  * @copyright   Copyright (c) 2016, Crafty Clicks Limited
  * @license     Licensed under the terms of the MIT license.
- * @version     1.1.5
+ * @version     1.1.6
  */
 
 clickToAddress.prototype.search = function(searchText, id, sequence){
@@ -558,12 +558,12 @@ function clickToAddress(config){
 	ccEvent(document, 'click', function(){
 		that.hide();
 	});
-	ccEvent(document, 'scroll', function(){
+	ccEvent(window, 'scroll', function(){
 		if(that.visible && that.focused){
 			setTimeout(function(){
 				that.gfxModeTools.reposition(that, that.activeInput);
 			},100);
-			that.hideKeyboard();
+			//that.hideKeyboard();
 		}
 	});
 	ccEvent(window, 'resize', function(){
@@ -1218,12 +1218,17 @@ c2a_gfx_modes['mode1'] = {
 		}
 
 		var activeClass = 'c2a_active';
+		target.cc_current_target = 1;
 		var activeElements = document.getElementsByClassName(activeClass);
 		for(var i=0; i<activeElements.length; i++){
-			activeElements[i].className = activeElements[i].className.replace(" "+activeClass, "");
+			if(typeof activeElements[i].cc_current_target == 'undefined'){
+				activeElements[i].className = activeElements[i].className.replace(" "+activeClass, "");
+			}
 		}
-
-		target.className += " "+activeClass;
+		delete target.cc_current_target;
+		if(target.className.indexOf(activeClass) == -1){
+			target.className += " "+activeClass;
+		}
 	}
 };
 
@@ -1298,11 +1303,17 @@ c2a_gfx_modes['mode2'] = {
 		}
 
 		var activeClass = 'c2a_active';
+		target.cc_current_target = 1;
 		var activeElements = document.getElementsByClassName(activeClass);
 		for(var i=0; i<activeElements.length; i++){
-			activeElements[i].className = activeElements[i].className.replace(" "+activeClass, "");
+			if(typeof activeElements[i].cc_current_target == 'undefined'){
+				activeElements[i].className = activeElements[i].className.replace(" "+activeClass, "");
+			}
 		}
-		target.className += " "+activeClass;
+		delete target.cc_current_target;
+		if(target.className.indexOf(activeClass) == -1){
+			target.className += " "+activeClass;
+		}
 	}
 };
 
@@ -1361,7 +1372,7 @@ clickToAddress.prototype.preset = function(config){
 	// * MAIN OBJECTS
 	// * These objects are store internal statuses. Do not modify any variable here.
 	// *
-	this.jsVersion = '1.1.5';
+	this.jsVersion = '1.1.6';
 	this.serviceReady = 0;
 	// set active country
 	this.activeCountry = '';
@@ -1918,7 +1929,7 @@ clickToAddress.prototype.onFocus = function(target){
 	that.activeInput = target;
 	that.focused = true;
 	that.show();
-	
+
 	that.gfxModeTools.reposition(that, target);
 
 	// if it just gained focus, execute custom event
@@ -1983,6 +1994,7 @@ clickToAddress.prototype.showGeo = function(){
 	'use strict';
 	this.searchObj.getElementsByClassName('geo')[0].style.display = 'block';
 };
+/*
 clickToAddress.prototype.hideKeyboard = function(){
 	'use strict';
 	// this code is for phones to hide the keyboard.
@@ -1997,6 +2009,7 @@ clickToAddress.prototype.hideKeyboard = function(){
 		that.activeInput.removeAttribute('disabled');
 	}, 100);
 };
+*/
 clickToAddress.prototype.getStyleSheet = function(){
 	'use strict';
 	if(this.cssPath === false){

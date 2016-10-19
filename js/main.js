@@ -64,12 +64,12 @@ function clickToAddress(config){
 	ccEvent(document, 'click', function(){
 		that.hide();
 	});
-	ccEvent(document, 'scroll', function(){
+	ccEvent(window, 'scroll', function(){
 		if(that.visible && that.focused){
 			setTimeout(function(){
 				that.gfxModeTools.reposition(that, that.activeInput);
 			},100);
-			that.hideKeyboard();
+			//that.hideKeyboard();
 		}
 	});
 	ccEvent(window, 'resize', function(){

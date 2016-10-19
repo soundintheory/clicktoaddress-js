@@ -79,11 +79,16 @@ c2a_gfx_modes['mode1'] = {
 		}
 
 		var activeClass = 'c2a_active';
+		target.cc_current_target = 1;
 		var activeElements = document.getElementsByClassName(activeClass);
 		for(var i=0; i<activeElements.length; i++){
-			activeElements[i].className = activeElements[i].className.replace(" "+activeClass, "");
+			if(typeof activeElements[i].cc_current_target == 'undefined'){
+				activeElements[i].className = activeElements[i].className.replace(" "+activeClass, "");
+			}
 		}
-
-		target.className += " "+activeClass;
+		delete target.cc_current_target;
+		if(target.className.indexOf(activeClass) == -1){
+			target.className += " "+activeClass;
+		}
 	}
 };
