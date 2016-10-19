@@ -72,8 +72,8 @@ clickToAddress.prototype.hide = function(force_it){
 	this.hideErrors();
 };
 clickToAddress.prototype.attach = function(dom, cfg){
-	var cfg = cfg || {};
 	'use strict';
+	var cfg = cfg || {};
 	var domElements = {};
 	var objectArray = [
 		'search',
@@ -236,10 +236,6 @@ clickToAddress.prototype.attach = function(dom, cfg){
 	ccEvent(target, 'focus', function(){
 		that.activeDom = that.domLib[domLibId];
 		that.onFocus(target);
-
-		if(typeof that.getCfg('onSearchFocus') == 'function'){
-			that.getCfg('onSearchFocus')(that, that.activeDom);
-		}
 	});
 	ccEvent(target, 'blur', function(){
 		if(that.serviceReady === 0)
@@ -275,7 +271,7 @@ clickToAddress.prototype.attach = function(dom, cfg){
 			that.activeDom = that.domLib[domLibId];
 			that.gfxModeTools.reposition(that, target);
 		}
-	})
+	});
 	if(target === document.activeElement){
 		this.onFocus(target);
 	}
@@ -290,15 +286,30 @@ clickToAddress.prototype.onFocus = function(target){
 		return;
 	}
 	var prestate = that.visible;
-	that.gfxModeTools.reposition(that, target);
 	that.activeInput = target;
 	that.focused = true;
 	that.show();
+
+	that.gfxModeTools.reposition(that, target);
+
+	// if it just gained focus, execute custom event
+	if(!prestate){
+		if(typeof that.getCfg('onSearchFocus') == 'function'){
+			that.getCfg('onSearchFocus')(that, that.activeDom);
+		}
+	}
+
 	if(target.value !== '' && !prestate){
 		that.sequence++;
 		that.searchStatus.lastSearchId = that.sequence;
+
+		// if the on focus search matches the last search, do not store it in history
+		var sequence = that.sequence;
+		if(that.lastSearch == target.value){
+			sequence = -1;
+		}
 		that.lastSearch = target.value;
-		that.search(target.value, that.activeId, that.sequence);
+		that.search(target.value, that.activeId, sequence);
 	}
 }
 clickToAddress.prototype.resetSelector = function(){
@@ -343,6 +354,7 @@ clickToAddress.prototype.showGeo = function(){
 	'use strict';
 	this.searchObj.getElementsByClassName('geo')[0].style.display = 'block';
 };
+/*
 clickToAddress.prototype.hideKeyboard = function(){
 	'use strict';
 	// this code is for phones to hide the keyboard.
@@ -357,6 +369,7 @@ clickToAddress.prototype.hideKeyboard = function(){
 		that.activeInput.removeAttribute('disabled');
 	}, 100);
 };
+*/
 clickToAddress.prototype.getStyleSheet = function(){
 	'use strict';
 	if(this.cssPath === false){

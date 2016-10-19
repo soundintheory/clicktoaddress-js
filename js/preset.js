@@ -139,7 +139,12 @@ clickToAddress.prototype.preset = function(config){
 	this.setCfg(config, 'onSetCounty');				// attach supported
 	this.setCfg(config, 'onError');
 	this.setCfg(config, 'historyTools', true);
-	this.setCfg(config, 'countrySelector', true);
+	// if there's only one country enabled, by default disable the country selector
+	if(this.enabledCountries.length === 1){
+		this.setCfg(config, 'countrySelector', false);
+	} else {
+		this.setCfg(config, 'countrySelector', true);
+	}
 	this.setCfg(config, 'showLogo', true);
 	this.setCfg(config, 'getIpLocation', true);
 	this.setCfg(config, 'accessTokenOverride', {});

@@ -46,32 +46,49 @@ c2a_gfx_modes['mode1'] = {
 	reposition: function(that, target){
 		// position to target
 		var elemRect = target.getBoundingClientRect();
+		/*	http://stackoverflow.com/questions/3464876/javascript-get-window-x-y-position-for-scroll
 		var htmlRect = document.getElementsByTagName('html')[0].getBoundingClientRect();
-		var topOffset = elemRect.top - htmlRect.top + target.offsetHeight - 3;
-		var	leftOffset = elemRect.left - htmlRect.left;
-		if(document.body.style.paddingLeft !== ''){
-			leftOffset += parseInt(document.body.style.paddingLeft);
-		}
+		*/
+		var doc = document.documentElement;
+		var docTop = (window.pageYOffset || doc.scrollTop)  - (doc.clientTop || 0);
+		var docLeft = (window.pageXOffset || doc.scrollLeft) - (doc.clientLeft || 0);
 
-		var htmlTop = parseInt( window.getComputedStyle(document.getElementsByTagName('html')[0]).getPropertyValue('margin-top') );
-			htmlTop += parseInt( window.getComputedStyle(document.getElementsByTagName('html')[0]).getPropertyValue('padding-top') );
+		var topOffset = (elemRect.top + docTop) + (target.offsetHeight - 1);
+		var leftOffset = elemRect.left + docLeft + 3; // 3px gap for nice edgy curl effect
 
-		topOffset += htmlTop;
+		var htmlBox = window.getComputedStyle(document.getElementsByTagName('html')[0]);
+		topOffset += parseInt( htmlBox.getPropertyValue('margin-top') ) + parseInt( htmlBox.getPropertyValue('padding-top') );
+		leftOffset += parseInt( htmlBox.getPropertyValue('margin-left') ) + parseInt( htmlBox.getPropertyValue('padding-left') );
 /*
 		if(htmlRect.bottom < that.searchObj.offsetHeight){
 			topOffset -= target.offsetHeight + that.searchObj.offsetHeight;
 		}
 */
-		that.searchObj.style.left = leftOffset + 3 +'px';
+		that.searchObj.style.left = leftOffset +'px';
 		that.searchObj.style.top = topOffset+'px';
 		that.searchObj.style.width = (target.offsetWidth - 6) +'px';
 
-		var activeClass = 'c2a_active';
-		var activeElements = document.getElementsByClassName(activeClass);
-		for(var i=0; i<activeElements.length; i++){
-			activeElements[i].className = activeElements[i].className.replace(" "+activeClass, "");
+		// if there's not enough space for the logo, hide it
+		var logo = that.searchObj.getElementsByClassName('c2a_logo');
+		if(logo.length){
+			if(elemRect.width < 300){
+				that.searchObj.getElementsByClassName('c2a_logo')[0].style.display = 'none';
+			} else {
+				that.searchObj.getElementsByClassName('c2a_logo')[0].style.display = 'block';
+			}
 		}
 
-		target.className += " "+activeClass;
+		var activeClass = 'c2a_active';
+		target.cc_current_target = 1;
+		var activeElements = document.getElementsByClassName(activeClass);
+		for(var i=0; i<activeElements.length; i++){
+			if(typeof activeElements[i].cc_current_target == 'undefined'){
+				activeElements[i].className = activeElements[i].className.replace(" "+activeClass, "");
+			}
+		}
+		delete target.cc_current_target;
+		if(target.className.indexOf(activeClass) == -1){
+			target.className += " "+activeClass;
+		}
 	}
 };

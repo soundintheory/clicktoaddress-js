@@ -19,6 +19,7 @@ c2a_gfx_modes['mode2'] = {
 			mainbar += '<div class="cc-history"><div class="cc-back disabled"></div>';
 			mainbar +='<div class="cc-forward disabled"></div></div>';
 		}
+
 		if(that.showLogo){
 			mainbar += '<div class="c2a_logo"></div>';
 		}
@@ -37,28 +38,47 @@ c2a_gfx_modes['mode2'] = {
 	},
 	reposition: function(that, target){
 		// position to target
-		var topElemHeight = 22;
-
 		var elemRect = target.getBoundingClientRect();
+		/*	http://stackoverflow.com/questions/3464876/javascript-get-window-x-y-position-for-scroll
 		var	htmlRect = document.getElementsByTagName('html')[0].getBoundingClientRect();
-		var	topOffset = (elemRect.top - htmlRect.top) - (topElemHeight+10);
-		var	leftOffset = elemRect.left - htmlRect.left + document.body.style.paddingLeft;
+		*/
+		var doc = document.documentElement;
+		var docTop = (window.pageYOffset || doc.scrollTop)  - (doc.clientTop || 0);
+		var docLeft = (window.pageXOffset || doc.scrollLeft) - (doc.clientLeft || 0);
 
-		var htmlTop = parseInt( window.getComputedStyle(document.getElementsByTagName('html')[0]).getPropertyValue('margin-top') );
-			htmlTop += parseInt( window.getComputedStyle(document.getElementsByTagName('html')[0]).getPropertyValue('padding-top') );
+		var mainBarHeight = that.searchObj.getElementsByClassName('mainbar')[0].clientHeight;
 
-		topOffset += htmlTop;
+		var topOffset = (elemRect.top + docTop) - (mainBarHeight + 6);
+		var leftOffset = (elemRect.left + docLeft);/* + parseInt( document.body.style.paddingLeft );*/
+
+		var htmlBox = window.getComputedStyle(document.getElementsByTagName('html')[0]);
+		topOffset += parseInt( htmlBox.getPropertyValue('margin-top') ) + parseInt( htmlBox.getPropertyValue('padding-top') );
+		leftOffset += parseInt( htmlBox.getPropertyValue('margin-left') ) + parseInt( htmlBox.getPropertyValue('padding-left') );
 
 		that.searchObj.style.left = leftOffset-5+'px';
 		that.searchObj.style.top = topOffset+'px';
 		that.searchObj.style.width = target.offsetWidth+10+'px';
-		that.searchObj.getElementsByClassName('mainbar')[0].style.marginBottom = target.offsetHeight+10+'px';
+		that.searchObj.getElementsByClassName('mainbar')[0].style.marginBottom = target.offsetHeight+6+'px';
+
+		// if there's not enough space for the logo, hide it
+		var logo = that.searchObj.getElementsByClassName('c2a_logo');
+		if(logo.length){
+			if(elemRect.width < 300 && logo[0].className.indexOf('hidden') == -1){
+				logo[0].className = 'c2a_logo hidden';
+			}
+		}
 
 		var activeClass = 'c2a_active';
+		target.cc_current_target = 1;
 		var activeElements = document.getElementsByClassName(activeClass);
 		for(var i=0; i<activeElements.length; i++){
-			activeElements[i].className = activeElements[i].className.replace(" "+activeClass, "");
+			if(typeof activeElements[i].cc_current_target == 'undefined'){
+				activeElements[i].className = activeElements[i].className.replace(" "+activeClass, "");
+			}
 		}
-		target.className += " "+activeClass;
+		delete target.cc_current_target;
+		if(target.className.indexOf(activeClass) == -1){
+			target.className += " "+activeClass;
+		}
 	}
 };

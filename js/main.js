@@ -23,23 +23,30 @@ function clickToAddress(config){
 		function(){
 			that.serviceReady = 1;
 			that.setCountryChange();
-			var country = null;
-			if(that.getIpLocation && that.ipLocation !== ''){
-				country = that.ipLocation;
-			} else {
-				country = that.defaultCountry;
-			}
-			if(that.enabledCountries.length && that.validCountries.length){
-				var defaultCountryIsValid = false;
-				for(var i=0; i<that.validCountries.length; i++){
-					if(that.validCountries[i].code == country){
-						defaultCountryIsValid = true;
-						break;
+			var isValidCountry = function(country, validCountries){
+				for(var i=0; i < validCountries.length; i++){
+					if( validCountries[i].code == country){
+						return true;
 					}
 				}
-				if(!defaultCountryIsValid){
-					country = that.validCountries[0].code;
+				return false;
+			};
+			var country = null;
+			if(that.validCountries.length){
+				// fallback to first valid country
+				country = that.validCountries[0].code;
+
+				// first try to set the country to the default one
+				if(isValidCountry(that.defaultCountry,that.validCountries)){
+					country = that.defaultCountry;
 				}
+				// then, override the default, if the current GeoLocation is available & the country is enabled.
+				if(that.getIpLocation && that.ipLocation !== '' && isValidCountry(that.ipLocation, that.validCountries)){
+					country = that.ipLocation;
+				}
+
+			} else {
+				throw 'Incorrect country configuration.';
 			}
 			that.selectCountry(country);
 		}
@@ -57,12 +64,12 @@ function clickToAddress(config){
 	ccEvent(document, 'click', function(){
 		that.hide();
 	});
-	ccEvent(document, 'scroll', function(){
+	ccEvent(window, 'scroll', function(){
 		if(that.visible && that.focused){
 			setTimeout(function(){
 				that.gfxModeTools.reposition(that, that.activeInput);
 			},100);
-			that.hideKeyboard();
+			//that.hideKeyboard();
 		}
 	});
 	ccEvent(window, 'resize', function(){
@@ -264,11 +271,12 @@ clickToAddress.prototype.setCounty = function(element, province){
 			element.value = target_val;
 		}
 	} else {
+		// set to preferred
 		var province_for_input = province.preferred;
-		if(province_for_input == ''){
+		if(province_for_input === ''){
 			province_for_input = province.name;
 		}
-		if(province_for_input == ''){
+		if(province_for_input === ''){
 			province_for_input = province.code;
 		}
 		element.value = province_for_input;
@@ -474,19 +482,22 @@ clickToAddress.prototype.changeCountry = function(filter){
 	this.searchStatus.inCountryMode = 1;
 	this.getFocus();
 };
-clickToAddress.prototype.selectCountry = function(countryCode){
+clickToAddress.prototype.selectCountry = function(countryCode, skipSearch){
 	'use strict';
+	var skipSearch = skipSearch || false;
 	var that = this;
 	this.clear();
 	var selectedCountry = {};
 	this.activeCountryId = 0;
 	for(var i=0; i<this.validCountries.length; i++){
 		if(this.validCountries[i].code == countryCode){
-			selectedCountry = this.validCountries[i];
 			this.activeCountryId = i;
 			break;
 		}
 	}
+	// safely capture the active country
+	selectedCountry = this.validCountries[this.activeCountryId];
+
 	var countryObj = this.searchObj.getElementsByClassName('country_img')[0];
 	countryObj.setAttribute('class','country_img cc-flag cc-flag-'+selectedCountry.short_code);
 	if(!this.countrySelector){
@@ -495,7 +506,8 @@ clickToAddress.prototype.selectCountry = function(countryCode){
 	this.activeCountry = countryCode;
 	that.searchStatus.inCountryMode = 0;
 	this.getFocus();
-	if(typeof this.activeInput.value != 'undefined' && typeof this.lastSearch != ''){
+
+	if(!skipSearch && typeof this.activeInput.value != 'undefined' && typeof this.lastSearch != ''){
 		this.activeInput.value = this.lastSearch;
 		this.activeId = '';
 		this.sequence++;
@@ -519,57 +531,94 @@ clickToAddress.prototype.selectCountry = function(countryCode){
 clickToAddress.prototype.setCountryChange = function(){
 	'use strict';
 	// first cull the country list, if limitations are set
+	var finalValidCountries = [];
 	if(this.enabledCountries.length !== 0){
-		for(var i=0; i<this.validCountries.length; i++){
-			// add parts
-			var row = this.validCountries[i];
-			switch(this.countryMatchWith){
-				case 'iso_3':
-					if(this.enabledCountries.indexOf(row.iso_3166_1_alpha_3) == -1){
-						this.validCountries.splice(i, 1);
-						i--;
-					}
-					break;
-				case 'iso_2':
-					if(this.enabledCountries.indexOf(row.iso_3166_1_alpha_2) == -1){
-						this.validCountries.splice(i, 1);
-						i--;
-					}
-					break;
-				// match with any text
-				default:
-					this.error('JS401');
-				case 'text':
-					var matchFound = false;
-					for(var j=0; !matchFound && j < Object.keys(row).length; j++){
-						var rowElem = row[Object.keys(row)[j]];
-						if(typeof rowElem != 'array'){
-							var text = rowElem.toString().toLowerCase();
-							for(var k=0; k < this.enabledCountries.length; k++){
-								if(text.indexOf(this.enabledCountries[k].toLowerCase()) === 0){
-									matchFound = true;
+		for(var iEC=0; iEC<this.enabledCountries.length; iEC++){
+			var enabledCountryTestString = this.enabledCountries[iEC];
+			var exactMatch = null;
+			var partialMatch = [];
+
+			for(var iVC=0; iVC<this.validCountries.length; iVC++){
+				if(finalValidCountries.indexOf(iVC) !== -1){
+					continue;
+				}
+				var row = this.validCountries[iVC];
+
+				switch(this.countryMatchWith){
+					case 'iso_3':
+						if(enabledCountryTestString == row.iso_3166_1_alpha_3){
+							exactMatch = iVC;
+						}
+						break;
+					case 'iso_2':
+						if(enabledCountryTestString == row.iso_3166_1_alpha_2){
+							exactMatch = iVC;
+						}
+						break;
+					case 'code':
+						var testArray = [
+							row.code.toUpperCase(),
+							row.short_code.toUpperCase()
+						];
+						if(testArray.indexOf(enabledCountryTestString) !== -1){
+							exactMatch = iVC;
+						}
+						break;
+					// match with any text
+					default:
+						this.error('JS401');
+					case 'text':
+						for(var j=0; !exactMatch && j < Object.keys(row).length; j++){
+							var rowElem = row[Object.keys(row)[j]];
+							if(typeof rowElem == 'string' || typeof rowElem == 'number'){
+								var text = rowElem.toString().toUpperCase();
+
+								if(text.indexOf(enabledCountryTestString) === 0){
+									if(text == enabledCountryTestString){
+										exactMatch = iVC;
+									} else if(partialMatch.indexOf(iVC) == -1){
+										partialMatch.push(iVC);
+									}
 								}
-							}
-						} else {
-							for(var k=0; k < this.enabledCountries.length; k++){
+							} else {
 								for(var l=0; l < rowElem.length; l++){
-									if(text.indexOf(this.enabledCountries[k].toLowerCase()) === 0){
-										matchFound = true;
+									var text = rowElem[l].toString().toUpperCase();
+									if(text.indexOf(enabledCountryTestString) === 0){
+										if(text == enabledCountryTestString){
+											exactMatch = iVC;
+										} else if(partialMatch.indexOf(iVC) == -1){
+											partialMatch.push(iVC);
+										}
 									}
 								}
 							}
 						}
-					}
-					if(!matchFound){
-						this.validCountries.splice(i, 1);
-						i--;
-					}
-					break;
+						break;
+				}
 			}
-
+			// remove exact matches
+			if(exactMatch !== null){
+				finalValidCountries.push(exactMatch);
+			} else if(partialMatch.length > 0){
+				for(var iPM=0; iPM < partialMatch.length; iPM++){
+					finalValidCountries.push(partialMatch[iPM]);
+				}
+			}
+			// reset
+			exactMatch = null;
+			partialMatch = [];
+		}
+		// set the validCountries
+		var offset = 0;
+		for(var iVC = 0; iVC < this.validCountries.length; iVC++){
+			if(finalValidCountries.indexOf(iVC+offset) == -1){
+				this.validCountries.splice(iVC, 1);
+				offset++;
+				iVC--;
+			}
 		}
 	}
-	if(this.validCountries.length == 0){
+	if(this.validCountries.length === 0){
 		throw 'No valid countries left in the country list!';
 	}
 
