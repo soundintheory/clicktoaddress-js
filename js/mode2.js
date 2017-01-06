@@ -40,15 +40,17 @@ c2a_gfx_modes['mode2'] = {
 		// position to target
 		var elemRect = target.getBoundingClientRect();
 		/*	http://stackoverflow.com/questions/3464876/javascript-get-window-x-y-position-for-scroll
-		var	htmlRect = document.getElementsByTagName('html')[0].getBoundingClientRect();
 		*/
+		var	htmlRect = document.getElementsByTagName('html')[0].getBoundingClientRect();
+		console.log(htmlRect.top);
+
 		var doc = document.documentElement;
 		var docTop = (window.pageYOffset || doc.scrollTop)  - (doc.clientTop || 0);
 		var docLeft = (window.pageXOffset || doc.scrollLeft) - (doc.clientLeft || 0);
 
 		var mainBarHeight = that.searchObj.getElementsByClassName('mainbar')[0].clientHeight;
 
-		var topOffset = (elemRect.top + docTop) - (mainBarHeight + 6);
+		var topOffset = (elemRect.top + docTop) - (mainBarHeight + 6) - htmlRect.top;
 		var leftOffset = (elemRect.left + docLeft);/* + parseInt( document.body.style.paddingLeft );*/
 
 		var htmlBox = window.getComputedStyle(document.getElementsByTagName('html')[0]);
