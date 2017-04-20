@@ -7,6 +7,7 @@ clickToAddress.prototype.error = function(code, message){
 		'JS502': 'API search request resulted in a JS error.',
 		'JS503': 'API address retrieve request resulted in a JS error.',
 		'JS505': 'API countrylist retrieve request resulted in a JS error.',
+		'JS506': 'JSON parsing error',
 		// js warnings
 		'JS401': 'Invalid value for countryMatchWith. Fallback to "text"'
 	};

@@ -42,7 +42,6 @@ c2a_gfx_modes['mode2'] = {
 		/*	http://stackoverflow.com/questions/3464876/javascript-get-window-x-y-position-for-scroll
 		*/
 		var	htmlRect = document.getElementsByTagName('html')[0].getBoundingClientRect();
-		console.log(htmlRect.top);
 
 		var doc = document.documentElement;
 		var docTop = (window.pageYOffset || doc.scrollTop)  - (doc.clientTop || 0);
