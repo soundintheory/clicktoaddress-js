@@ -5,7 +5,7 @@
  * @link        https://craftyclicks.co.uk
  * @copyright   Copyright (c) 2016, Crafty Clicks Limited
  * @license     Licensed under the terms of the MIT license.
- * @version     1.1.8
+ * @version     1.1.9
  */
 
 clickToAddress.prototype.search = function(searchText, id, sequence){
@@ -184,11 +184,9 @@ clickToAddress.prototype.apiRequest = function(action, parameters, callback){
 	// Set up the URL
 	var url = this.baseURL + action;
 
-	if(typeof this.customParameters !== 'undefined'){
-		var keys = Object.keys(this.customParameters);
-		for(var i=0; i<keys.length; i++){
-			parameters[keys[i]] = this.customParameters[keys[i]];
-		}
+	var keys = Object.keys(this.customParameters);
+	for(var i=0; i<keys.length; i++){
+		parameters[keys[i]] = this.customParameters[keys[i]];
 	}
 
 	// Create new XMLHttpRequest
@@ -1266,8 +1264,8 @@ c2a_gfx_modes['mode2'] = {
 		// position to target
 		var elemRect = target.getBoundingClientRect();
 		/*	http://stackoverflow.com/questions/3464876/javascript-get-window-x-y-position-for-scroll
-		*/
 		var	htmlRect = document.getElementsByTagName('html')[0].getBoundingClientRect();
+		*/
 
 		var doc = document.documentElement;
 		var docTop = (window.pageYOffset || doc.scrollTop)  - (doc.clientTop || 0);
@@ -1275,7 +1273,7 @@ c2a_gfx_modes['mode2'] = {
 
 		var mainBarHeight = that.searchObj.getElementsByClassName('mainbar')[0].clientHeight;
 
-		var topOffset = (elemRect.top + docTop) - (mainBarHeight + 6) - htmlRect.top;
+		var topOffset = (elemRect.top + docTop) - (mainBarHeight + 6);/* - htmlRect.top;*/
 		var leftOffset = (elemRect.left + docLeft);/* + parseInt( document.body.style.paddingLeft );*/
 
 		var htmlBox = window.getComputedStyle(document.getElementsByTagName('html')[0]);
@@ -1365,7 +1363,7 @@ clickToAddress.prototype.preset = function(config){
 	// * MAIN OBJECTS
 	// * These objects are store internal statuses. Do not modify any variable here.
 	// *
-	this.jsVersion = '1.1.8';
+	this.jsVersion = '1.1.9';
 	this.serviceReady = 0;
 	// set active country
 	this.activeCountry = '';
@@ -1493,7 +1491,7 @@ clickToAddress.prototype.preset = function(config){
 
 	this.setCfg(config, 'disableAutoSearch', false); // attach supported
 
-	this.setCfg(config, 'customParameters');
+	this.setCfg(config, 'customParameters', {});
 
 	this.setFingerPrint();
 };

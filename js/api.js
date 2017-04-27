@@ -174,11 +174,9 @@ clickToAddress.prototype.apiRequest = function(action, parameters, callback){
 	// Set up the URL
 	var url = this.baseURL + action;
 
-	if(typeof this.customParameters !== 'undefined'){
-		var keys = Object.keys(this.customParameters);
-		for(var i=0; i<keys.length; i++){
-			parameters[keys[i]] = this.customParameters[keys[i]];
-		}
+	var keys = Object.keys(this.customParameters);
+	for(var i=0; i<keys.length; i++){
+		parameters[keys[i]] = this.customParameters[keys[i]];
 	}
 
 	// Create new XMLHttpRequest

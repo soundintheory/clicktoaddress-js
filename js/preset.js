@@ -158,7 +158,7 @@ clickToAddress.prototype.preset = function(config){
 
 	this.setCfg(config, 'disableAutoSearch', false); // attach supported
 
-	this.setCfg(config, 'customParameters');
+	this.setCfg(config, 'customParameters', {});
 
 	this.setFingerPrint();
 };
