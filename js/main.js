@@ -4,7 +4,7 @@ function clickToAddress(config){
 	if(document.getElementById('cc_c2a') !== null){
 		throw 'Already initiated';
 	}
-	if(typeof that.preset == 'undefined'){
+	if(typeof that == 'undefined' || typeof that.preset == 'undefined'){
 		throw 'Incorrect way to initialize this code. use "new ClickToAddress(config);"';
 	}
 	that.preset(config);
@@ -144,8 +144,16 @@ clickToAddress.prototype.fillData = function(addressData){
 		if(addressData.result.company_name !== ''){
 			if(typeof this.activeDom.company != 'undefined'){
 				this.activeDom.company.value = addressData.result.company_name;
+				this.lastSearchCompanyValue = addressData.result.company_name;
 			} else {
 				this.activeDom.line_1.value = addressData.result.company_name + ', ' + this.activeDom.line_1.value;
+			}
+		} else {
+			if(typeof this.activeDom.company != 'undefined'){
+				if(this.lastSearchCompanyValue !== '' && this.activeDom.company.value == this.lastSearchCompanyValue){
+					this.activeDom.company.value = '';
+				}
+				this.lastSearchCompanyValue = '';
 			}
 		}
 

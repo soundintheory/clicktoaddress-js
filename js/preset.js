@@ -100,6 +100,8 @@ clickToAddress.prototype.preset = function(config){
 	this.lastSearch = '';
 	this.funcStore = {};
 
+	this.lastSearchCompanyValue = '';
+
 	// *
 	// * CONFIGURATION OBJECTS
 	// * These objects store the configurable parameters.
@@ -155,6 +157,8 @@ clickToAddress.prototype.preset = function(config){
 	this.setCfg(config, 'cssPath', 'https://cc-cdn.com/generic/styles/v1/cc_c2a.min.css');
 
 	this.setCfg(config, 'disableAutoSearch', false); // attach supported
+
+	this.setCfg(config, 'customParameters', {});
 
 	this.setFingerPrint();
 };

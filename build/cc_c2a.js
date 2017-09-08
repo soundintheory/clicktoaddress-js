@@ -5,7 +5,7 @@
  * @link        https://craftyclicks.co.uk
  * @copyright   Copyright (c) 2016, Crafty Clicks Limited
  * @license     Licensed under the terms of the MIT license.
- * @version     1.1.6
+ * @version     1.1.9
  */
 
 clickToAddress.prototype.search = function(searchText, id, sequence){
@@ -47,7 +47,11 @@ clickToAddress.prototype.search = function(searchText, id, sequence){
 		parameters.coords.lat = this.coords.latitude;
 		parameters.coords.lng = this.coords.longitude;
 	}
-	var successFunction = function(that, data){
+
+	// first check cache
+	try{
+		var data = this.cacheRetrieve(parameters);
+
 		that.setProgressBar(1);
 		that.clear();
 		that.hideErrors();
@@ -60,12 +64,6 @@ clickToAddress.prototype.search = function(searchText, id, sequence){
 		that.searchStatus.lastResponseId = sequence || 0;
 		// store in cache
 		that.cacheStore(parameters, data, sequence);
-	};
-
-	// first check cache
-	try{
-		var data = this.cacheRetrieve(parameters);
-		successFunction(that, data);
 		return;
 	} catch (err) {
 		if(['cc/cr/01', 'cc/cr/02'].indexOf(err) == -1){
@@ -75,38 +73,22 @@ clickToAddress.prototype.search = function(searchText, id, sequence){
 
 	// Set up the URL
 	var url = this.baseURL + 'find';
-
-	// Create new XMLHttpRequest
-	var request = new XMLHttpRequest();
-	request.open('POST', url, true);
-	request.setRequestHeader('Content-Type', 'application/json');
-	request.setRequestHeader('Accept', 'application/json');
-	// Wait for change and then either JSON parse response text or throw exception for HTTP error
-	request.onreadystatechange = function() {
-		if (this.readyState !== 4){
-			return;
-		}
-		if (this.status >= 200 && this.status < 400){
-			if(this.status == 200){
-				var data = '';
-				try{
-					data = JSON.parse(this.responseText);
-					if(that.searchStatus.lastResponseId <= sequence){
-						successFunction(that, data);
-					}
-				}
-				catch(err){
-					that.error('JS502');
-				}
+	this.apiRequest('find', parameters, function(data){
+		if(that.searchStatus.lastResponseId <= sequence){
+			that.setProgressBar(1);
+			that.clear();
+			that.hideErrors();
+			// return data
+			that.searchResults = data;
+			that.showResults();
+			if(!that.focused){
+				that.activeInput.focus();
 			}
-		} else {
-			that.handleApiError(this);
+			that.searchStatus.lastResponseId = sequence || 0;
+			// store in cache
+			that.cacheStore(parameters, data, sequence);
 		}
-	};
-	// Send request
-	request.send(JSON.stringify(parameters));
-	// Nullify request object
-	request = null;
+	});
 };
 clickToAddress.prototype.getAddressDetails = function(id){
 	'use strict';
@@ -127,18 +109,13 @@ clickToAddress.prototype.getAddressDetails = function(id){
 		parameters.coords = this.coords;
 	}
 
-	var successFunction = function(that, data){
-		that.fillData(data);
-		that.hideErrors();
-		that.cleanHistory();
-
-		that.cacheStore(parameters, data);
-	};
-
 	// first check cache
 	try{
 		var data = this.cacheRetrieve(parameters);
-		successFunction(that, data);
+		that.fillData(data);
+		that.hideErrors();
+		that.cleanHistory();
+		that.cacheStore(parameters, data);
 		return;
 	} catch (err) {
 		if(['cc/cr/01', 'cc/cr/02'].indexOf(err) == -1){
@@ -148,35 +125,21 @@ clickToAddress.prototype.getAddressDetails = function(id){
 
 	// Set up the URL
 	var url = this.baseURL + 'retrieve';
-
-	// Create new XMLHttpRequest
-	var request = new XMLHttpRequest();
-	request.open('POST', url, true);
-	request.setRequestHeader('Content-Type', 'application/json');
-	request.setRequestHeader('Accept', 'application/json');
-	// Wait for change and then either JSON parse response text or throw exception for HTTP error
-	request.onreadystatechange = function() {
-		if (this.readyState === 4){
-			if (this.status >= 200 && this.status < 400){
-				try{
-					var data = JSON.parse(this.responseText);
-					successFunction(that, data);
-				} catch(e){
-					that.error('JS503');
-				}
-			} else {
-				that.handleApiError(this);
-			}
+	this.apiRequest('retrieve', parameters, function(data){
+		try{
+			that.fillData(data);
+			that.hideErrors();
+			that.cleanHistory();
+			that.cacheStore(parameters, data);
+		} catch(e){
+			that.error('JS503');
 		}
-	};
-	// Send request
-	request.send(JSON.stringify(parameters));
-	// Nullify request object
-	request = null;
+	});
 };
 
 clickToAddress.prototype.getAvailableCountries = function(success_function){
 	'use strict';
+	var that = this;
 	var parameters = {
 		key: this.key,
 		fingerprint: this.fingerprint,
@@ -184,47 +147,18 @@ clickToAddress.prototype.getAvailableCountries = function(success_function){
 		integration: this.tag,
 		language: this.countryLanguage
 	};
-	// Set up the URL
-	var url = this.baseURL + 'countries';
+	this.apiRequest('countries', parameters, function(data){
+		try{
+			that.serviceReady = 1;
+			that.validCountries = data.countries;
+			that.ipLocation = data.ip_location;
+			that.hideErrors();
+			success_function();
+		} catch(e){
+			that.error('JS505');
+		}
+	});
 
-	// Create new XMLHttpRequest
-	var request = new XMLHttpRequest();
-	request.open('POST', url, true);
-	request.setRequestHeader('Content-Type', 'application/json');
-	request.setRequestHeader('Accept', 'application/json');
-	// Wait for change and then either JSON parse response text or throw exception for HTTP error
-	var that = this;
-	request.onreadystatechange = function() {
-		if (this.readyState === 4){
-			if(this.status == 401){
-				// unauthorized access token
-				return;
-			}
-			if (this.status >= 200 && this.status < 400){
-				try{
-					that.serviceReady = 1;
-					var respJson = JSON.parse(this.responseText);
-					that.validCountries = respJson.countries;
-					that.ipLocation = respJson.ip_location;
-					that.hideErrors();
-					success_function();
-				} catch(e){
-					that.error('JS505');
-				}
-			} else {
-				that.handleApiError(this);
-			}
-		}
-	};
-	// Send request
-	request.send(JSON.stringify(parameters));
-	// set timeout
-	var xmlHttpTimeout = setTimeout(function(){
-		if(request !== null && request.readyState !== 4){
-			request.abort();
-			that.error('JS501');
-		}
-	},10000);
 };
 
 clickToAddress.prototype.handleApiError = function(ajax){
@@ -244,6 +178,53 @@ clickToAddress.prototype.handleApiError = function(ajax){
 	} else {
 		this.error('JS500');
 	}
+};
+
+clickToAddress.prototype.apiRequest = function(action, parameters, callback){
+	// Set up the URL
+	var url = this.baseURL + action;
+
+	var keys = Object.keys(this.customParameters);
+	for(var i=0; i<keys.length; i++){
+		parameters[keys[i]] = this.customParameters[keys[i]];
+	}
+
+	// Create new XMLHttpRequest
+	var request = new XMLHttpRequest();
+	request.open('POST', url, true);
+	request.setRequestHeader('Content-Type', 'application/json');
+	request.setRequestHeader('Accept', 'application/json');
+	// Wait for change and then either JSON parse response text or throw exception for HTTP error
+	var that = this;
+	request.onreadystatechange = function() {
+		if (this.readyState === 4){
+			if(this.status == 401){
+				// unauthorized access token
+				return;
+			}
+			if (this.status >= 200 && this.status < 400){
+				try{
+					var data = JSON.parse(this.responseText);
+					callback(data);
+				} catch(e){
+					that.error('JS506');
+				}
+			} else {
+				that.handleApiError(this);
+			}
+		}
+	};
+	// Send request
+	request.send(JSON.stringify(parameters));
+	// Set timeout
+	var xmlHttpTimeout = setTimeout(function(){
+		if(request !== null && request.readyState !== 4){
+			request.abort();
+			that.error('JS501');
+		}
+	},10000);
+	// Nullify request object
+	request = null;
 };
 
 clickToAddress.prototype.cacheRetrieve = function(search){
@@ -426,6 +407,7 @@ clickToAddress.prototype.error = function(code, message){
 		'JS502': 'API search request resulted in a JS error.',
 		'JS503': 'API address retrieve request resulted in a JS error.',
 		'JS505': 'API countrylist retrieve request resulted in a JS error.',
+		'JS506': 'JSON parsing error',
 		// js warnings
 		'JS401': 'Invalid value for countryMatchWith. Fallback to "text"'
 	};
@@ -498,7 +480,7 @@ function clickToAddress(config){
 	if(document.getElementById('cc_c2a') !== null){
 		throw 'Already initiated';
 	}
-	if(typeof that.preset == 'undefined'){
+	if(typeof that == 'undefined' || typeof that.preset == 'undefined'){
 		throw 'Incorrect way to initialize this code. use "new ClickToAddress(config);"';
 	}
 	that.preset(config);
@@ -638,8 +620,16 @@ clickToAddress.prototype.fillData = function(addressData){
 		if(addressData.result.company_name !== ''){
 			if(typeof this.activeDom.company != 'undefined'){
 				this.activeDom.company.value = addressData.result.company_name;
+				this.lastSearchCompanyValue = addressData.result.company_name;
 			} else {
 				this.activeDom.line_1.value = addressData.result.company_name + ', ' + this.activeDom.line_1.value;
+			}
+		} else {
+			if(typeof this.activeDom.company != 'undefined'){
+				if(this.lastSearchCompanyValue !== '' && this.activeDom.company.value == this.lastSearchCompanyValue){
+					this.activeDom.company.value = '';
+				}
+				this.lastSearchCompanyValue = '';
 			}
 		}
 
@@ -1276,13 +1266,14 @@ c2a_gfx_modes['mode2'] = {
 		/*	http://stackoverflow.com/questions/3464876/javascript-get-window-x-y-position-for-scroll
 		var	htmlRect = document.getElementsByTagName('html')[0].getBoundingClientRect();
 		*/
+
 		var doc = document.documentElement;
 		var docTop = (window.pageYOffset || doc.scrollTop)  - (doc.clientTop || 0);
 		var docLeft = (window.pageXOffset || doc.scrollLeft) - (doc.clientLeft || 0);
 
 		var mainBarHeight = that.searchObj.getElementsByClassName('mainbar')[0].clientHeight;
 
-		var topOffset = (elemRect.top + docTop) - (mainBarHeight + 6);
+		var topOffset = (elemRect.top + docTop) - (mainBarHeight + 6);/* - htmlRect.top;*/
 		var leftOffset = (elemRect.left + docLeft);/* + parseInt( document.body.style.paddingLeft );*/
 
 		var htmlBox = window.getComputedStyle(document.getElementsByTagName('html')[0]);
@@ -1372,7 +1363,7 @@ clickToAddress.prototype.preset = function(config){
 	// * MAIN OBJECTS
 	// * These objects are store internal statuses. Do not modify any variable here.
 	// *
-	this.jsVersion = '1.1.6';
+	this.jsVersion = '1.1.9';
 	this.serviceReady = 0;
 	// set active country
 	this.activeCountry = '';
@@ -1419,10 +1410,35 @@ clickToAddress.prototype.preset = function(config){
 	this.lastSearch = '';
 	this.funcStore = {};
 
+	this.lastSearchCompanyValue = '';
+
 	// *
 	// * CONFIGURATION OBJECTS
 	// * These objects store the configurable parameters.
 	// * Hardcoded overwrites are possible here.
+
+	/* idea */
+	/*
+	{
+		ui: {
+			layout: 'simple',
+			ambient: '5',
+			accent: '2',
+			navigation: false,
+			countrySelector: false,
+			showLogo: false,
+			disableAutosearch: false
+		},
+		countries: {
+			default: iso_3,
+			geocode: true,
+			enabled: [iso_3, iso_3],
+
+			matchWith: iso2,
+			language: 'de'
+		}
+	}
+	*/
 
 	// set gfx mode
 	this.setCfg(config, 'gfxMode', 1);
@@ -1474,6 +1490,8 @@ clickToAddress.prototype.preset = function(config){
 	this.setCfg(config, 'cssPath', 'https://cc-cdn.com/generic/styles/v1/cc_c2a.min.css');
 
 	this.setCfg(config, 'disableAutoSearch', false); // attach supported
+
+	this.setCfg(config, 'customParameters', {});
 
 	this.setFingerPrint();
 };

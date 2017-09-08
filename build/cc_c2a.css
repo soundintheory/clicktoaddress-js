@@ -375,6 +375,9 @@
   padding: 0.5em 0.5em 0.5em 1em;
   transition: background-color 0.15s linear;
   text-align: left;
+  /*span{
+				float: left;
+			}*/
 }
 #cc_c2a ul.c2a_results li:not(.deadend):hover,
 #cc_c2a ul.c2a_results li.active {
