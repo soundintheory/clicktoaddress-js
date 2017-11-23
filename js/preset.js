@@ -55,6 +55,7 @@ clickToAddress.prototype.preset = function(config){
 	// *
 	this.jsVersion = '@@version';
 	this.serviceReady = 0;
+	this.debug = false;
 	// set active country
 	this.activeCountry = '';
 	// is the mouse currently over the dropdown
@@ -157,9 +158,10 @@ clickToAddress.prototype.preset = function(config){
 	this.setCfg(config, 'cssPath', 'https://cc-cdn.com/generic/styles/v1/cc_c2a.min.css');
 
 	this.setCfg(config, 'disableAutoSearch', false); // attach supported
+	this.setCfg(config, 'transliterate', false);
+	this.setCfg(config, 'debug', false);
 
 	this.setCfg(config, 'customParameters', {});
 
 	this.setFingerPrint();
 };
-var cc_debug = false;
