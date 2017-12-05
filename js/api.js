@@ -143,7 +143,12 @@ clickToAddress.prototype.getAvailableCountries = function(success_function){
 			that.validCountries = data.countries;
 			that.ipLocation = data.ip_location;
 			that.hideErrors();
-			success_function();
+			try{
+				success_function();
+			} catch(e){
+				console.log(e);
+				that.error('JS515');
+			}
 		} catch(e){
 			that.error('JS505');
 		}
@@ -155,6 +160,8 @@ clickToAddress.prototype.handleApiError = function(ajax){
 	'use strict';
 	if([401, 402].indexOf(ajax.status) != -1){
 		this.serviceReady = -1;
+		this.error('API401');
+		return;
 	}
 	var data = {};
 	try{
@@ -164,9 +171,9 @@ clickToAddress.prototype.handleApiError = function(ajax){
 		data = {};
 	}
 	if( typeof data.error != 'undefined' && typeof data.error.status == "string" ){
-		this.error(data.error.status, data.error.message);
+		this.error('API500','API error: ['+data.error.status+']'+data.error.message);
 	} else {
-		this.error('JS500');
+		this.error('API500');
 	}
 };
 
