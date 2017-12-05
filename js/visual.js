@@ -93,9 +93,6 @@ clickToAddress.prototype.attach = function(dom, cfg){
 					return document.getElementById(dom[obj_name]);
 				}
 			};
-			for(var i = 0; i < objectArray.length; i++){
-				domElements[objectArray[i]] = quickGet(dom, objectArray[i]);
-			}
 			break;
 		case 'class':
 			quickGet = function(dom, obj_name){
@@ -103,9 +100,6 @@ clickToAddress.prototype.attach = function(dom, cfg){
 					return document.getElementsByClassName(dom[obj_name])[0];
 				}
 			};
-			for(var i = 0; i < objectArray.length; i++){
-				domElements[objectArray[i]] = quickGet(dom, objectArray[i]);
-			}
 			break;
 		case 'name':
 			quickGet = function(dom, obj_name){
@@ -113,9 +107,6 @@ clickToAddress.prototype.attach = function(dom, cfg){
 					return document.getElementsByName(dom[obj_name])[0];
 				}
 			};
-			for(var i = 0; i < objectArray.length; i++){
-				domElements[objectArray[i]] = quickGet(dom, objectArray[i]);
-			}
 			break;
 		case 'object':
 			quickGet = function(dom, obj_name){
@@ -123,10 +114,10 @@ clickToAddress.prototype.attach = function(dom, cfg){
 					return dom[obj_name];
 				}
 			};
-			for(var i = 0; i < objectArray.length; i++){
-				domElements[objectArray[i]] = quickGet(dom, objectArray[i]);
-			}
 			break;
+	}
+	for(var i = 0; i < objectArray.length; i++){
+		domElements[objectArray[i]] = quickGet(dom, objectArray[i]);
 	}
 
 	var target = domElements.search;

@@ -8,8 +8,9 @@ clickToAddress.prototype.setupText = function(textCfg){
 		default_placeholder: 'Start with post/zip code or street',
 		country_placeholder: 'Type here to search for a country',
 		country_button: 'Change Country',
-		generic_error: 'An error occured. Please enter your address manually',
-		no_results: 'No results found'
+		generic_error: 'Service unavailable.</br>Please enter your address manually.',
+		no_results: 'No results found',
+		more: '({{value}} more)' // {{value}} marks the place for the number of further results
 		//geocode: 'Your search results are prioritised based on your location.',
 	};
 	if(typeof textCfg != 'undefined'){
@@ -101,6 +102,8 @@ clickToAddress.prototype.preset = function(config){
 	this.lastSearch = '';
 	this.funcStore = {};
 
+	this.transl = null;
+
 	this.lastSearchCompanyValue = '';
 
 	// *
@@ -133,6 +136,15 @@ clickToAddress.prototype.preset = function(config){
 		ambient: 'light',
 		accent: 'default'
 	});
+	if(['light','dark','custom'].indexOf(this.style.ambient) == -1){
+		this.style.ambient = 'light';
+	}
+	if(['default','red','pink','purple','deepPurple','indigo','blue','lightBlue',
+		'cyan','teal','green','lightGreen','lime','yellow','amber','orange',
+		'deepOrange','brown','grey','blueGrey','custom'
+	].indexOf(this.style.accent) == -1){
+		this.style.accent = 'default';
+	}
 	this.setCfg(config, 'domMode', 'name');
 
 	this.setCfg(config, 'placeholders', true);

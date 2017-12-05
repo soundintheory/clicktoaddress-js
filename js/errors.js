@@ -129,18 +129,4 @@ clickToAddress.prototype.start_debug = function(){
 			btn1.className = 'c2a_toggle';
 		}
 	});
-}
-clickToAddress.prototype.addTransl = function(){
-	var jsId = 'crafty_transliterate';
-	if(document.getElementById('crafty_transliterate') === null){
-		if (!document.getElementById(jsId))
-		{
-			var head	= document.getElementsByTagName('head')[0];
-			var link	= document.createElement('script');
-			link.id	 = jsId;
-			link.type = 'text/javascript';
-			link.src = 'https://unpkg.com/transliteration@1.6.2/lib/browser/transliteration.min.js';
-			head.appendChild(link);
-		}
-	}
-}
+};

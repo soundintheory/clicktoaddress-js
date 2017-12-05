@@ -114,8 +114,8 @@ function clickToAddress(config){
 clickToAddress.prototype.fillData = function(addressDataResult){
 	'use strict';
 	var addressData = null;
-	if(this.transliterate && typeof transl !== "undefined"){
-		addressData = JSON.parse(transl(JSON.stringify(addressDataResult)));
+	if(this.transliterate && typeof this.transl === "function"){
+		addressData = JSON.parse(this.transl(JSON.stringify(addressDataResult)));
 	} else {
 		addressData = addressDataResult;
 	}
@@ -401,9 +401,9 @@ clickToAddress.prototype.showResults = function(full){
 		// add parts
 		var row = JSON.parse(JSON.stringify(this.searchResults.results[i]));
 		var hover_label = row.labels.join(', ');
-		if(that.transliterate && typeof transl !== "undefined"){
+		if(that.transliterate && typeof that.transl === "function"){
 			for(var j=0; j<row.labels.length; j++){
-				row.labels[j] = transl(row.labels[j]);
+				row.labels[j] = that.transl(row.labels[j]);
 			}
 		}
 		var content = '<div>';
@@ -412,7 +412,7 @@ clickToAddress.prototype.showResults = function(full){
 		if(typeof row.labels[1] == 'string' && row.labels[1] !== '')
 			content += '<span class="light">'+row.labels[1]+'</span>';
 		if(typeof row.count == 'number' && row.count > 1)
-			content += '<span class="light">('+row.count+' more)</span>';
+			content += '<span class="light">'+that.texts.more.replace("{{value}}",row.count)+'</span>';
 		content += '</div>';
 		listElements[i].innerHTML = content;
 		listElements[i].setAttribute('title',hover_label);
@@ -458,9 +458,9 @@ clickToAddress.prototype.showResultsExtra = function(){
 		// add parts
 		var row = JSON.parse(JSON.stringify(this.searchResults.results[i]));
 		var hover_label = row.labels.join(', ');
-		if(that.transliterate && typeof transl !== "undefined"){
+		if(that.transliterate && typeof that.transl === "function"){
 			for(var j=0; j<row.labels.length; j++){
-				row.labels[j] = transl(row.labels[j]);
+				row.labels[j] = that.transl(row.labels[j]);
 			}
 		}
 		var content = '<div>';
