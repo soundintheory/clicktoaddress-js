@@ -8,22 +8,26 @@ c2a_gfx_modes['mode2'] = {
 		cc_dropdown.className = 'c2a_mode'+that.gfxMode+' c2a_'+that.style.ambient+' c2a_accent_'+that.style.accent;
 		cc_dropdown.id = 'cc_c2a';
 
-		var mainbar = '<div class="mainbar">';
-		var btnClass = 'country_btn';
-		if(that.countrySelector){
-			btnClass += ' country_btn_active';
-		}
-		mainbar += '<div class="'+btnClass+'"><div class="country_img"></div><span>'+that.texts.country_button+'</span></div>';
+		var mainbar = '';
+		if(that.countrySelectorOption != 'hidden' || that.historyTools){
+			mainbar += '<div class="mainbar">';
+			if(that.countrySelectorOption != 'hidden'){
+				var btnClass = 'country_btn';
+				if(that.countrySelectorOption == 'enabled'){
+					btnClass += ' country_btn_active';
+				}
+				mainbar += '<div class="'+btnClass+'"><div class="country_img"></div><span>'+that.texts.country_button+'</span></div>';
+			}
+			if(that.historyTools){
+				mainbar += '<div class="cc-history"><div class="cc-back disabled"></div>';
+				mainbar +='<div class="cc-forward disabled"></div></div>';
+			}
 
-		if(that.historyTools){
-			mainbar += '<div class="cc-history"><div class="cc-back disabled"></div>';
-			mainbar +='<div class="cc-forward disabled"></div></div>';
+			if(that.showLogo){
+				mainbar += '<div class="c2a_logo"></div>';
+			}
+			mainbar += '</div>';
 		}
-
-		if(that.showLogo){
-			mainbar += '<div class="c2a_logo"></div>';
-		}
-		mainbar += '</div>';
 		var progressBar = '<div class="progressBar"></div>';
 		var infoBar = '<div class="infoBar"></div>';
 		var footerClass = 'c2a_footer',
@@ -47,7 +51,10 @@ c2a_gfx_modes['mode2'] = {
 		var docTop = (window.pageYOffset || doc.scrollTop)  - (doc.clientTop || 0);
 		var docLeft = (window.pageXOffset || doc.scrollLeft) - (doc.clientLeft || 0);
 
-		var mainBarHeight = that.searchObj.getElementsByClassName('mainbar')[0].clientHeight;
+		var mainBarHeight = 0;
+		if(that.searchObj.getElementsByClassName('mainbar').length){
+			mainBarHeight = that.searchObj.getElementsByClassName('mainbar')[0].clientHeight;
+		}
 
 		var topOffset = (elemRect.top + docTop) - (mainBarHeight + 6);/* - htmlRect.top;*/
 		var leftOffset = (elemRect.left + docLeft);/* + parseInt( document.body.style.paddingLeft );*/
@@ -59,7 +66,9 @@ c2a_gfx_modes['mode2'] = {
 		that.searchObj.style.left = leftOffset-5+'px';
 		that.searchObj.style.top = topOffset+'px';
 		that.searchObj.style.width = target.offsetWidth+10+'px';
-		that.searchObj.getElementsByClassName('mainbar')[0].style.marginBottom = target.offsetHeight+6+'px';
+		if(that.searchObj.getElementsByClassName('c2a_results').length){
+			that.searchObj.getElementsByClassName('c2a_results')[0].style.marginTop = target.offsetHeight+6+'px';
+		}
 
 		// if there's not enough space for the logo, hide it
 		var logo = that.searchObj.getElementsByClassName('c2a_logo');

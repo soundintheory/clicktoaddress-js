@@ -83,7 +83,7 @@ function clickToAddress(config){
 	ccEvent(that.resultList, 'scroll', function(){
 		var scrollTop = parseInt(this.scrollTop);
 		var innerHeight = parseInt(window.getComputedStyle(this, null).getPropertyValue("height"));
-		if(that.searchStatus.inCountryMode != 1 && parseInt(this.scrollHeight) !== 0 && scrollTop + innerHeight == parseInt(this.scrollHeight)){
+		if(that.searchStatus.inCountryMode != 1 && parseInt(this.scrollHeight) !== 0 && scrollTop + innerHeight >= parseInt(this.scrollHeight)){
 			that.showResultsExtra();
 		}
 	});
@@ -610,11 +610,12 @@ clickToAddress.prototype.selectCountry = function(countryCode, skipSearch){
 	}
 	// safely capture the active country
 	selectedCountry = this.validCountries[this.activeCountryId];
-
-	var countryObj = this.searchObj.getElementsByClassName('country_img')[0];
-	countryObj.setAttribute('class','country_img cc-flag cc-flag-'+selectedCountry.short_code);
-	if(!this.countrySelector){
-		this.searchObj.getElementsByClassName('country_btn')[0].getElementsByTagName('span')[0].innerHTML = selectedCountry.country_name;
+	if(this.countrySelectorOption !== 'hidden'){
+		var countryObj = this.searchObj.getElementsByClassName('country_img')[0];
+		countryObj.setAttribute('class','country_img cc-flag cc-flag-'+selectedCountry.short_code);
+		if(this.countrySelectorOption == 'disabled'){
+			this.searchObj.getElementsByClassName('country_btn')[0].getElementsByTagName('span')[0].innerHTML = selectedCountry.country_name;
+		}
 	}
 	this.activeCountry = countryCode;
 	that.searchStatus.inCountryMode = 0;
@@ -735,7 +736,7 @@ clickToAddress.prototype.setCountryChange = function(){
 		throw 'No valid countries left in the country list!';
 	}
 
-	if(this.countrySelector){
+	if(this.countrySelectorOption == 'enabled'){
 		var countryObj = this.searchObj.getElementsByClassName('country_btn')[0];
 		var that = this;
 		ccEvent(countryObj, 'click', function(){

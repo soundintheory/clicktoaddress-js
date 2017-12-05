@@ -157,9 +157,21 @@ clickToAddress.prototype.preset = function(config){
 	// if there's only one country enabled, by default disable the country selector
 	if(this.enabledCountries.length === 1){
 		this.setCfg(config, 'countrySelector', false);
+		this.setCfg(config, 'countrySelectorOption', 'disabled');
 	} else {
 		this.setCfg(config, 'countrySelector', true);
+		this.setCfg(config, 'countrySelectorOption', 'enabled');
 	}
+	if(typeof config.countrySelectorOption == 'undefined' && typeof config.countrySelector != 'undefined'){
+		if(this.countrySelector){
+			this.countrySelectorOption = 'enabled';
+		} else {
+			this.countrySelectorOption = 'disabled';
+		}
+	}
+
+
+
 	this.setCfg(config, 'showLogo', true);
 	this.setCfg(config, 'getIpLocation', true);
 	this.setCfg(config, 'accessTokenOverride', {});
@@ -172,6 +184,7 @@ clickToAddress.prototype.preset = function(config){
 	this.setCfg(config, 'disableAutoSearch', false); // attach supported
 	this.setCfg(config, 'transliterate', false);
 	this.setCfg(config, 'debug', false);
+	//this.setCfg(config, 'restrictFilters', false);
 
 	this.setCfg(config, 'customParameters', {});
 
