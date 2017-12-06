@@ -214,13 +214,13 @@ clickToAddress.prototype.fillData = function(addressDataResult){
 		}
 
 	}
-	try{
-		if(typeof this.getCfg('onResultSelected') == 'function'){
+	if(typeof this.getCfg('onResultSelected') == 'function'){
+		try{
 			addressData.result.country = this.validCountries[this.activeCountryId];
 			this.getCfg('onResultSelected')(this, this.activeDom, addressData.result);
+		} catch(e){
+			this.error('JS504');
 		}
-	} catch(e){
-		this.error('JS504');
 	}
 
 	this.hide(true);

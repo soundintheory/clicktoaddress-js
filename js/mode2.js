@@ -72,8 +72,12 @@ c2a_gfx_modes['mode2'] = {
 		// if there's not enough space for the logo, hide it
 		var logo = that.searchObj.getElementsByClassName('c2a_logo');
 		if(logo.length){
-			if(elemRect.width < 300 && logo[0].className.indexOf('hidden') == -1){
-				logo[0].className = 'c2a_logo hidden';
+			if(elemRect.width < 300){
+				that.tools.addClass(logo[0],'hidden');
+			} else {
+				if(!that.tools.hasClass(logo[0],'tools_in_use')){
+					that.tools.removeClass(logo[0],'hidden');
+				}
 			}
 		}
 

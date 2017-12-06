@@ -70,9 +70,11 @@ c2a_gfx_modes['mode3'] = {
 		var logo = that.searchObj.getElementsByClassName('c2a_logo');
 		if(logo.length){
 			if(elemRect.width < 300){
-				that.searchObj.getElementsByClassName('c2a_logo')[0].style.display = 'none';
+				that.tools.addClass(logo[0],'hidden');
 			} else {
-				that.searchObj.getElementsByClassName('c2a_logo')[0].style.display = 'block';
+				if(!that.tools.hasClass(logo[0],'tools_in_use')){
+					that.tools.removeClass(logo[0],'hidden');
+				}
 			}
 		}
 
