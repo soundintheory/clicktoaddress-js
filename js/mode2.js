@@ -24,19 +24,18 @@ c2a_gfx_modes['mode2'] = {
 			}
 
 			if(that.showLogo){
-				mainbar += '<div class="c2a_logo"></div>';
+				mainbar += '<div class="c2a_logo" title="Provided by Crafty Clicks"></div>';
 			}
 			mainbar += '</div>';
 		}
 		var progressBar = '<div class="progressBar"></div>';
 		var infoBar = '<div class="infoBar"></div>';
-		var footerClass = 'c2a_footer',
-			title = '';
+		var footerClass = 'c2a_footer';
 
 		var footerHtml = progressBar + infoBar;
 
 		var html =	mainbar+'<div class="c2a_error"></div><ul class="c2a_results"></ul>' +
-					'<div class="'+footerClass+'"'+title+'>'+footerHtml+'</div>';
+					'<div class="'+footerClass+'">'+footerHtml+'</div>';
 		cc_dropdown.innerHTML = html;
 		document.body.appendChild(cc_dropdown);
 	},

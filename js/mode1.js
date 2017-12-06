@@ -24,7 +24,7 @@ c2a_gfx_modes['mode1'] = {
 				mainbar += historyBar;
 			}
 			if(that.showLogo){
-				mainbar += '<div class="c2a_logo"></div>';
+				mainbar += '<div class="c2a_logo" title="Provided by Crafty Clicks"></div>';
 			}
 			mainbar += '</div>';
 		}
@@ -36,13 +36,8 @@ c2a_gfx_modes['mode1'] = {
 		var footerClass = 'c2a_footer',
 			title = '';
 
-		if(that.showLogo){
-			footerHtml += '<div class="c2a_logo"></div>';
-			title = ' title="Provided by Crafty Clicks"';
-		}
-
 		var html =	'<div class="c2a_error"></div><ul class="c2a_results"></ul>'+
-					'<div class="'+footerClass+'"'+title+'>'+footerHtml+'</div>';
+					'<div class="'+footerClass+'">'+footerHtml+'</div>';
 		cc_dropdown.innerHTML = html;
 		document.body.appendChild(cc_dropdown);
 	},
