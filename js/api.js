@@ -146,7 +146,6 @@ clickToAddress.prototype.getAvailableCountries = function(success_function){
 			try{
 				success_function();
 			} catch(e){
-				console.log(e);
 				that.error('JS515');
 			}
 		} catch(e){
