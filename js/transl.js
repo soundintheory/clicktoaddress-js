@@ -1,6 +1,6 @@
 clickToAddress.prototype.addTransl = function(){
 	var that = this;
-	var transl_url = 'https://cc-cdn.com/utils/transl/v1/transliteration.min.js';
+	var transl_url = 'https://cc-cdn.com/utils/transl/v1.6.2/transliteration.min.js';
 	try {
 		if("function" == typeof define && define.amd){
 			requirejs.config({
@@ -24,13 +24,12 @@ clickToAddress.prototype.addTransl = function(){
 					head.appendChild(link);
 				}
 				var waitForLib = function(){
-					console.log('wait for transl');
 					if(typeof transl == 'function'){
 						clearInterval(transl_loading);
 						that.transl = transl;
 					}
 				}
-				var transl_loading = setInterval(waitForLib,100);
+				var transl_loading = setInterval(waitForLib,250);
 			}
 		}
 	} catch(e){
