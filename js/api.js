@@ -37,7 +37,11 @@ clickToAddress.prototype.search = function(searchText, id, sequence){
 		parameters.coords.lat = this.coords.latitude;
 		parameters.coords.lng = this.coords.longitude;
 	}
-	var successFunction = function(that, data){
+
+	// first check cache
+	try{
+		var data = this.cacheRetrieve(parameters);
+
 		that.setProgressBar(1);
 		that.clear();
 		that.hideErrors();
@@ -50,12 +54,6 @@ clickToAddress.prototype.search = function(searchText, id, sequence){
 		that.searchStatus.lastResponseId = sequence || 0;
 		// store in cache
 		that.cacheStore(parameters, data, sequence);
-	};
-
-	// first check cache
-	try{
-		var data = this.cacheRetrieve(parameters);
-		successFunction(that, data);
 		return;
 	} catch (err) {
 		if(['cc/cr/01', 'cc/cr/02'].indexOf(err) == -1){
@@ -65,38 +63,22 @@ clickToAddress.prototype.search = function(searchText, id, sequence){
 
 	// Set up the URL
 	var url = this.baseURL + 'find';
-
-	// Create new XMLHttpRequest
-	var request = new XMLHttpRequest();
-	request.open('POST', url, true);
-	request.setRequestHeader('Content-Type', 'application/json');
-	request.setRequestHeader('Accept', 'application/json');
-	// Wait for change and then either JSON parse response text or throw exception for HTTP error
-	request.onreadystatechange = function() {
-		if (this.readyState !== 4){
-			return;
-		}
-		if (this.status >= 200 && this.status < 400){
-			if(this.status == 200){
-				var data = '';
-				try{
-					data = JSON.parse(this.responseText);
-					if(that.searchStatus.lastResponseId <= sequence){
-						successFunction(that, data);
-					}
-				}
-				catch(err){
-					that.error('JS502');
-				}
+	this.apiRequest('find', parameters, function(data){
+		if(that.searchStatus.lastResponseId <= sequence){
+			that.setProgressBar(1);
+			that.clear();
+			that.hideErrors();
+			// return data
+			that.searchResults = data;
+			that.showResults();
+			if(!that.focused){
+				that.activeInput.focus();
 			}
-		} else {
-			that.handleApiError(this);
+			that.searchStatus.lastResponseId = sequence || 0;
+			// store in cache
+			that.cacheStore(parameters, data, sequence);
 		}
-	};
-	// Send request
-	request.send(JSON.stringify(parameters));
-	// Nullify request object
-	request = null;
+	});
 };
 clickToAddress.prototype.getAddressDetails = function(id){
 	'use strict';
@@ -117,18 +99,13 @@ clickToAddress.prototype.getAddressDetails = function(id){
 		parameters.coords = this.coords;
 	}
 
-	var successFunction = function(that, data){
-		that.fillData(data);
-		that.hideErrors();
-		that.cleanHistory();
-
-		that.cacheStore(parameters, data);
-	};
-
 	// first check cache
 	try{
 		var data = this.cacheRetrieve(parameters);
-		successFunction(that, data);
+		that.fillData(data);
+		that.hideErrors();
+		that.cleanHistory();
+		that.cacheStore(parameters, data);
 		return;
 	} catch (err) {
 		if(['cc/cr/01', 'cc/cr/02'].indexOf(err) == -1){
@@ -138,35 +115,21 @@ clickToAddress.prototype.getAddressDetails = function(id){
 
 	// Set up the URL
 	var url = this.baseURL + 'retrieve';
-
-	// Create new XMLHttpRequest
-	var request = new XMLHttpRequest();
-	request.open('POST', url, true);
-	request.setRequestHeader('Content-Type', 'application/json');
-	request.setRequestHeader('Accept', 'application/json');
-	// Wait for change and then either JSON parse response text or throw exception for HTTP error
-	request.onreadystatechange = function() {
-		if (this.readyState === 4){
-			if (this.status >= 200 && this.status < 400){
-				try{
-					var data = JSON.parse(this.responseText);
-					successFunction(that, data);
-				} catch(e){
-					that.error('JS503');
-				}
-			} else {
-				that.handleApiError(this);
-			}
+	this.apiRequest('retrieve', parameters, function(data){
+		try{
+			that.fillData(data);
+			that.hideErrors();
+			that.cleanHistory();
+			that.cacheStore(parameters, data);
+		} catch(e){
+			that.error('JS503');
 		}
-	};
-	// Send request
-	request.send(JSON.stringify(parameters));
-	// Nullify request object
-	request = null;
+	});
 };
 
 clickToAddress.prototype.getAvailableCountries = function(success_function){
 	'use strict';
+	var that = this;
 	var parameters = {
 		key: this.key,
 		fingerprint: this.fingerprint,
@@ -174,8 +137,53 @@ clickToAddress.prototype.getAvailableCountries = function(success_function){
 		integration: this.tag,
 		language: this.countryLanguage
 	};
+	this.apiRequest('countries', parameters, function(data){
+		try{
+			that.serviceReady = 1;
+			that.validCountries = data.countries;
+			that.ipLocation = data.ip_location;
+			that.hideErrors();
+			try{
+				success_function();
+			} catch(e){
+				that.error('JS515');
+			}
+		} catch(e){
+			that.error('JS505');
+		}
+	});
+
+};
+
+clickToAddress.prototype.handleApiError = function(ajax){
+	'use strict';
+	if([401, 402].indexOf(ajax.status) != -1){
+		this.serviceReady = -1;
+		this.error('API401');
+		return;
+	}
+	var data = {};
+	try{
+		data = JSON.parse(ajax.responseText);
+	}
+	catch(e){
+		data = {};
+	}
+	if( typeof data.error != 'undefined' && typeof data.error.status == "string" ){
+		this.error('API500','API error: ['+data.error.status+']'+data.error.message);
+	} else {
+		this.error('API500');
+	}
+};
+
+clickToAddress.prototype.apiRequest = function(action, parameters, callback){
 	// Set up the URL
-	var url = this.baseURL + 'countries';
+	var url = this.baseURL + action;
+
+	var keys = Object.keys(this.customParameters);
+	for(var i=0; i<keys.length; i++){
+		parameters[keys[i]] = this.customParameters[keys[i]];
+	}
 
 	// Create new XMLHttpRequest
 	var request = new XMLHttpRequest();
@@ -192,14 +200,10 @@ clickToAddress.prototype.getAvailableCountries = function(success_function){
 			}
 			if (this.status >= 200 && this.status < 400){
 				try{
-					that.serviceReady = 1;
-					var respJson = JSON.parse(this.responseText);
-					that.validCountries = respJson.countries;
-					that.ipLocation = respJson.ip_location;
-					that.hideErrors();
-					success_function();
+					var data = JSON.parse(this.responseText);
+					callback(data);
 				} catch(e){
-					that.error('JS505');
+					that.error('JS506');
 				}
 			} else {
 				that.handleApiError(this);
@@ -208,30 +212,13 @@ clickToAddress.prototype.getAvailableCountries = function(success_function){
 	};
 	// Send request
 	request.send(JSON.stringify(parameters));
-	// set timeout
+	// Set timeout
 	var xmlHttpTimeout = setTimeout(function(){
 		if(request !== null && request.readyState !== 4){
 			request.abort();
 			that.error('JS501');
 		}
 	},10000);
-};
-
-clickToAddress.prototype.handleApiError = function(ajax){
-	'use strict';
-	if([401, 402].indexOf(ajax.status) != -1){
-		this.serviceReady = -1;
-	}
-	var data = {};
-	try{
-		data = JSON.parse(ajax.responseText);
-	}
-	catch(e){
-		data = {};
-	}
-	if( typeof data.error != 'undefined' && typeof data.error.status == "string" ){
-		this.error(data.error.status, data.error.message);
-	} else {
-		this.error('JS500');
-	}
+	// Nullify request object
+	request = null;
 };
