@@ -1,3 +1,5 @@
+clickToAddress.prototype.tools = {};
+
 function ccEvent(target, event_to_react, function_to_call){
 	target.addEventListener(event_to_react,function_to_call);
 }
@@ -156,3 +158,31 @@ function getCountryCode(c2a, text, matchBy){
 	}
 	return false;
 }
+
+clickToAddress.prototype.tools.addClass = function(elem, value){
+	var classes = elem.className.split(" ");
+	if(classes.indexOf(value) == -1){
+		classes.push(value);
+	}
+	elem.className = classes.join(" ");
+};
+
+clickToAddress.prototype.tools.removeClass = function(elem, value){
+	var classes = elem.className.split(" ");
+	for(var i=0; i<classes.length; i++){
+		if(classes[i] == value){
+			classes.splice(i,1);
+			i--;
+		}
+	}
+	elem.className = classes.join(" ");
+};
+clickToAddress.prototype.tools.hasClass = function(elem, value){
+	var classes = elem.className.split(" ");
+	for(var i=0; i<classes.length; i++){
+		if(classes[i] == value){
+			return true;
+		}
+	}
+	return false;
+};

@@ -17,6 +17,10 @@ clickToAddress.prototype.info = function(state, count){
 			infoBar.className += ' infoActive infoWarning';
 			infoBar.innerHTML = this.texts.no_results;
 			break;
+		case 'error':
+			infoBar.className += ' infoActive infoWarning';
+			infoBar.innerHTML = this.texts.generic_error;
+			break;
 		default:
 			infoBar.className = 'infoBar';
 			infoBar.innerHTML = '';

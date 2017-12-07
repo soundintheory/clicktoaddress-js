@@ -135,9 +135,13 @@ clickToAddress.prototype.setHistoryStep = function(){
 	var logo = this.searchObj.getElementsByClassName('c2a_logo');
 	if(logo.length){
 		if(logo_visible == 2){
-			logo[0].className = 'c2a_logo';
+			this.tools.removeClass(logo[0],'hidden');
+			this.tools.removeClass(logo[0],'tools_in_use');
+			//logo[0].className = 'c2a_logo';
 		} else {
-			logo[0].className = 'c2a_logo hidden';
+			this.tools.addClass(logo[0],'hidden');
+			this.tools.addClass(logo[0],'tools_in_use');
+			//logo[0].className = 'c2a_logo hidden';
 		}
 	}
 };

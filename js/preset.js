@@ -8,8 +8,9 @@ clickToAddress.prototype.setupText = function(textCfg){
 		default_placeholder: 'Start with post/zip code or street',
 		country_placeholder: 'Type here to search for a country',
 		country_button: 'Change Country',
-		generic_error: 'An error occured. Please enter your address manually',
-		no_results: 'No results found'
+		generic_error: 'Service unavailable.</br>Please enter your address manually.',
+		no_results: 'No results found',
+		more: '({{value}} more)' // {{value}} marks the place for the number of further results
 		//geocode: 'Your search results are prioritised based on your location.',
 	};
 	if(typeof textCfg != 'undefined'){
@@ -55,6 +56,7 @@ clickToAddress.prototype.preset = function(config){
 	// *
 	this.jsVersion = '@@version';
 	this.serviceReady = 0;
+	this.debug = false;
 	// set active country
 	this.activeCountry = '';
 	// is the mouse currently over the dropdown
@@ -100,6 +102,8 @@ clickToAddress.prototype.preset = function(config){
 	this.lastSearch = '';
 	this.funcStore = {};
 
+	this.transl = null;
+
 	this.lastSearchCompanyValue = '';
 
 	// *
@@ -132,6 +136,15 @@ clickToAddress.prototype.preset = function(config){
 		ambient: 'light',
 		accent: 'default'
 	});
+	if(['light','dark','custom'].indexOf(this.style.ambient) == -1){
+		this.style.ambient = 'light';
+	}
+	if(['default','red','pink','purple','deepPurple','indigo','blue','lightBlue',
+		'cyan','teal','green','lightGreen','lime','yellow','amber','orange',
+		'deepOrange','brown','grey','blueGrey','custom'
+	].indexOf(this.style.accent) == -1){
+		this.style.accent = 'default';
+	}
 	this.setCfg(config, 'domMode', 'name');
 
 	this.setCfg(config, 'placeholders', true);
@@ -144,9 +157,21 @@ clickToAddress.prototype.preset = function(config){
 	// if there's only one country enabled, by default disable the country selector
 	if(this.enabledCountries.length === 1){
 		this.setCfg(config, 'countrySelector', false);
+		this.setCfg(config, 'countrySelectorOption', 'disabled');
 	} else {
 		this.setCfg(config, 'countrySelector', true);
+		this.setCfg(config, 'countrySelectorOption', 'enabled');
 	}
+	if(typeof config.countrySelectorOption == 'undefined' && typeof config.countrySelector != 'undefined'){
+		if(this.countrySelector){
+			this.countrySelectorOption = 'enabled';
+		} else {
+			this.countrySelectorOption = 'disabled';
+		}
+	}
+
+
+
 	this.setCfg(config, 'showLogo', true);
 	this.setCfg(config, 'getIpLocation', true);
 	this.setCfg(config, 'accessTokenOverride', {});
@@ -157,9 +182,11 @@ clickToAddress.prototype.preset = function(config){
 	this.setCfg(config, 'cssPath', 'https://cc-cdn.com/generic/styles/v1/cc_c2a.min.css');
 
 	this.setCfg(config, 'disableAutoSearch', false); // attach supported
+	this.setCfg(config, 'transliterate', false);
+	this.setCfg(config, 'debug', false);
+	//this.setCfg(config, 'restrictFilters', false);
 
 	this.setCfg(config, 'customParameters', {});
 
 	this.setFingerPrint();
 };
-var cc_debug = false;
