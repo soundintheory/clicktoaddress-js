@@ -179,7 +179,7 @@ clickToAddress.prototype.preset = function(config){
 	this.setCfg(config, 'countryLanguage','en');
 	this.setCfg(config, 'countryMatchWith','iso_3');
 	this.setCfg(config, 'tag', '');
-	this.setCfg(config, 'cssPath', 'https://cc-cdn.com/generic/styles/v1.1.2/cc_c2a.min.css');
+	this.setCfg(config, 'cssPath', 'https://cc-cdn.com/generic/styles/v1/cc_c2a.min.css');
 
 	this.setCfg(config, 'disableAutoSearch', false); // attach supported
 	this.setCfg(config, 'transliterate', false);
