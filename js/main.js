@@ -399,7 +399,7 @@ clickToAddress.prototype.showResults = function(full){
 	for(var i=0; i<listElements.length && i < this.scrollLimit; i++){
 
 		// add parts
-		var row = JSON.parse(JSON.stringify(this.searchResults.results[i]));
+		var row = this.searchResults.results[i];
 		var hover_label = row.labels.join(', ');
 		if(that.transliterate && typeof that.transl === "function"){
 			for(var j=0; j<row.labels.length; j++){
@@ -456,7 +456,7 @@ clickToAddress.prototype.showResultsExtra = function(){
 	var that = this;
 	for(var i=currentPosition; i<listElements.length; i++){
 		// add parts
-		var row = JSON.parse(JSON.stringify(this.searchResults.results[i]));
+		var row = this.searchResults.results[i];
 		var hover_label = row.labels.join(', ');
 		if(that.transliterate && typeof that.transl === "function"){
 			for(var j=0; j<row.labels.length; j++){
