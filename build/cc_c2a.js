@@ -5,7 +5,7 @@
  * @link        https://craftyclicks.co.uk
  * @copyright   Copyright (c) 2016, Crafty Clicks Limited
  * @license     Licensed under the terms of the MIT license.
- * @version     1.1.10
+ * @version     1.1.11
  */
 
 clickToAddress.prototype.search = function(searchText, id, sequence){
@@ -47,21 +47,6 @@ clickToAddress.prototype.search = function(searchText, id, sequence){
 		parameters.coords.lat = this.coords.latitude;
 		parameters.coords.lng = this.coords.longitude;
 	}
-	// filter override
-	/*
-	if(this.restrictFilters !== false){
-		var filters = parameters.id.split("|");
-		var filter_keys = Object.keys(this.restrictFilters);
-		for(var i=0; i<filter_keys.length; i++){
-			var id = parseInt(filter_keys[i]);
-			if([0,1,2,3].indexOf(id) !== -1){
-				filters[id] = this.restrictFilters[id];
-			}
-		}
-		parameters.id = filters.join('|');
-	}
-	*/
-
 
 	// first check cache
 	try{
@@ -998,20 +983,24 @@ clickToAddress.prototype.showResults = function(full){
 	this.resultList.scrollTop = 0;
 	var that = this;
 	for(var i=0; i<listElements.length && i < this.scrollLimit; i++){
-
 		// add parts
-		var row = JSON.parse(JSON.stringify(this.searchResults.results[i]));
+		var row = this.searchResults.results[i];
+
+		var labels = [];
 		var hover_label = row.labels.join(', ');
-		if(that.transliterate && typeof that.transl === "function"){
-			for(var j=0; j<row.labels.length; j++){
-				row.labels[j] = that.transl(row.labels[j]);
+
+		for(var j=0; j<row.labels.length; j++){
+			if(that.transliterate && typeof that.transl === "function"){
+				labels.push(that.transl(row.labels[j]));
+			} else {
+				labels.push(row.labels[j]);
 			}
 		}
 		var content = '<div>';
-		if(typeof row.labels[0] == 'string' && row.labels[0] !== '')
-			content += '<span>'+row.labels[0]+'</span>';
-		if(typeof row.labels[1] == 'string' && row.labels[1] !== '')
-			content += '<span class="light">'+row.labels[1]+'</span>';
+		if(typeof labels[0] == 'string' && labels[0] !== '')
+			content += '<span>'+labels[0]+'</span>';
+		if(typeof labels[1] == 'string' && labels[1] !== '')
+			content += '<span class="light">'+labels[1]+'</span>';
 		if(typeof row.count == 'number' && row.count > 1)
 			content += '<span class="light">'+that.texts.more.replace("{{value}}",row.count)+'</span>';
 		content += '</div>';
@@ -1057,18 +1046,23 @@ clickToAddress.prototype.showResultsExtra = function(){
 	var that = this;
 	for(var i=currentPosition; i<listElements.length; i++){
 		// add parts
-		var row = JSON.parse(JSON.stringify(this.searchResults.results[i]));
+		var row = this.searchResults.results[i];
+
+		var labels = [];
 		var hover_label = row.labels.join(', ');
-		if(that.transliterate && typeof that.transl === "function"){
-			for(var j=0; j<row.labels.length; j++){
-				row.labels[j] = that.transl(row.labels[j]);
+
+		for(var j=0; j<row.labels.length; j++){
+			if(that.transliterate && typeof that.transl === "function"){
+				labels.push(that.transl(row.labels[j]));
+			} else {
+				labels.push(row.labels[j]);
 			}
 		}
 		var content = '<div>';
-		if(typeof row.labels[0] == 'string' && row.labels[0] !== '')
-			content += '<span>'+row.labels[0]+'</span>';
-		if(typeof row.labels[1] == 'string' && row.labels[1] !== '')
-			content += '<span class="light">'+row.labels[1]+'</span>';
+		if(typeof labels[0] == 'string' && labels[0] !== '')
+			content += '<span>'+labels[0]+'</span>';
+		if(typeof labels[1] == 'string' && labels[1] !== '')
+			content += '<span class="light">'+labels[1]+'</span>';
 		if(typeof row.count == 'number' && row.count > 1)
 			content += '<span class="light">('+row.count+' more)</span>';
 		content += '</div>';
@@ -1702,7 +1696,7 @@ clickToAddress.prototype.preset = function(config){
 	// * MAIN OBJECTS
 	// * These objects are store internal statuses. Do not modify any variable here.
 	// *
-	this.jsVersion = '1.1.10';
+	this.jsVersion = '1.1.11';
 	this.serviceReady = 0;
 	this.debug = false;
 	// set active country

@@ -397,20 +397,24 @@ clickToAddress.prototype.showResults = function(full){
 	this.resultList.scrollTop = 0;
 	var that = this;
 	for(var i=0; i<listElements.length && i < this.scrollLimit; i++){
-
 		// add parts
 		var row = this.searchResults.results[i];
+
+		var labels = [];
 		var hover_label = row.labels.join(', ');
-		if(that.transliterate && typeof that.transl === "function"){
-			for(var j=0; j<row.labels.length; j++){
-				row.labels[j] = that.transl(row.labels[j]);
+
+		for(var j=0; j<row.labels.length; j++){
+			if(that.transliterate && typeof that.transl === "function"){
+				labels.push(that.transl(row.labels[j]));
+			} else {
+				labels.push(row.labels[j]);
 			}
 		}
 		var content = '<div>';
-		if(typeof row.labels[0] == 'string' && row.labels[0] !== '')
-			content += '<span>'+row.labels[0]+'</span>';
-		if(typeof row.labels[1] == 'string' && row.labels[1] !== '')
-			content += '<span class="light">'+row.labels[1]+'</span>';
+		if(typeof labels[0] == 'string' && labels[0] !== '')
+			content += '<span>'+labels[0]+'</span>';
+		if(typeof labels[1] == 'string' && labels[1] !== '')
+			content += '<span class="light">'+labels[1]+'</span>';
 		if(typeof row.count == 'number' && row.count > 1)
 			content += '<span class="light">'+that.texts.more.replace("{{value}}",row.count)+'</span>';
 		content += '</div>';
@@ -457,17 +461,22 @@ clickToAddress.prototype.showResultsExtra = function(){
 	for(var i=currentPosition; i<listElements.length; i++){
 		// add parts
 		var row = this.searchResults.results[i];
+
+		var labels = [];
 		var hover_label = row.labels.join(', ');
-		if(that.transliterate && typeof that.transl === "function"){
-			for(var j=0; j<row.labels.length; j++){
-				row.labels[j] = that.transl(row.labels[j]);
+
+		for(var j=0; j<row.labels.length; j++){
+			if(that.transliterate && typeof that.transl === "function"){
+				labels.push(that.transl(row.labels[j]));
+			} else {
+				labels.push(row.labels[j]);
 			}
 		}
 		var content = '<div>';
-		if(typeof row.labels[0] == 'string' && row.labels[0] !== '')
-			content += '<span>'+row.labels[0]+'</span>';
-		if(typeof row.labels[1] == 'string' && row.labels[1] !== '')
-			content += '<span class="light">'+row.labels[1]+'</span>';
+		if(typeof labels[0] == 'string' && labels[0] !== '')
+			content += '<span>'+labels[0]+'</span>';
+		if(typeof labels[1] == 'string' && labels[1] !== '')
+			content += '<span class="light">'+labels[1]+'</span>';
 		if(typeof row.count == 'number' && row.count > 1)
 			content += '<span class="light">('+row.count+' more)</span>';
 		content += '</div>';
