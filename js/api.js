@@ -102,7 +102,7 @@ clickToAddress.prototype.getAddressDetails = function(id){
 	// first check cache
 	try{
 		var data = this.cacheRetrieve(parameters);
-		that.fillData(data);
+		that.fillData(data.result);
 		that.hideErrors();
 		that.cleanHistory();
 		that.cacheStore(parameters, data);
@@ -117,7 +117,7 @@ clickToAddress.prototype.getAddressDetails = function(id){
 	var url = this.baseURL + 'retrieve';
 	this.apiRequest('retrieve', parameters, function(data){
 		try{
-			that.fillData(data);
+			that.fillData(data.result);
 			that.hideErrors();
 			that.cleanHistory();
 			that.cacheStore(parameters, data);

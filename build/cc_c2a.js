@@ -112,7 +112,7 @@ clickToAddress.prototype.getAddressDetails = function(id){
 	// first check cache
 	try{
 		var data = this.cacheRetrieve(parameters);
-		that.fillData(data);
+		that.fillData(data.result);
 		that.hideErrors();
 		that.cleanHistory();
 		that.cacheStore(parameters, data);
@@ -127,7 +127,7 @@ clickToAddress.prototype.getAddressDetails = function(id){
 	var url = this.baseURL + 'retrieve';
 	this.apiRequest('retrieve', parameters, function(data){
 		try{
-			that.fillData(data);
+			that.fillData(data.result);
 			that.hideErrors();
 			that.cleanHistory();
 			that.cacheStore(parameters, data);
@@ -700,8 +700,15 @@ function clickToAddress(config){
 clickToAddress.prototype.fillData = function(addressDataResult){
 	'use strict';
 	var addressData = null;
+	/* to ensure we don't modify the original returned data,
+	 * we preform a deep-copy here, otherwise it would create issues while toggling transl
+	 */
 	if(this.transliterate && typeof this.transl === "function"){
-		addressData = JSON.parse(this.transl(JSON.stringify(addressDataResult)));
+		var resultKeys = Object.keys(addressDataResult);
+		addressData = {};
+		for(var k=0; k<resultKeys.length; k++){
+			addressData[resultKeys[k]] = transl(addressDataResult[resultKeys[k]]);
+		}
 	} else {
 		addressData = addressDataResult;
 	}
@@ -728,24 +735,24 @@ clickToAddress.prototype.fillData = function(addressDataResult){
 	if(typeof this.activeDom.line_1 != 'undefined'){
 		var line_3 = [];
 
-		if(addressData.result.line_1 === '' && addressData.result.company_name !== ''){
-			addressData.result.line_1 = addressData.result.company_name;
+		if(addressData.line_1 === '' && addressData.company_name !== ''){
+			addressData.line_1 = addressData.company_name;
 		}
 
-		this.activeDom.line_1.value = addressData.result.line_1;
+		this.activeDom.line_1.value = addressData.line_1;
 		if(typeof this.activeDom.line_2 != 'undefined'){
-			this.activeDom.line_2.value = addressData.result.line_2;
+			this.activeDom.line_2.value = addressData.line_2;
 		} else {
-			if(addressData.result.line_2 !== ''){
-				line_3.push( addressData.result.line_2 );
+			if(addressData.line_2 !== ''){
+				line_3.push( addressData.line_2 );
 			}
 		}
-		if(addressData.result.company_name !== ''){
+		if(addressData.company_name !== ''){
 			if(typeof this.activeDom.company != 'undefined'){
-				this.activeDom.company.value = addressData.result.company_name;
-				this.lastSearchCompanyValue = addressData.result.company_name;
+				this.activeDom.company.value = addressData.company_name;
+				this.lastSearchCompanyValue = addressData.company_name;
 			} else {
-				this.activeDom.line_1.value = addressData.result.company_name + ', ' + this.activeDom.line_1.value;
+				this.activeDom.line_1.value = addressData.company_name + ', ' + this.activeDom.line_1.value;
 			}
 		} else {
 			if(typeof this.activeDom.company != 'undefined'){
@@ -757,37 +764,37 @@ clickToAddress.prototype.fillData = function(addressDataResult){
 		}
 
 		if(typeof this.activeDom.postcode != 'undefined'){
-			this.activeDom.postcode.value = addressData.result.postal_code;
+			this.activeDom.postcode.value = addressData.postal_code;
 		} else {
-			line_3.push(addressData.result.postal_code);
+			line_3.push(addressData.postal_code);
 		}
 
 		if(typeof this.activeDom.town != 'undefined'){
-			if(addressData.result.locality !== ''){
-				this.activeDom.town.value = addressData.result.locality;
+			if(addressData.locality !== ''){
+				this.activeDom.town.value = addressData.locality;
 			} else {
-				this.activeDom.town.value = addressData.result.dependent_locality;
+				this.activeDom.town.value = addressData.dependent_locality;
 			}
 		} else {
-			if(addressData.result.locality !== ''){
-				line_3.push(addressData.result.locality);
+			if(addressData.locality !== ''){
+				line_3.push(addressData.locality);
 			} else {
-				line_3.push(addressData.result.dependent_locality);
+				line_3.push(addressData.dependent_locality);
 			}
 		}
 
-		if(addressData.result.province_code !== '' || addressData.result.province_name !== ''){
+		if(addressData.province_code !== '' || addressData.province_name !== ''){
 			var province_set = {
-				preferred: addressData.result.province,
-				code: addressData.result.province_code,
-				name: addressData.result.province_name
+				preferred: addressData.province,
+				code: addressData.province_code,
+				name: addressData.province_name
 			};
 			if(typeof this.getCfg('onSetCounty') == 'function'){
 				this.getCfg('onSetCounty')(this, this.activeDom, province_set);
 			} else if(typeof this.activeDom.county != 'undefined'){
 				this.setCounty(this.activeDom.county,province_set);
 			}/* else {
-				line_3.push( addressData.result.province_name );
+				line_3.push( addressData.province_name );
 			}*/
 		}
 
@@ -802,8 +809,8 @@ clickToAddress.prototype.fillData = function(addressDataResult){
 	}
 	if(typeof this.getCfg('onResultSelected') == 'function'){
 		try{
-			addressData.result.country = this.validCountries[this.activeCountryId];
-			this.getCfg('onResultSelected')(this, this.activeDom, addressData.result);
+			addressData.country = this.validCountries[this.activeCountryId];
+			this.getCfg('onResultSelected')(this, this.activeDom, addressData);
 		} catch(e){
 			this.error('JS504');
 		}
@@ -2024,9 +2031,9 @@ clickToAddress.prototype.tools.hasClass = function(elem, value){
 
 clickToAddress.prototype.addTransl = function(){
 	var that = this;
-	var transl_url = 'https://cc-cdn.com/utils/transl/v1.6.2/transliteration.min.js';
 	try {
 		if("function" == typeof define && define.amd){
+			var transl_url = 'https://cc-cdn.com/utils/transl/v1.6.2/transliteration.min';
 			requirejs.config({
 				paths: {
 					'transliterate': [transl_url]
@@ -2036,6 +2043,7 @@ clickToAddress.prototype.addTransl = function(){
 				that.transl = transl;
 			});
 		} else {
+			var transl_url = 'https://cc-cdn.com/utils/transl/v1.6.2/transliteration.min.js';
 			var jsId = 'crafty_transliterate';
 			if(document.getElementById('crafty_transliterate') === null){
 				if (!document.getElementById(jsId))

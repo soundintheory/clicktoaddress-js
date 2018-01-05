@@ -1,8 +1,8 @@
 clickToAddress.prototype.addTransl = function(){
 	var that = this;
-	var transl_url = 'https://cc-cdn.com/utils/transl/v1.6.2/transliteration.min.js';
 	try {
 		if("function" == typeof define && define.amd){
+			var transl_url = 'https://cc-cdn.com/utils/transl/v1.6.2/transliteration.min';
 			requirejs.config({
 				paths: {
 					'transliterate': [transl_url]
@@ -12,6 +12,7 @@ clickToAddress.prototype.addTransl = function(){
 				that.transl = transl;
 			});
 		} else {
+			var transl_url = 'https://cc-cdn.com/utils/transl/v1.6.2/transliteration.min.js';
 			var jsId = 'crafty_transliterate';
 			if(document.getElementById('crafty_transliterate') === null){
 				if (!document.getElementById(jsId))
