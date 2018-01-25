@@ -5,7 +5,7 @@
  * @link        https://craftyclicks.co.uk
  * @copyright   Copyright (c) 2016, Crafty Clicks Limited
  * @license     Licensed under the terms of the MIT license.
- * @version     1.1.11
+ * @version     1.1.12
  */
 
 clickToAddress.prototype.search = function(searchText, id, sequence){
@@ -669,7 +669,7 @@ function clickToAddress(config){
 	ccEvent(that.resultList, 'scroll', function(){
 		var scrollTop = parseInt(this.scrollTop);
 		var innerHeight = parseInt(window.getComputedStyle(this, null).getPropertyValue("height"));
-		if(that.searchStatus.inCountryMode != 1 && parseInt(this.scrollHeight) !== 0 && scrollTop + innerHeight >= parseInt(this.scrollHeight)){
+		if(that.searchStatus.inCountryMode != 1 && parseInt(this.scrollHeight) !== 0 && scrollTop + innerHeight >= (parseInt(this.scrollHeight) * 0.8)){
 			that.showResultsExtra();
 		}
 	});
@@ -1703,7 +1703,7 @@ clickToAddress.prototype.preset = function(config){
 	// * MAIN OBJECTS
 	// * These objects are store internal statuses. Do not modify any variable here.
 	// *
-	this.jsVersion = '1.1.11';
+	this.jsVersion = '1.1.12';
 	this.serviceReady = 0;
 	this.debug = false;
 	// set active country
