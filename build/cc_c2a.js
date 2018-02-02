@@ -5,7 +5,7 @@
  * @link        https://craftyclicks.co.uk
  * @copyright   Copyright (c) 2016, Crafty Clicks Limited
  * @license     Licensed under the terms of the MIT license.
- * @version     1.1.10
+ * @version     1.1.12
  */
 
 clickToAddress.prototype.search = function(searchText, id, sequence){
@@ -47,21 +47,6 @@ clickToAddress.prototype.search = function(searchText, id, sequence){
 		parameters.coords.lat = this.coords.latitude;
 		parameters.coords.lng = this.coords.longitude;
 	}
-	// filter override
-	/*
-	if(this.restrictFilters !== false){
-		var filters = parameters.id.split("|");
-		var filter_keys = Object.keys(this.restrictFilters);
-		for(var i=0; i<filter_keys.length; i++){
-			var id = parseInt(filter_keys[i]);
-			if([0,1,2,3].indexOf(id) !== -1){
-				filters[id] = this.restrictFilters[id];
-			}
-		}
-		parameters.id = filters.join('|');
-	}
-	*/
-
 
 	// first check cache
 	try{
@@ -127,7 +112,7 @@ clickToAddress.prototype.getAddressDetails = function(id){
 	// first check cache
 	try{
 		var data = this.cacheRetrieve(parameters);
-		that.fillData(data);
+		that.fillData(data.result);
 		that.hideErrors();
 		that.cleanHistory();
 		that.cacheStore(parameters, data);
@@ -142,7 +127,7 @@ clickToAddress.prototype.getAddressDetails = function(id){
 	var url = this.baseURL + 'retrieve';
 	this.apiRequest('retrieve', parameters, function(data){
 		try{
-			that.fillData(data);
+			that.fillData(data.result);
 			that.hideErrors();
 			that.cleanHistory();
 			that.cacheStore(parameters, data);
@@ -684,7 +669,7 @@ function clickToAddress(config){
 	ccEvent(that.resultList, 'scroll', function(){
 		var scrollTop = parseInt(this.scrollTop);
 		var innerHeight = parseInt(window.getComputedStyle(this, null).getPropertyValue("height"));
-		if(that.searchStatus.inCountryMode != 1 && parseInt(this.scrollHeight) !== 0 && scrollTop + innerHeight >= parseInt(this.scrollHeight)){
+		if(that.searchStatus.inCountryMode != 1 && parseInt(this.scrollHeight) !== 0 && scrollTop + innerHeight >= (parseInt(this.scrollHeight) * 0.8)){
 			that.showResultsExtra();
 		}
 	});
@@ -715,8 +700,15 @@ function clickToAddress(config){
 clickToAddress.prototype.fillData = function(addressDataResult){
 	'use strict';
 	var addressData = null;
+	/* to ensure we don't modify the original returned data,
+	 * we preform a deep-copy here, otherwise it would create issues while toggling transl
+	 */
 	if(this.transliterate && typeof this.transl === "function"){
-		addressData = JSON.parse(this.transl(JSON.stringify(addressDataResult)));
+		var resultKeys = Object.keys(addressDataResult);
+		addressData = {};
+		for(var k=0; k<resultKeys.length; k++){
+			addressData[resultKeys[k]] = transl(addressDataResult[resultKeys[k]]);
+		}
 	} else {
 		addressData = addressDataResult;
 	}
@@ -743,24 +735,24 @@ clickToAddress.prototype.fillData = function(addressDataResult){
 	if(typeof this.activeDom.line_1 != 'undefined'){
 		var line_3 = [];
 
-		if(addressData.result.line_1 === '' && addressData.result.company_name !== ''){
-			addressData.result.line_1 = addressData.result.company_name;
+		if(addressData.line_1 === '' && addressData.company_name !== ''){
+			addressData.line_1 = addressData.company_name;
 		}
 
-		this.activeDom.line_1.value = addressData.result.line_1;
+		this.activeDom.line_1.value = addressData.line_1;
 		if(typeof this.activeDom.line_2 != 'undefined'){
-			this.activeDom.line_2.value = addressData.result.line_2;
+			this.activeDom.line_2.value = addressData.line_2;
 		} else {
-			if(addressData.result.line_2 !== ''){
-				line_3.push( addressData.result.line_2 );
+			if(addressData.line_2 !== ''){
+				line_3.push( addressData.line_2 );
 			}
 		}
-		if(addressData.result.company_name !== ''){
+		if(addressData.company_name !== ''){
 			if(typeof this.activeDom.company != 'undefined'){
-				this.activeDom.company.value = addressData.result.company_name;
-				this.lastSearchCompanyValue = addressData.result.company_name;
+				this.activeDom.company.value = addressData.company_name;
+				this.lastSearchCompanyValue = addressData.company_name;
 			} else {
-				this.activeDom.line_1.value = addressData.result.company_name + ', ' + this.activeDom.line_1.value;
+				this.activeDom.line_1.value = addressData.company_name + ', ' + this.activeDom.line_1.value;
 			}
 		} else {
 			if(typeof this.activeDom.company != 'undefined'){
@@ -772,37 +764,37 @@ clickToAddress.prototype.fillData = function(addressDataResult){
 		}
 
 		if(typeof this.activeDom.postcode != 'undefined'){
-			this.activeDom.postcode.value = addressData.result.postal_code;
+			this.activeDom.postcode.value = addressData.postal_code;
 		} else {
-			line_3.push(addressData.result.postal_code);
+			line_3.push(addressData.postal_code);
 		}
 
 		if(typeof this.activeDom.town != 'undefined'){
-			if(addressData.result.locality !== ''){
-				this.activeDom.town.value = addressData.result.locality;
+			if(addressData.locality !== ''){
+				this.activeDom.town.value = addressData.locality;
 			} else {
-				this.activeDom.town.value = addressData.result.dependent_locality;
+				this.activeDom.town.value = addressData.dependent_locality;
 			}
 		} else {
-			if(addressData.result.locality !== ''){
-				line_3.push(addressData.result.locality);
+			if(addressData.locality !== ''){
+				line_3.push(addressData.locality);
 			} else {
-				line_3.push(addressData.result.dependent_locality);
+				line_3.push(addressData.dependent_locality);
 			}
 		}
 
-		if(addressData.result.province_code !== '' || addressData.result.province_name !== ''){
+		if(addressData.province_code !== '' || addressData.province_name !== ''){
 			var province_set = {
-				preferred: addressData.result.province,
-				code: addressData.result.province_code,
-				name: addressData.result.province_name
+				preferred: addressData.province,
+				code: addressData.province_code,
+				name: addressData.province_name
 			};
 			if(typeof this.getCfg('onSetCounty') == 'function'){
 				this.getCfg('onSetCounty')(this, this.activeDom, province_set);
 			} else if(typeof this.activeDom.county != 'undefined'){
 				this.setCounty(this.activeDom.county,province_set);
 			}/* else {
-				line_3.push( addressData.result.province_name );
+				line_3.push( addressData.province_name );
 			}*/
 		}
 
@@ -817,8 +809,8 @@ clickToAddress.prototype.fillData = function(addressDataResult){
 	}
 	if(typeof this.getCfg('onResultSelected') == 'function'){
 		try{
-			addressData.result.country = this.validCountries[this.activeCountryId];
-			this.getCfg('onResultSelected')(this, this.activeDom, addressData.result);
+			addressData.country = this.validCountries[this.activeCountryId];
+			this.getCfg('onResultSelected')(this, this.activeDom, addressData);
 		} catch(e){
 			this.error('JS504');
 		}
@@ -998,20 +990,24 @@ clickToAddress.prototype.showResults = function(full){
 	this.resultList.scrollTop = 0;
 	var that = this;
 	for(var i=0; i<listElements.length && i < this.scrollLimit; i++){
-
 		// add parts
-		var row = JSON.parse(JSON.stringify(this.searchResults.results[i]));
+		var row = this.searchResults.results[i];
+
+		var labels = [];
 		var hover_label = row.labels.join(', ');
-		if(that.transliterate && typeof that.transl === "function"){
-			for(var j=0; j<row.labels.length; j++){
-				row.labels[j] = that.transl(row.labels[j]);
+
+		for(var j=0; j<row.labels.length; j++){
+			if(that.transliterate && typeof that.transl === "function"){
+				labels.push(that.transl(row.labels[j]));
+			} else {
+				labels.push(row.labels[j]);
 			}
 		}
 		var content = '<div>';
-		if(typeof row.labels[0] == 'string' && row.labels[0] !== '')
-			content += '<span>'+row.labels[0]+'</span>';
-		if(typeof row.labels[1] == 'string' && row.labels[1] !== '')
-			content += '<span class="light">'+row.labels[1]+'</span>';
+		if(typeof labels[0] == 'string' && labels[0] !== '')
+			content += '<span>'+labels[0]+'</span>';
+		if(typeof labels[1] == 'string' && labels[1] !== '')
+			content += '<span class="light">'+labels[1]+'</span>';
 		if(typeof row.count == 'number' && row.count > 1)
 			content += '<span class="light">'+that.texts.more.replace("{{value}}",row.count)+'</span>';
 		content += '</div>';
@@ -1057,18 +1053,23 @@ clickToAddress.prototype.showResultsExtra = function(){
 	var that = this;
 	for(var i=currentPosition; i<listElements.length; i++){
 		// add parts
-		var row = JSON.parse(JSON.stringify(this.searchResults.results[i]));
+		var row = this.searchResults.results[i];
+
+		var labels = [];
 		var hover_label = row.labels.join(', ');
-		if(that.transliterate && typeof that.transl === "function"){
-			for(var j=0; j<row.labels.length; j++){
-				row.labels[j] = that.transl(row.labels[j]);
+
+		for(var j=0; j<row.labels.length; j++){
+			if(that.transliterate && typeof that.transl === "function"){
+				labels.push(that.transl(row.labels[j]));
+			} else {
+				labels.push(row.labels[j]);
 			}
 		}
 		var content = '<div>';
-		if(typeof row.labels[0] == 'string' && row.labels[0] !== '')
-			content += '<span>'+row.labels[0]+'</span>';
-		if(typeof row.labels[1] == 'string' && row.labels[1] !== '')
-			content += '<span class="light">'+row.labels[1]+'</span>';
+		if(typeof labels[0] == 'string' && labels[0] !== '')
+			content += '<span>'+labels[0]+'</span>';
+		if(typeof labels[1] == 'string' && labels[1] !== '')
+			content += '<span class="light">'+labels[1]+'</span>';
 		if(typeof row.count == 'number' && row.count > 1)
 			content += '<span class="light">('+row.count+' more)</span>';
 		content += '</div>';
@@ -1702,7 +1703,7 @@ clickToAddress.prototype.preset = function(config){
 	// * MAIN OBJECTS
 	// * These objects are store internal statuses. Do not modify any variable here.
 	// *
-	this.jsVersion = '1.1.10';
+	this.jsVersion = '1.1.12';
 	this.serviceReady = 0;
 	this.debug = false;
 	// set active country
@@ -2030,9 +2031,9 @@ clickToAddress.prototype.tools.hasClass = function(elem, value){
 
 clickToAddress.prototype.addTransl = function(){
 	var that = this;
-	var transl_url = 'https://cc-cdn.com/utils/transl/v1.6.2/transliteration.min.js';
 	try {
 		if("function" == typeof define && define.amd){
+			var transl_url = 'https://cc-cdn.com/utils/transl/v1.6.2/transliteration.min';
 			requirejs.config({
 				paths: {
 					'transliterate': [transl_url]
@@ -2042,6 +2043,7 @@ clickToAddress.prototype.addTransl = function(){
 				that.transl = transl;
 			});
 		} else {
+			var transl_url = 'https://cc-cdn.com/utils/transl/v1.6.2/transliteration.min.js';
 			var jsId = 'crafty_transliterate';
 			if(document.getElementById('crafty_transliterate') === null){
 				if (!document.getElementById(jsId))
