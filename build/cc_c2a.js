@@ -5,7 +5,7 @@
  * @link        https://craftyclicks.co.uk
  * @copyright   Copyright (c) 2016, Crafty Clicks Limited
  * @license     Licensed under the terms of the MIT license.
- * @version     1.1.12
+ * @version     1.1.13
  */
 
 clickToAddress.prototype.search = function(searchText, id, sequence){
@@ -707,7 +707,7 @@ clickToAddress.prototype.fillData = function(addressDataResult){
 		var resultKeys = Object.keys(addressDataResult);
 		addressData = {};
 		for(var k=0; k<resultKeys.length; k++){
-			addressData[resultKeys[k]] = transl(addressDataResult[resultKeys[k]]);
+			addressData[resultKeys[k]] = this.transl(addressDataResult[resultKeys[k]]);
 		}
 	} else {
 		addressData = addressDataResult;
@@ -1703,7 +1703,7 @@ clickToAddress.prototype.preset = function(config){
 	// * MAIN OBJECTS
 	// * These objects are store internal statuses. Do not modify any variable here.
 	// *
-	this.jsVersion = '1.1.12';
+	this.jsVersion = '1.1.13';
 	this.serviceReady = 0;
 	this.debug = false;
 	// set active country
