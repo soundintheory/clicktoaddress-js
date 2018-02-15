@@ -121,7 +121,7 @@ clickToAddress.prototype.fillData = function(addressDataResult){
 		var resultKeys = Object.keys(addressDataResult);
 		addressData = {};
 		for(var k=0; k<resultKeys.length; k++){
-			addressData[resultKeys[k]] = transl(addressDataResult[resultKeys[k]]);
+			addressData[resultKeys[k]] = this.transl(addressDataResult[resultKeys[k]]);
 		}
 	} else {
 		addressData = addressDataResult;
