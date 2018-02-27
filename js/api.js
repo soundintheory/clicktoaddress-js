@@ -122,7 +122,7 @@ clickToAddress.prototype.getAddressDetails = function(id){
 			that.cleanHistory();
 			that.cacheStore(parameters, data);
 		} catch(e){
-			that.error('JS503');
+			that.error('JS503',e);
 		}
 	});
 };
@@ -146,10 +146,10 @@ clickToAddress.prototype.getAvailableCountries = function(success_function){
 			try{
 				success_function();
 			} catch(e){
-				that.error('JS515');
+				that.error('JS515',e);
 			}
 		} catch(e){
-			that.error('JS505');
+			that.error('JS505',e);
 		}
 	});
 
@@ -203,7 +203,7 @@ clickToAddress.prototype.apiRequest = function(action, parameters, callback){
 					var data = JSON.parse(this.responseText);
 					callback(data);
 				} catch(e){
-					that.error('JS506');
+					that.error('JS506',e);
 				}
 			} else {
 				that.handleApiError(this);
