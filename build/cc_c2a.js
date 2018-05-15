@@ -5,7 +5,7 @@
  * @link        https://craftyclicks.co.uk
  * @copyright   Copyright (c) 2016, Crafty Clicks Limited
  * @license     Licensed under the terms of the MIT license.
- * @version     1.1.13
+ * @version     1.1.14
  */
 
 clickToAddress.prototype.search = function(searchText, id, sequence){
@@ -1652,7 +1652,7 @@ clickToAddress.prototype.preset = function(config){
 	// * MAIN OBJECTS
 	// * These objects are store internal statuses. Do not modify any variable here.
 	// *
-	this.jsVersion = '1.1.13';
+	this.jsVersion = '1.1.14';
 	this.serviceReady = 0;
 	this.debug = false;
 	// set active country
