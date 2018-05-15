@@ -47,22 +47,22 @@ clickToAddress.prototype.error = function(code, message){
 			level: 1
 		},
 	};
-	if(typeof message == 'undefined'){
+	console.warn('CraftyClicks Debug Error Message');
+	var c = '['+code+']';
+	if(typeof message == 'undefined' || !this.debug){
 		if(typeof errors[code] !== 'undefined'){
-			message = errors[code].default_message;
+			console.warn(c+errors[code].default_message);
 		} else {
-			message = '';
+			console.warn(c);
+		}
+	} else {
+		if(typeof message.stack != 'undefined'){
+			console.warn(c+message.stack);
+		} else {
+			console.warn(c+message);
 		}
 	}
-	console.warn('CraftyClicks Debug Error Message: ['+code+'] '+message);
 	if(errors[code].level == 1){
-		/*if(this.serviceReady !== -1){
-			this.errorObj.innerHTML = this.texts.generic_error;
-		} else {
-			this.errorObj.innerHTML = this.texts.generic_error;
-		}
-		this.errorObj.className = 'c2a_error';
-		*/
 		this.info('error');
 	}
 
@@ -104,12 +104,7 @@ clickToAddress.prototype.start_debug = function(){
 	+'}';
 	styles += ' #cc_c2a_debug .c2a_toggle.c2a_toggle_on{ background-color: #87D37C; color: white; }'
 	styles += ' #cc_c2a_debug .c2a_toggle{ cursor: pointer; }';
-
-	if (css.styleSheet) css.styleSheet.cssText = styles;
-	else css.appendChild(document.createTextNode(styles));
-
-	document.getElementsByTagName("head")[0].appendChild(css);
-
+	this.tools.__$styleInject(styles);
 
 	var cc_debug = document.createElement('DIV');
 	cc_debug.id = 'cc_c2a_debug';
@@ -120,7 +115,7 @@ clickToAddress.prototype.start_debug = function(){
 	cc_debug.innerHTML = html;
 	document.body.appendChild(cc_debug);
 	var btn1 = document.getElementById('toggl_transl');
-	ccEvent(btn1, 'click', function(){
+	this.tools.ccEvent(btn1, 'click', function(){
 		that.transliterate = !that.transliterate;
 		if(that.transliterate){
 			btn1.className = 'c2a_toggle c2a_toggle_on';

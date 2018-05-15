@@ -33,7 +33,7 @@ clickToAddress.prototype.cacheStore = function(search, obj, sequence){
 		if(typeof this.cache.finds[search.country] == 'undefined'){
 			this.cache.finds[search.country] = [];
 		}
-		var splice_pos = Math.abs(binaryIndexOf(this.cache.finds[search.country], sequence));
+		var splice_pos = Math.abs(this.tools.binaryIndexOf(this.cache.finds[search.country], sequence));
 		this.cache.finds[search.country].splice(splice_pos, 0, {
 			query: search.query,
 			id: search.id,
@@ -96,12 +96,12 @@ clickToAddress.prototype.setHistoryActions = function(){
 	var that = this;
 	var backBtn = this.searchObj.getElementsByClassName('cc-back')[0];
 	var forwardBtn = this.searchObj.getElementsByClassName('cc-forward')[0];
-	ccEvent(backBtn, 'click', function(){
+	this.tools.ccEvent(backBtn, 'click', function(){
 		if(backBtn.className == 'cc-back'){
 			that.history(0);
 		}
 	});
-	ccEvent(forwardBtn, 'click', function(){
+	this.tools.ccEvent(forwardBtn, 'click', function(){
 		if(forwardBtn.className == 'cc-forward'){
 			that.history(1);
 		}
