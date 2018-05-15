@@ -55,16 +55,16 @@ function clickToAddress(config){
 		that.setHistoryActions();
 	}
 	// apply events
-	ccEvent(that.searchObj, 'mouseover',function(){
+	this.tools.ccEvent(that.searchObj, 'mouseover',function(){
 		that.hover = true;
 	});
-	ccEvent(that.searchObj, 'mouseout',function(){
+	this.tools.ccEvent(that.searchObj, 'mouseout',function(){
 		that.hover = false;
 	});
-	ccEvent(document, 'click', function(){
+	this.tools.ccEvent(document, 'click', function(){
 		that.hide();
 	});
-	ccEvent(window, 'scroll', function(){
+	this.tools.ccEvent(window, 'scroll', function(){
 		if(that.visible && that.focused){
 			setTimeout(function(){
 				that.gfxModeTools.reposition(that, that.activeInput);
@@ -72,7 +72,7 @@ function clickToAddress(config){
 			//that.hideKeyboard();
 		}
 	});
-	ccEvent(window, 'resize', function(){
+	this.tools.ccEvent(window, 'resize', function(){
 		if(that.visible){
 			setTimeout(function(){
 				that.gfxModeTools.reposition(that, that.activeInput);
@@ -80,7 +80,7 @@ function clickToAddress(config){
 		}
 	});
 	/* TODO: SCROLL */
-	ccEvent(that.resultList, 'scroll', function(){
+	this.tools.ccEvent(that.resultList, 'scroll', function(){
 		var scrollTop = parseInt(this.scrollTop);
 		var innerHeight = parseInt(window.getComputedStyle(this, null).getPropertyValue("height"));
 		if(that.searchStatus.inCountryMode != 1 && parseInt(this.scrollHeight) !== 0 && scrollTop + innerHeight >= (parseInt(this.scrollHeight) * 0.8)){
@@ -96,6 +96,7 @@ function clickToAddress(config){
 	}
 	*/
 	that.getStyleSheet();
+	that.tools.__$styleInject('#cc_c2a ul.c2a_results li.cc-hidden{ display: none; }');
 
 	if(that.transliterate){
 		that.addTransl();
@@ -243,13 +244,13 @@ clickToAddress.prototype.setCounty = function(element, province){
 		if(options.length){
 			var found = 0;
 
-			var province_name = removeDiacritics(province.name);
-			var province_code = removeDiacritics(province.code);
+			var province_name = this.tools.removeDiacritics(province.name);
+			var province_code = this.tools.removeDiacritics(province.code);
 
 			for(var i=0; i<options.length; i++){
 
-				var option_content = removeDiacritics(options[i].innerHTML);
-				var option_value = removeDiacritics(options[i].value);
+				var option_content = this.tools.removeDiacritics(options[i].innerHTML);
+				var option_value = this.tools.removeDiacritics(options[i].value);
 				if(
 					(
 						option_content !== '' &&
@@ -277,7 +278,7 @@ clickToAddress.prototype.setCounty = function(element, province){
 				if(province_text === ''){
 					province_text = province.code;
 				}
-				var provinceMatchText = removeDiacritics(province_text);
+				var provinceMatchText = this.tools.removeDiacritics(province_text);
 				// longest common substring + most character match
 
 				var matches = {
@@ -287,7 +288,7 @@ clickToAddress.prototype.setCounty = function(element, province){
 
 				// iterate through all possible matches (longest common substring)
 				for(var i=0; i<options.length; i++){
-					var option_text = removeDiacritics(options[i].innerHTML);
+					var option_text = this.tools.removeDiacritics(options[i].innerHTML);
 					var highestRank = 0;
 
 					var rankTable = [];
@@ -363,7 +364,7 @@ clickToAddress.prototype.setCounty = function(element, province){
 						rank: 1000
 					};
 					for(var i=0; i<matches.ids.length; i++){
-						var r = characterDifferences(removeDiacritics(options[matches.ids[i]].innerHTML), provinceMatchText);
+						var r = characterDifferences(this.tools.removeDiacritics(options[matches.ids[i]].innerHTML), provinceMatchText);
 						if(r<charMatch.rank){
 							charMatch.rank = r;
 							charMatch.id = i;
@@ -389,122 +390,75 @@ clickToAddress.prototype.setCounty = function(element, province){
 		element.value = province_for_input;
 	}
 };
-clickToAddress.prototype.showResults = function(full){
+clickToAddress.prototype.showResults = function(){
 	'use strict';
-	this.scrollPosition = 0;
-	this.resetSelector();
-	this.info('clear');
-	var newHtml = '';
-	var limit = this.searchResults.results.length - (this.scrollLimit * this.scrollPosition);
-	for(var i=0; i<limit && i < this.scrollLimit; i++){
-		newHtml += '<li></li>';
-	}
-	this.resultList.innerHTML = newHtml;
-	var listElements = this.resultList.getElementsByTagName('li');
-	this.resultList.scrollTop = 0;
-	var that = this;
-	for(var i=0; i<listElements.length && i < this.scrollLimit; i++){
+	var _cs = this;
+	_cs.scrollPosition = 0;
+	_cs.resetSelector();
+	_cs.info('clear');
+	_cs.resultList.innerHTML = '';
+	for(var i=0; i<_cs.searchResults.results.length; i++){
 		// add parts
-		var row = this.searchResults.results[i];
+		var row = _cs.searchResults.results[i];
+		if(typeof row.count == 'undefined' || typeof row.id == 'undefined'){
+			throw 'server error';
+		}
 
 		var labels = [];
 		var hover_label = row.labels.join(', ');
 
 		for(var j=0; j<row.labels.length; j++){
-			if(that.transliterate && typeof that.transl === "function"){
-				labels.push(that.transl(row.labels[j]));
+			if(_cs.transliterate && typeof _cs.transl === "function"){
+				labels.push(_cs.transl(row.labels[j]));
 			} else {
 				labels.push(row.labels[j]);
 			}
 		}
 		var content = '<div>';
 		if(typeof labels[0] == 'string' && labels[0] !== '')
-			content += '<span>'+labels[0]+'</span>';
+		content += '<span>'+labels[0]+'</span>';
 		if(typeof labels[1] == 'string' && labels[1] !== '')
-			content += '<span class="light">'+labels[1]+'</span>';
+		content += '<span class="light">'+labels[1]+'</span>';
 		if(typeof row.count == 'number' && row.count > 1)
-			content += '<span class="light">'+that.texts.more.replace("{{value}}",row.count)+'</span>';
+		content += '<span class="light">'+_cs.texts.more.replace("{{value}}",row.count)+'</span>';
 		content += '</div>';
-		listElements[i].innerHTML = content;
-		listElements[i].setAttribute('title',hover_label);
 		// add attributes
-		if(typeof row.count !== 'undefined' && typeof row.id !== 'undefined'){
-			ccData(listElements[i],'id',row.id.toString());
-			ccData(listElements[i],'count',row.count.toString());
-			if(row.count != 1){
-				listElements[i].className = 'cc-filter';
-			}
-		} else {
-			throw 'server error';
+		var new_elem = document.createElement("LI");
+		new_elem.innerHTML = content;
+		_cs.tools.ccData(new_elem, 'id', row.id.toString());
+		_cs.tools.ccData(new_elem, 'count', row.count.toString());
+		new_elem.setAttribute('title',hover_label);
+		if(row.count != 1){
+			_cs.tools.addClass(new_elem, 'cc-filter');
 		}
+		if(i >= _cs.scrollLimit){
+			_cs.tools.addClass(new_elem, 'cc-hidden');
+		}
+		_cs.resultList.appendChild(new_elem);
 	}
+	_cs.resultList.scrollTop = 0;
+	var listElements = _cs.resultList.getElementsByTagName('li');
 	// add events
 	for(var i=0; i<listElements.length; i++){
-		ccEvent(listElements[i], 'click', function(){
-			that.select(this);
+		_cs.tools.ccEvent(listElements[i], 'click', function(){
+			_cs.select(this);
 		});
 	}
 
-	if(this.searchResults.results.length === 0){
-		this.info('no-results');
-		this.hasContent = false;
+	if(_cs.searchResults.results.length === 0){
+		_cs.info('no-results');
+		_cs.hasContent = false;
 	} else {
-		this.hasContent = true;
+		_cs.hasContent = true;
 	}
 
 };
 clickToAddress.prototype.showResultsExtra = function(){
 	'use strict';
-	this.scrollPosition++;
-	var currentPosition = (this.scrollLimit * this.scrollPosition);
-	var newHtml = '';
-	var limit = this.searchResults.results.length - currentPosition;
-	for(var i=0; i<limit && i < this.scrollLimit; i++){
-		newHtml += '<li></li>';
-	}
-	this.resultList.innerHTML += newHtml;
-	var listElements = this.resultList.getElementsByTagName('li');
-	var that = this;
-	for(var i=currentPosition; i<listElements.length; i++){
-		// add parts
-		var row = this.searchResults.results[i];
-
-		var labels = [];
-		var hover_label = row.labels.join(', ');
-
-		for(var j=0; j<row.labels.length; j++){
-			if(that.transliterate && typeof that.transl === "function"){
-				labels.push(that.transl(row.labels[j]));
-			} else {
-				labels.push(row.labels[j]);
-			}
-		}
-		var content = '<div>';
-		if(typeof labels[0] == 'string' && labels[0] !== '')
-			content += '<span>'+labels[0]+'</span>';
-		if(typeof labels[1] == 'string' && labels[1] !== '')
-			content += '<span class="light">'+labels[1]+'</span>';
-		if(typeof row.count == 'number' && row.count > 1)
-			content += '<span class="light">('+row.count+' more)</span>';
-		content += '</div>';
-		listElements[i].innerHTML = content;
-		listElements[i].setAttribute('title',hover_label);
-		// add attributes
-		if(typeof row.count !== 'undefined' && typeof row.id !== 'undefined'){
-			ccData(listElements[i],'id',row.id.toString());
-			ccData(listElements[i],'count',row.count.toString());
-			if(row.count != 1){
-				listElements[i].className = 'cc-filter';
-			}
-		} else {
-			throw 'server error';
-		}
-	}
-	// add events
-	for(var i=0; i<listElements.length; i++){
-		ccEvent(listElements[i], 'click', function(){
-			that.select(this);
-		});
+	var _cs = this;
+	var listElements = _cs.resultList.querySelectorAll('.cc-hidden');
+	for(var i=0; i<_cs.scrollLimit && i<listElements.length; i++){
+		_cs.tools.removeClass(listElements[i], 'cc-hidden');
 	}
 }
 
@@ -513,8 +467,8 @@ clickToAddress.prototype.select = function(li){
 	this.resetSelector();
 	this.cleanHistory();
 
-	li.id = ccData(li, 'id');
-	li.count = ccData(li, 'count');
+	li.id = this.tools.ccData(li, 'id');
+	li.count = this.tools.ccData(li, 'count');
 
 	if(li.count === '1'){
 		this.getAddressDetails(li.id);
@@ -603,7 +557,7 @@ clickToAddress.prototype.changeCountry = function(filter){
 			listElements[i].setAttribute('countryCode',row.code);
 			that.hasContent = true;
 			// add events
-			ccEvent(listElements[i], 'click', function(){
+			this.tools.ccEvent(listElements[i], 'click', function(){
 				that.selectCountry(this.getAttribute('countryCode'));
 			});
 		}
@@ -755,7 +709,7 @@ clickToAddress.prototype.setCountryChange = function(){
 	if(this.countrySelectorOption == 'enabled'){
 		var countryObj = this.searchObj.getElementsByClassName('country_btn')[0];
 		var that = this;
-		ccEvent(countryObj, 'click', function(){
+		this.tools.ccEvent(countryObj, 'click', function(){
 			if(that.searchStatus.inCountryMode === 0){
 				that.setPlaceholder(1);
 				that.changeCountry();

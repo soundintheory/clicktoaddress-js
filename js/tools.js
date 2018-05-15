@@ -1,10 +1,10 @@
 clickToAddress.prototype.tools = {};
 
-function ccEvent(target, event_to_react, function_to_call){
+clickToAddress.prototype.tools.ccEvent = function(target, event_to_react, function_to_call){
 	target.addEventListener(event_to_react,function_to_call);
 }
 
-function ccData(target, attr, value){
+clickToAddress.prototype.tools.ccData = function(target, attr, value){
 	if(typeof target === 'undefined' || typeof attr === 'undefined'){
 		return;
 	}
@@ -16,7 +16,7 @@ function ccData(target, attr, value){
 	}
 }
 
-var defaultDiacriticsRemovalMap = [
+clickToAddress.prototype.tools.defaultDiacriticsRemovalMap = [
 	{'base':'A', 'letters':/[\u0041\u24B6\uFF21\u00C0\u00C1\u00C2\u1EA6\u1EA4\u1EAA\u1EA8\u00C3\u0100\u0102\u1EB0\u1EAE\u1EB4\u1EB2\u0226\u01E0\u00C4\u01DE\u1EA2\u00C5\u01FA\u01CD\u0200\u0202\u1EA0\u1EAC\u1EB6\u1E00\u0104\u023A\u2C6F]/g},
 	{'base':'AA','letters':/[\uA732]/g},
 	{'base':'AE','letters':/[\u00C6\u01FC\u01E2]/g},
@@ -102,15 +102,15 @@ var defaultDiacriticsRemovalMap = [
 	{'base':'y','letters':/[\u0079\u24E8\uFF59\u1EF3\u00FD\u0177\u1EF9\u0233\u1E8F\u00FF\u1EF7\u1E99\u1EF5\u01B4\u024F\u1EFF]/g},
 	{'base':'z','letters':/[\u007A\u24E9\uFF5A\u017A\u1E91\u017C\u017E\u1E93\u1E95\u01B6\u0225\u0240\u2C6C\uA763]/g}
 ];
-function removeDiacritics (str) {
-	var changes = defaultDiacriticsRemovalMap;
+clickToAddress.prototype.tools.removeDiacritics = function(str) {
+	var changes = this.defaultDiacriticsRemovalMap;
 	for(var i=0; i<changes.length; i++) {
 		str = str.replace(changes[i].letters, changes[i].base);
 	}
 	return str.toLowerCase();
 }
 
-function binaryIndexOf(array, sequence) {
+clickToAddress.prototype.tools.binaryIndexOf = function(array, sequence) {
 	'use strict';
 
 	var minIndex = 0;
@@ -137,7 +137,7 @@ function binaryIndexOf(array, sequence) {
 	return ~maxIndex;
 }
 
-function getCountryCode(c2a, text, matchBy){
+clickToAddress.prototype.tools.getCountryCode = function(c2a, text, matchBy){
 	switch(matchBy){
 		case 'iso_3':
 			for(var i=0; i<c2a.validCountries.length; i++){
@@ -157,6 +157,30 @@ function getCountryCode(c2a, text, matchBy){
 			break;
 	}
 	return false;
+}
+// provide backwards compatibility
+if(typeof getCountryCode == 'undefined'){
+	var getCountryCode = function(c2a, text, matchBy){
+		switch(matchBy){
+			case 'iso_3':
+				for(var i=0; i<c2a.validCountries.length; i++){
+					var row = c2a.validCountries[i];
+					if(row.iso_3166_1_alpha_3 == text){
+						return row.code;
+					}
+				}
+				break;
+			case 'iso_2':
+				for(var i=0; i<c2a.validCountries.length; i++){
+					var row = c2a.validCountries[i];
+					if(row.iso_3166_1_alpha_2 == text){
+						return row.code;
+					}
+				}
+				break;
+		}
+		return false;
+	}
 }
 
 clickToAddress.prototype.tools.addClass = function(elem, value){
@@ -186,3 +210,15 @@ clickToAddress.prototype.tools.hasClass = function(elem, value){
 	}
 	return false;
 };
+clickToAddress.prototype.tools.__$styleInject = function(css) {
+	css = css || '';
+	var head = document.head || document.getElementsByTagName('head')[0];
+	var style = document.createElement('style');
+	style.type = 'text/css';
+	if (style.styleSheet){
+		style.styleSheet.cssText = css;
+	} else {
+		style.appendChild(document.createTextNode(css));
+	}
+	head.appendChild(style);
+}

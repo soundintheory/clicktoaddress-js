@@ -115,6 +115,13 @@ clickToAddress.prototype.attach = function(dom, cfg){
 				}
 			};
 			break;
+		case 'jQuery':
+			quickGet = function(dom, obj_name){
+				if(dom[obj_name] instanceof jQuery){
+					return dom[obj_name][0];
+				}
+			}
+			break;
 	}
 	for(var i = 0; i < objectArray.length; i++){
 		domElements[objectArray[i]] = quickGet(dom, objectArray[i]);
@@ -132,7 +139,7 @@ clickToAddress.prototype.attach = function(dom, cfg){
 	this.domLib.push(domElements);
 
 	var that = this;
-	ccEvent(target, 'keydown', function(e){
+	this.tools.ccEvent(target, 'keydown', function(e){
 		if(that.serviceReady === 0)
 			return;
 		// up down
@@ -149,7 +156,7 @@ clickToAddress.prototype.attach = function(dom, cfg){
 			e.preventDefault();
 		}
 	});
-	ccEvent(target, 'keyup', function(e){
+	this.tools.ccEvent(target, 'keyup', function(e){
 		if(that.serviceReady === 0)
 			return;
 		// escape
@@ -224,17 +231,17 @@ clickToAddress.prototype.attach = function(dom, cfg){
 			that.gfxModeTools.reposition(that, target);
 		}
 	});
-	ccEvent(target, 'focus', function(){
+	this.tools.ccEvent(target, 'focus', function(){
 		that.activeDom = that.domLib[domLibId];
 		that.onFocus(target);
 	});
-	ccEvent(target, 'blur', function(){
+	this.tools.ccEvent(target, 'blur', function(){
 		if(that.serviceReady === 0)
 			return;
 		that.focused = false;
 		that.hide();
 	});
-	ccEvent(target, 'c2a-search', function(){
+	this.tools.ccEvent(target, 'c2a-search', function(){
 		that.show();
 		if(that.searchStatus.inCountryMode == 1){
 			that.changeCountry(this.value);

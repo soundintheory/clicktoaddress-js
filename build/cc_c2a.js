@@ -5,7 +5,7 @@
  * @link        https://craftyclicks.co.uk
  * @copyright   Copyright (c) 2016, Crafty Clicks Limited
  * @license     Licensed under the terms of the MIT license.
- * @version     1.1.13
+ * @version     1.1.14
  */
 
 clickToAddress.prototype.search = function(searchText, id, sequence){
@@ -132,7 +132,7 @@ clickToAddress.prototype.getAddressDetails = function(id){
 			that.cleanHistory();
 			that.cacheStore(parameters, data);
 		} catch(e){
-			that.error('JS503');
+			that.error('JS503',e);
 		}
 	});
 };
@@ -156,10 +156,10 @@ clickToAddress.prototype.getAvailableCountries = function(success_function){
 			try{
 				success_function();
 			} catch(e){
-				that.error('JS515');
+				that.error('JS515',e);
 			}
 		} catch(e){
-			that.error('JS505');
+			that.error('JS505',e);
 		}
 	});
 
@@ -213,7 +213,7 @@ clickToAddress.prototype.apiRequest = function(action, parameters, callback){
 					var data = JSON.parse(this.responseText);
 					callback(data);
 				} catch(e){
-					that.error('JS506');
+					that.error('JS506',e);
 				}
 			} else {
 				that.handleApiError(this);
@@ -268,7 +268,7 @@ clickToAddress.prototype.cacheStore = function(search, obj, sequence){
 		if(typeof this.cache.finds[search.country] == 'undefined'){
 			this.cache.finds[search.country] = [];
 		}
-		var splice_pos = Math.abs(binaryIndexOf(this.cache.finds[search.country], sequence));
+		var splice_pos = Math.abs(this.tools.binaryIndexOf(this.cache.finds[search.country], sequence));
 		this.cache.finds[search.country].splice(splice_pos, 0, {
 			query: search.query,
 			id: search.id,
@@ -331,12 +331,12 @@ clickToAddress.prototype.setHistoryActions = function(){
 	var that = this;
 	var backBtn = this.searchObj.getElementsByClassName('cc-back')[0];
 	var forwardBtn = this.searchObj.getElementsByClassName('cc-forward')[0];
-	ccEvent(backBtn, 'click', function(){
+	this.tools.ccEvent(backBtn, 'click', function(){
 		if(backBtn.className == 'cc-back'){
 			that.history(0);
 		}
 	});
-	ccEvent(forwardBtn, 'click', function(){
+	this.tools.ccEvent(forwardBtn, 'click', function(){
 		if(forwardBtn.className == 'cc-forward'){
 			that.history(1);
 		}
@@ -457,22 +457,22 @@ clickToAddress.prototype.error = function(code, message){
 			level: 1
 		},
 	};
-	if(typeof message == 'undefined'){
+	console.warn('CraftyClicks Debug Error Message');
+	var c = '['+code+']';
+	if(typeof message == 'undefined' || !this.debug){
 		if(typeof errors[code] !== 'undefined'){
-			message = errors[code].default_message;
+			console.warn(c+errors[code].default_message);
 		} else {
-			message = '';
+			console.warn(c);
+		}
+	} else {
+		if(typeof message.stack != 'undefined'){
+			console.warn(c+message.stack);
+		} else {
+			console.warn(c+message);
 		}
 	}
-	console.warn('CraftyClicks Debug Error Message: ['+code+'] '+message);
 	if(errors[code].level == 1){
-		/*if(this.serviceReady !== -1){
-			this.errorObj.innerHTML = this.texts.generic_error;
-		} else {
-			this.errorObj.innerHTML = this.texts.generic_error;
-		}
-		this.errorObj.className = 'c2a_error';
-		*/
 		this.info('error');
 	}
 
@@ -514,12 +514,7 @@ clickToAddress.prototype.start_debug = function(){
 	+'}';
 	styles += ' #cc_c2a_debug .c2a_toggle.c2a_toggle_on{ background-color: #87D37C; color: white; }'
 	styles += ' #cc_c2a_debug .c2a_toggle{ cursor: pointer; }';
-
-	if (css.styleSheet) css.styleSheet.cssText = styles;
-	else css.appendChild(document.createTextNode(styles));
-
-	document.getElementsByTagName("head")[0].appendChild(css);
-
+	this.tools.__$styleInject(styles);
 
 	var cc_debug = document.createElement('DIV');
 	cc_debug.id = 'cc_c2a_debug';
@@ -530,7 +525,7 @@ clickToAddress.prototype.start_debug = function(){
 	cc_debug.innerHTML = html;
 	document.body.appendChild(cc_debug);
 	var btn1 = document.getElementById('toggl_transl');
-	ccEvent(btn1, 'click', function(){
+	this.tools.ccEvent(btn1, 'click', function(){
 		that.transliterate = !that.transliterate;
 		if(that.transliterate){
 			btn1.className = 'c2a_toggle c2a_toggle_on';
@@ -641,16 +636,16 @@ function clickToAddress(config){
 		that.setHistoryActions();
 	}
 	// apply events
-	ccEvent(that.searchObj, 'mouseover',function(){
+	this.tools.ccEvent(that.searchObj, 'mouseover',function(){
 		that.hover = true;
 	});
-	ccEvent(that.searchObj, 'mouseout',function(){
+	this.tools.ccEvent(that.searchObj, 'mouseout',function(){
 		that.hover = false;
 	});
-	ccEvent(document, 'click', function(){
+	this.tools.ccEvent(document, 'click', function(){
 		that.hide();
 	});
-	ccEvent(window, 'scroll', function(){
+	this.tools.ccEvent(window, 'scroll', function(){
 		if(that.visible && that.focused){
 			setTimeout(function(){
 				that.gfxModeTools.reposition(that, that.activeInput);
@@ -658,7 +653,7 @@ function clickToAddress(config){
 			//that.hideKeyboard();
 		}
 	});
-	ccEvent(window, 'resize', function(){
+	this.tools.ccEvent(window, 'resize', function(){
 		if(that.visible){
 			setTimeout(function(){
 				that.gfxModeTools.reposition(that, that.activeInput);
@@ -666,7 +661,7 @@ function clickToAddress(config){
 		}
 	});
 	/* TODO: SCROLL */
-	ccEvent(that.resultList, 'scroll', function(){
+	this.tools.ccEvent(that.resultList, 'scroll', function(){
 		var scrollTop = parseInt(this.scrollTop);
 		var innerHeight = parseInt(window.getComputedStyle(this, null).getPropertyValue("height"));
 		if(that.searchStatus.inCountryMode != 1 && parseInt(this.scrollHeight) !== 0 && scrollTop + innerHeight >= (parseInt(this.scrollHeight) * 0.8)){
@@ -682,6 +677,7 @@ function clickToAddress(config){
 	}
 	*/
 	that.getStyleSheet();
+	that.tools.__$styleInject('#cc_c2a ul.c2a_results li.cc-hidden{ display: none; }');
 
 	if(that.transliterate){
 		that.addTransl();
@@ -829,13 +825,13 @@ clickToAddress.prototype.setCounty = function(element, province){
 		if(options.length){
 			var found = 0;
 
-			var province_name = removeDiacritics(province.name);
-			var province_code = removeDiacritics(province.code);
+			var province_name = this.tools.removeDiacritics(province.name);
+			var province_code = this.tools.removeDiacritics(province.code);
 
 			for(var i=0; i<options.length; i++){
 
-				var option_content = removeDiacritics(options[i].innerHTML);
-				var option_value = removeDiacritics(options[i].value);
+				var option_content = this.tools.removeDiacritics(options[i].innerHTML);
+				var option_value = this.tools.removeDiacritics(options[i].value);
 				if(
 					(
 						option_content !== '' &&
@@ -863,7 +859,7 @@ clickToAddress.prototype.setCounty = function(element, province){
 				if(province_text === ''){
 					province_text = province.code;
 				}
-				var provinceMatchText = removeDiacritics(province_text);
+				var provinceMatchText = this.tools.removeDiacritics(province_text);
 				// longest common substring + most character match
 
 				var matches = {
@@ -873,7 +869,7 @@ clickToAddress.prototype.setCounty = function(element, province){
 
 				// iterate through all possible matches (longest common substring)
 				for(var i=0; i<options.length; i++){
-					var option_text = removeDiacritics(options[i].innerHTML);
+					var option_text = this.tools.removeDiacritics(options[i].innerHTML);
 					var highestRank = 0;
 
 					var rankTable = [];
@@ -949,7 +945,7 @@ clickToAddress.prototype.setCounty = function(element, province){
 						rank: 1000
 					};
 					for(var i=0; i<matches.ids.length; i++){
-						var r = characterDifferences(removeDiacritics(options[matches.ids[i]].innerHTML), provinceMatchText);
+						var r = characterDifferences(this.tools.removeDiacritics(options[matches.ids[i]].innerHTML), provinceMatchText);
 						if(r<charMatch.rank){
 							charMatch.rank = r;
 							charMatch.id = i;
@@ -975,122 +971,75 @@ clickToAddress.prototype.setCounty = function(element, province){
 		element.value = province_for_input;
 	}
 };
-clickToAddress.prototype.showResults = function(full){
+clickToAddress.prototype.showResults = function(){
 	'use strict';
-	this.scrollPosition = 0;
-	this.resetSelector();
-	this.info('clear');
-	var newHtml = '';
-	var limit = this.searchResults.results.length - (this.scrollLimit * this.scrollPosition);
-	for(var i=0; i<limit && i < this.scrollLimit; i++){
-		newHtml += '<li></li>';
-	}
-	this.resultList.innerHTML = newHtml;
-	var listElements = this.resultList.getElementsByTagName('li');
-	this.resultList.scrollTop = 0;
-	var that = this;
-	for(var i=0; i<listElements.length && i < this.scrollLimit; i++){
+	var _cs = this;
+	_cs.scrollPosition = 0;
+	_cs.resetSelector();
+	_cs.info('clear');
+	_cs.resultList.innerHTML = '';
+	for(var i=0; i<_cs.searchResults.results.length; i++){
 		// add parts
-		var row = this.searchResults.results[i];
+		var row = _cs.searchResults.results[i];
+		if(typeof row.count == 'undefined' || typeof row.id == 'undefined'){
+			throw 'server error';
+		}
 
 		var labels = [];
 		var hover_label = row.labels.join(', ');
 
 		for(var j=0; j<row.labels.length; j++){
-			if(that.transliterate && typeof that.transl === "function"){
-				labels.push(that.transl(row.labels[j]));
+			if(_cs.transliterate && typeof _cs.transl === "function"){
+				labels.push(_cs.transl(row.labels[j]));
 			} else {
 				labels.push(row.labels[j]);
 			}
 		}
 		var content = '<div>';
 		if(typeof labels[0] == 'string' && labels[0] !== '')
-			content += '<span>'+labels[0]+'</span>';
+		content += '<span>'+labels[0]+'</span>';
 		if(typeof labels[1] == 'string' && labels[1] !== '')
-			content += '<span class="light">'+labels[1]+'</span>';
+		content += '<span class="light">'+labels[1]+'</span>';
 		if(typeof row.count == 'number' && row.count > 1)
-			content += '<span class="light">'+that.texts.more.replace("{{value}}",row.count)+'</span>';
+		content += '<span class="light">'+_cs.texts.more.replace("{{value}}",row.count)+'</span>';
 		content += '</div>';
-		listElements[i].innerHTML = content;
-		listElements[i].setAttribute('title',hover_label);
 		// add attributes
-		if(typeof row.count !== 'undefined' && typeof row.id !== 'undefined'){
-			ccData(listElements[i],'id',row.id.toString());
-			ccData(listElements[i],'count',row.count.toString());
-			if(row.count != 1){
-				listElements[i].className = 'cc-filter';
-			}
-		} else {
-			throw 'server error';
+		var new_elem = document.createElement("LI");
+		new_elem.innerHTML = content;
+		_cs.tools.ccData(new_elem, 'id', row.id.toString());
+		_cs.tools.ccData(new_elem, 'count', row.count.toString());
+		new_elem.setAttribute('title',hover_label);
+		if(row.count != 1){
+			_cs.tools.addClass(new_elem, 'cc-filter');
 		}
+		if(i >= _cs.scrollLimit){
+			_cs.tools.addClass(new_elem, 'cc-hidden');
+		}
+		_cs.resultList.appendChild(new_elem);
 	}
+	_cs.resultList.scrollTop = 0;
+	var listElements = _cs.resultList.getElementsByTagName('li');
 	// add events
 	for(var i=0; i<listElements.length; i++){
-		ccEvent(listElements[i], 'click', function(){
-			that.select(this);
+		_cs.tools.ccEvent(listElements[i], 'click', function(){
+			_cs.select(this);
 		});
 	}
 
-	if(this.searchResults.results.length === 0){
-		this.info('no-results');
-		this.hasContent = false;
+	if(_cs.searchResults.results.length === 0){
+		_cs.info('no-results');
+		_cs.hasContent = false;
 	} else {
-		this.hasContent = true;
+		_cs.hasContent = true;
 	}
 
 };
 clickToAddress.prototype.showResultsExtra = function(){
 	'use strict';
-	this.scrollPosition++;
-	var currentPosition = (this.scrollLimit * this.scrollPosition);
-	var newHtml = '';
-	var limit = this.searchResults.results.length - currentPosition;
-	for(var i=0; i<limit && i < this.scrollLimit; i++){
-		newHtml += '<li></li>';
-	}
-	this.resultList.innerHTML += newHtml;
-	var listElements = this.resultList.getElementsByTagName('li');
-	var that = this;
-	for(var i=currentPosition; i<listElements.length; i++){
-		// add parts
-		var row = this.searchResults.results[i];
-
-		var labels = [];
-		var hover_label = row.labels.join(', ');
-
-		for(var j=0; j<row.labels.length; j++){
-			if(that.transliterate && typeof that.transl === "function"){
-				labels.push(that.transl(row.labels[j]));
-			} else {
-				labels.push(row.labels[j]);
-			}
-		}
-		var content = '<div>';
-		if(typeof labels[0] == 'string' && labels[0] !== '')
-			content += '<span>'+labels[0]+'</span>';
-		if(typeof labels[1] == 'string' && labels[1] !== '')
-			content += '<span class="light">'+labels[1]+'</span>';
-		if(typeof row.count == 'number' && row.count > 1)
-			content += '<span class="light">('+row.count+' more)</span>';
-		content += '</div>';
-		listElements[i].innerHTML = content;
-		listElements[i].setAttribute('title',hover_label);
-		// add attributes
-		if(typeof row.count !== 'undefined' && typeof row.id !== 'undefined'){
-			ccData(listElements[i],'id',row.id.toString());
-			ccData(listElements[i],'count',row.count.toString());
-			if(row.count != 1){
-				listElements[i].className = 'cc-filter';
-			}
-		} else {
-			throw 'server error';
-		}
-	}
-	// add events
-	for(var i=0; i<listElements.length; i++){
-		ccEvent(listElements[i], 'click', function(){
-			that.select(this);
-		});
+	var _cs = this;
+	var listElements = _cs.resultList.querySelectorAll('.cc-hidden');
+	for(var i=0; i<_cs.scrollLimit && i<listElements.length; i++){
+		_cs.tools.removeClass(listElements[i], 'cc-hidden');
 	}
 }
 
@@ -1099,8 +1048,8 @@ clickToAddress.prototype.select = function(li){
 	this.resetSelector();
 	this.cleanHistory();
 
-	li.id = ccData(li, 'id');
-	li.count = ccData(li, 'count');
+	li.id = this.tools.ccData(li, 'id');
+	li.count = this.tools.ccData(li, 'count');
 
 	if(li.count === '1'){
 		this.getAddressDetails(li.id);
@@ -1189,7 +1138,7 @@ clickToAddress.prototype.changeCountry = function(filter){
 			listElements[i].setAttribute('countryCode',row.code);
 			that.hasContent = true;
 			// add events
-			ccEvent(listElements[i], 'click', function(){
+			this.tools.ccEvent(listElements[i], 'click', function(){
 				that.selectCountry(this.getAttribute('countryCode'));
 			});
 		}
@@ -1341,7 +1290,7 @@ clickToAddress.prototype.setCountryChange = function(){
 	if(this.countrySelectorOption == 'enabled'){
 		var countryObj = this.searchObj.getElementsByClassName('country_btn')[0];
 		var that = this;
-		ccEvent(countryObj, 'click', function(){
+		this.tools.ccEvent(countryObj, 'click', function(){
 			if(that.searchStatus.inCountryMode === 0){
 				that.setPlaceholder(1);
 				that.changeCountry();
@@ -1703,7 +1652,7 @@ clickToAddress.prototype.preset = function(config){
 	// * MAIN OBJECTS
 	// * These objects are store internal statuses. Do not modify any variable here.
 	// *
-	this.jsVersion = '1.1.13';
+	this.jsVersion = '1.1.14';
 	this.serviceReady = 0;
 	this.debug = false;
 	// set active country
@@ -1842,11 +1791,11 @@ clickToAddress.prototype.preset = function(config){
 
 clickToAddress.prototype.tools = {};
 
-function ccEvent(target, event_to_react, function_to_call){
+clickToAddress.prototype.tools.ccEvent = function(target, event_to_react, function_to_call){
 	target.addEventListener(event_to_react,function_to_call);
 }
 
-function ccData(target, attr, value){
+clickToAddress.prototype.tools.ccData = function(target, attr, value){
 	if(typeof target === 'undefined' || typeof attr === 'undefined'){
 		return;
 	}
@@ -1858,7 +1807,7 @@ function ccData(target, attr, value){
 	}
 }
 
-var defaultDiacriticsRemovalMap = [
+clickToAddress.prototype.tools.defaultDiacriticsRemovalMap = [
 	{'base':'A', 'letters':/[\u0041\u24B6\uFF21\u00C0\u00C1\u00C2\u1EA6\u1EA4\u1EAA\u1EA8\u00C3\u0100\u0102\u1EB0\u1EAE\u1EB4\u1EB2\u0226\u01E0\u00C4\u01DE\u1EA2\u00C5\u01FA\u01CD\u0200\u0202\u1EA0\u1EAC\u1EB6\u1E00\u0104\u023A\u2C6F]/g},
 	{'base':'AA','letters':/[\uA732]/g},
 	{'base':'AE','letters':/[\u00C6\u01FC\u01E2]/g},
@@ -1944,15 +1893,15 @@ var defaultDiacriticsRemovalMap = [
 	{'base':'y','letters':/[\u0079\u24E8\uFF59\u1EF3\u00FD\u0177\u1EF9\u0233\u1E8F\u00FF\u1EF7\u1E99\u1EF5\u01B4\u024F\u1EFF]/g},
 	{'base':'z','letters':/[\u007A\u24E9\uFF5A\u017A\u1E91\u017C\u017E\u1E93\u1E95\u01B6\u0225\u0240\u2C6C\uA763]/g}
 ];
-function removeDiacritics (str) {
-	var changes = defaultDiacriticsRemovalMap;
+clickToAddress.prototype.tools.removeDiacritics = function(str) {
+	var changes = this.defaultDiacriticsRemovalMap;
 	for(var i=0; i<changes.length; i++) {
 		str = str.replace(changes[i].letters, changes[i].base);
 	}
 	return str.toLowerCase();
 }
 
-function binaryIndexOf(array, sequence) {
+clickToAddress.prototype.tools.binaryIndexOf = function(array, sequence) {
 	'use strict';
 
 	var minIndex = 0;
@@ -1979,7 +1928,7 @@ function binaryIndexOf(array, sequence) {
 	return ~maxIndex;
 }
 
-function getCountryCode(c2a, text, matchBy){
+clickToAddress.prototype.tools.getCountryCode = function(c2a, text, matchBy){
 	switch(matchBy){
 		case 'iso_3':
 			for(var i=0; i<c2a.validCountries.length; i++){
@@ -1999,6 +1948,30 @@ function getCountryCode(c2a, text, matchBy){
 			break;
 	}
 	return false;
+}
+// provide backwards compatibility
+if(typeof getCountryCode == 'undefined'){
+	var getCountryCode = function(c2a, text, matchBy){
+		switch(matchBy){
+			case 'iso_3':
+				for(var i=0; i<c2a.validCountries.length; i++){
+					var row = c2a.validCountries[i];
+					if(row.iso_3166_1_alpha_3 == text){
+						return row.code;
+					}
+				}
+				break;
+			case 'iso_2':
+				for(var i=0; i<c2a.validCountries.length; i++){
+					var row = c2a.validCountries[i];
+					if(row.iso_3166_1_alpha_2 == text){
+						return row.code;
+					}
+				}
+				break;
+		}
+		return false;
+	}
 }
 
 clickToAddress.prototype.tools.addClass = function(elem, value){
@@ -2028,6 +2001,18 @@ clickToAddress.prototype.tools.hasClass = function(elem, value){
 	}
 	return false;
 };
+clickToAddress.prototype.tools.__$styleInject = function(css) {
+	css = css || '';
+	var head = document.head || document.getElementsByTagName('head')[0];
+	var style = document.createElement('style');
+	style.type = 'text/css';
+	if (style.styleSheet){
+		style.styleSheet.cssText = css;
+	} else {
+		style.appendChild(document.createTextNode(css));
+	}
+	head.appendChild(style);
+}
 
 clickToAddress.prototype.addTransl = function(){
 	var that = this;
@@ -2187,6 +2172,13 @@ clickToAddress.prototype.attach = function(dom, cfg){
 				}
 			};
 			break;
+		case 'jQuery':
+			quickGet = function(dom, obj_name){
+				if(dom[obj_name] instanceof jQuery){
+					return dom[obj_name][0];
+				}
+			}
+			break;
 	}
 	for(var i = 0; i < objectArray.length; i++){
 		domElements[objectArray[i]] = quickGet(dom, objectArray[i]);
@@ -2204,7 +2196,7 @@ clickToAddress.prototype.attach = function(dom, cfg){
 	this.domLib.push(domElements);
 
 	var that = this;
-	ccEvent(target, 'keydown', function(e){
+	this.tools.ccEvent(target, 'keydown', function(e){
 		if(that.serviceReady === 0)
 			return;
 		// up down
@@ -2221,7 +2213,7 @@ clickToAddress.prototype.attach = function(dom, cfg){
 			e.preventDefault();
 		}
 	});
-	ccEvent(target, 'keyup', function(e){
+	this.tools.ccEvent(target, 'keyup', function(e){
 		if(that.serviceReady === 0)
 			return;
 		// escape
@@ -2296,17 +2288,17 @@ clickToAddress.prototype.attach = function(dom, cfg){
 			that.gfxModeTools.reposition(that, target);
 		}
 	});
-	ccEvent(target, 'focus', function(){
+	this.tools.ccEvent(target, 'focus', function(){
 		that.activeDom = that.domLib[domLibId];
 		that.onFocus(target);
 	});
-	ccEvent(target, 'blur', function(){
+	this.tools.ccEvent(target, 'blur', function(){
 		if(that.serviceReady === 0)
 			return;
 		that.focused = false;
 		that.hide();
 	});
-	ccEvent(target, 'c2a-search', function(){
+	this.tools.ccEvent(target, 'c2a-search', function(){
 		that.show();
 		if(that.searchStatus.inCountryMode == 1){
 			that.changeCountry(this.value);
