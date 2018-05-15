@@ -971,7 +971,7 @@ clickToAddress.prototype.setCounty = function(element, province){
 		element.value = province_for_input;
 	}
 };
-clickToAddress.prototype.showResults = function(full){
+clickToAddress.prototype.showResults = function(){
 	'use strict';
 	var _cs = this;
 	_cs.scrollPosition = 0;
@@ -1037,7 +1037,7 @@ clickToAddress.prototype.showResults = function(full){
 clickToAddress.prototype.showResultsExtra = function(){
 	'use strict';
 	var _cs = this;
-	var listElements = _cs.resultList.getElementsByClassName('cc-hidden');
+	var listElements = _cs.resultList.querySelectorAll('.cc-hidden');
 	for(var i=0; i<_cs.scrollLimit && i<listElements.length; i++){
 		_cs.tools.removeClass(listElements[i], 'cc-hidden');
 	}
