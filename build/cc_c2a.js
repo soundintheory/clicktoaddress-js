@@ -5,7 +5,7 @@
  * @link        https://craftyclicks.co.uk
  * @copyright   Copyright (c) 2016, Crafty Clicks Limited
  * @license     Licensed under the terms of the MIT license.
- * @version     1.1.14
+ * @version     1.1.15
  */
 
 clickToAddress.prototype.search = function(searchText, id, sequence){
@@ -1652,7 +1652,7 @@ clickToAddress.prototype.preset = function(config){
 	// * MAIN OBJECTS
 	// * These objects are store internal statuses. Do not modify any variable here.
 	// *
-	this.jsVersion = '1.1.14';
+	this.jsVersion = '1.1.15';
 	this.serviceReady = 0;
 	this.debug = false;
 	// set active country
@@ -2099,7 +2099,7 @@ clickToAddress.prototype.show = function(){
 	this.setHistoryStep();
 
 	if(this.activeInput != 'init'){
-		this.activeInput.setAttribute('autocomplete','off');
+		this.activeInput.setAttribute('autocomplete','new-crafty-global-search');
 	}
 };
 clickToAddress.prototype.hide = function(force_it){

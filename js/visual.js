@@ -42,7 +42,7 @@ clickToAddress.prototype.show = function(){
 	this.setHistoryStep();
 
 	if(this.activeInput != 'init'){
-		this.activeInput.setAttribute('autocomplete','off');
+		this.activeInput.setAttribute('autocomplete','new-crafty-global-search');
 	}
 };
 clickToAddress.prototype.hide = function(force_it){
