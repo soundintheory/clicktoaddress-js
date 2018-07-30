@@ -66,7 +66,7 @@ clickToAddress.prototype.hide = function(force_it){
 
 		if(this.activeInput != 'init'){
 			this.activeInput.className = this.activeInput.className.replace(" c2a_active", "");
-			this.activeInput.setAttribute('autocomplete','on');
+			this.activeInput.setAttribute('autocomplete','new-crafty-global-search');
 		}
 	}
 	this.hideErrors();
