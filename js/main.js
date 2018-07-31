@@ -472,7 +472,7 @@ clickToAddress.prototype.select = function(li){
 
 	if(li.count === '1'){
 		this.getAddressDetails(li.id);
-		this.hide();
+		//this.hide();
 		this.loseFocus();
 		return;
 	}
