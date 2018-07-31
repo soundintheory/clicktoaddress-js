@@ -5,7 +5,7 @@
  * @link        https://craftyclicks.co.uk
  * @copyright   Copyright (c) 2016, Crafty Clicks Limited
  * @license     Licensed under the terms of the MIT license.
- * @version     1.1.15
+ * @version     1.1.16
  */
 
 clickToAddress.prototype.search = function(searchText, id, sequence){
@@ -1053,7 +1053,7 @@ clickToAddress.prototype.select = function(li){
 
 	if(li.count === '1'){
 		this.getAddressDetails(li.id);
-		this.hide();
+		//this.hide();
 		this.loseFocus();
 		return;
 	}
@@ -1652,7 +1652,7 @@ clickToAddress.prototype.preset = function(config){
 	// * MAIN OBJECTS
 	// * These objects are store internal statuses. Do not modify any variable here.
 	// *
-	this.jsVersion = '1.1.15';
+	this.jsVersion = '1.1.16';
 	this.serviceReady = 0;
 	this.debug = false;
 	// set active country
@@ -1778,6 +1778,8 @@ clickToAddress.prototype.preset = function(config){
 	this.setCfg(config, 'countryMatchWith','iso_3');
 	this.setCfg(config, 'tag', '');
 	this.setCfg(config, 'cssPath', 'https://cc-cdn.com/generic/styles/v1/cc_c2a.min.css');
+
+	this.setCfg(config, 'preserveAutocompleteAttribute', false);
 
 	this.setCfg(config, 'disableAutoSearch', false); // attach supported
 	this.setCfg(config, 'transliterate', false);
@@ -2099,6 +2101,11 @@ clickToAddress.prototype.show = function(){
 	this.setHistoryStep();
 
 	if(this.activeInput != 'init'){
+		// store existing autocomplete value
+		var cc_ac_stored = this.activeInput.getAttribute('autocomplete');
+		if(cc_ac_stored){
+			this.activeInput.setAttribute('cc_ac_stored', cc_ac_stored);
+		}
 		this.activeInput.setAttribute('autocomplete','new-crafty-global-search');
 	}
 };
@@ -2121,9 +2128,16 @@ clickToAddress.prototype.hide = function(force_it){
 		this.resetSelector();
 		this.setPlaceholder(0);
 
+
+
 		if(this.activeInput != 'init'){
 			this.activeInput.className = this.activeInput.className.replace(" c2a_active", "");
-			this.activeInput.setAttribute('autocomplete','on');
+
+			// retrieve existing autocomplete value
+			var cc_ac_stored = this.activeInput.getAttribute('cc_ac_stored');
+			this.activeInput.setAttribute('autocomplete', cc_ac_stored);
+			this.activeInput.removeAttribute('cc_ac_stored');
+
 		}
 	}
 	this.hideErrors();
@@ -2330,6 +2344,12 @@ clickToAddress.prototype.attach = function(dom, cfg){
 	if(target === document.activeElement){
 		this.onFocus(target);
 	}
+
+	if(!that.getCfg('preserveAutocompleteAttribute') && domElements.line_1.getAttribute('cc_applied') != 'true'){
+		// autocomplete - immediate swapping is not disabled, and line_1 is not the active target
+		target.setAttribute('autocomplete','new-crafty-global-search');
+	}
+
 };
 clickToAddress.prototype.onFocus = function(target){
 	'use strict';
