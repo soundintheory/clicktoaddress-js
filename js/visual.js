@@ -286,7 +286,7 @@ clickToAddress.prototype.attach = function(dom, cfg){
 		this.onFocus(target);
 	}
 
-	if(!that.getCfg('preserveAutocompleteAttribute') && domElements.line_1.getAttribute('cc_applied') != 'true'){
+	if(!that.getCfg('preserveAutocompleteAttribute') && (typeof domElements.line_1 == 'undefined' || domElements.line_1.getAttribute('cc_applied') != 'true')){
 		// autocomplete - immediate swapping is not disabled, and line_1 is not the active target
 		target.setAttribute('autocomplete','new-crafty-global-search');
 	}
