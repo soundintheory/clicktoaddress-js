@@ -10,8 +10,9 @@ clickToAddress.prototype.setupText = function(textCfg){
 		country_button: 'Change Country',
 		generic_error: 'Service unavailable.</br>Please enter your address manually.',
 		no_results: 'No results found',
-		more: '({{value}} more)' // {{value}} marks the place for the number of further results
+		more: '({{value}} more)', // {{value}} marks the place for the number of further results
 		//geocode: 'Your search results are prioritised based on your location.',
+		country_name_overrides: {}
 	};
 	if(typeof textCfg != 'undefined'){
 		var keys = Object.keys(this.texts);
