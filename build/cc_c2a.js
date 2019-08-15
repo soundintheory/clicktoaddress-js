@@ -5,7 +5,7 @@
  * @link        https://craftyclicks.co.uk
  * @copyright   Copyright (c) 2016, Crafty Clicks Limited
  * @license     Licensed under the terms of the MIT license.
- * @version     1.1.17
+ * @version     1.1.18
  */
 
 clickToAddress.prototype.search = function(searchText, id, sequence){
@@ -1098,6 +1098,9 @@ clickToAddress.prototype.changeCountry = function(filter){
 	this.resultList.innerHTML = newHtml;
 	var listElements = this.resultList.getElementsByTagName('li');
 	this.resultList.scrollTop = 0;
+
+	var country_name_override_keys = Object.keys(this.texts.country_name_overrides);
+
 	var that = this;
 	var skip = 0;
 	for(var i=0; i<listElements.length; i++){
@@ -1123,7 +1126,11 @@ clickToAddress.prototype.changeCountry = function(filter){
 				}
 			}
 			if(matchFound){
-				content = '<span class="cc-flag cc-flag-'+row.short_code+'"></span>'+'<span>'+row.country_name+'</span>';
+				var country_name = row.country_name;
+				if(country_name_override_keys.indexOf(row.iso_3166_1_alpha_3.toLowerCase()) != -1){
+					country_name = this.texts.country_name_overrides[row.iso_3166_1_alpha_3.toLowerCase()];
+				}
+				content = '<span class="cc-flag cc-flag-'+row.short_code+'"></span>'+'<span>'+country_name+'</span>';
 			}
 			else{
 				listElements[i].parentNode.removeChild(listElements[i]);
@@ -1131,7 +1138,11 @@ clickToAddress.prototype.changeCountry = function(filter){
 				skip++;
 			}
 		} else {
-			var content = '<span class="cc-flag cc-flag-'+row.short_code+'"></span>'+'<span>'+row.country_name+'</span>';
+			var country_name = row.country_name;
+			if(country_name_override_keys.indexOf(row.iso_3166_1_alpha_3.toLowerCase()) != -1){
+				country_name = this.texts.country_name_overrides[row.iso_3166_1_alpha_3.toLowerCase()];
+			}
+			content = '<span class="cc-flag cc-flag-'+row.short_code+'"></span>'+'<span>'+country_name+'</span>';
 		}
 		if(content != ''){
 			listElements[i].innerHTML = content;
@@ -1608,8 +1619,9 @@ clickToAddress.prototype.setupText = function(textCfg){
 		country_button: 'Change Country',
 		generic_error: 'Service unavailable.</br>Please enter your address manually.',
 		no_results: 'No results found',
-		more: '({{value}} more)' // {{value}} marks the place for the number of further results
+		more: '({{value}} more)', // {{value}} marks the place for the number of further results
 		//geocode: 'Your search results are prioritised based on your location.',
+		country_name_overrides: {}
 	};
 	if(typeof textCfg != 'undefined'){
 		var keys = Object.keys(this.texts);
@@ -1652,7 +1664,7 @@ clickToAddress.prototype.preset = function(config){
 	// * MAIN OBJECTS
 	// * These objects are store internal statuses. Do not modify any variable here.
 	// *
-	this.jsVersion = '1.1.17';
+	this.jsVersion = '1.1.18';
 	this.serviceReady = 0;
 	this.debug = false;
 	// set active country

@@ -517,6 +517,9 @@ clickToAddress.prototype.changeCountry = function(filter){
 	this.resultList.innerHTML = newHtml;
 	var listElements = this.resultList.getElementsByTagName('li');
 	this.resultList.scrollTop = 0;
+
+	var country_name_override_keys = Object.keys(this.texts.country_name_overrides);
+
 	var that = this;
 	var skip = 0;
 	for(var i=0; i<listElements.length; i++){
@@ -542,7 +545,11 @@ clickToAddress.prototype.changeCountry = function(filter){
 				}
 			}
 			if(matchFound){
-				content = '<span class="cc-flag cc-flag-'+row.short_code+'"></span>'+'<span>'+row.country_name+'</span>';
+				var country_name = row.country_name;
+				if(country_name_override_keys.indexOf(row.iso_3166_1_alpha_3.toLowerCase()) != -1){
+					country_name = this.texts.country_name_overrides[row.iso_3166_1_alpha_3.toLowerCase()];
+				}
+				content = '<span class="cc-flag cc-flag-'+row.short_code+'"></span>'+'<span>'+country_name+'</span>';
 			}
 			else{
 				listElements[i].parentNode.removeChild(listElements[i]);
@@ -550,7 +557,11 @@ clickToAddress.prototype.changeCountry = function(filter){
 				skip++;
 			}
 		} else {
-			var content = '<span class="cc-flag cc-flag-'+row.short_code+'"></span>'+'<span>'+row.country_name+'</span>';
+			var country_name = row.country_name;
+			if(country_name_override_keys.indexOf(row.iso_3166_1_alpha_3.toLowerCase()) != -1){
+				country_name = this.texts.country_name_overrides[row.iso_3166_1_alpha_3.toLowerCase()];
+			}
+			content = '<span class="cc-flag cc-flag-'+row.short_code+'"></span>'+'<span>'+country_name+'</span>';
 		}
 		if(content != ''){
 			listElements[i].innerHTML = content;
