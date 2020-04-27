@@ -51,8 +51,9 @@ c2a_gfx_modes['mode1'] = {
 		var docTop = (window.pageYOffset || doc.scrollTop)  - (doc.clientTop || 0);
 		var docLeft = (window.pageXOffset || doc.scrollLeft) - (doc.clientLeft || 0);
 
-		var topOffset = (elemRect.top + docTop) + (target.offsetHeight - 1);
-		var leftOffset = elemRect.left + docLeft + 3; // 3px gap for nice edgy curl effect
+		//-2 to set the bar on the same line as the top bar
+		var topOffset = (elemRect.top + docTop) + (target.offsetHeight - 1)-2;
+		var leftOffset = elemRect.left + docLeft; // 3px gap for nice edgy curl effect
 
 		var htmlBox = window.getComputedStyle(document.getElementsByTagName('html')[0]);
 		topOffset += parseInt( htmlBox.getPropertyValue('margin-top') ) + parseInt( htmlBox.getPropertyValue('padding-top') );
@@ -64,7 +65,7 @@ c2a_gfx_modes['mode1'] = {
 */
 		that.searchObj.style.left = leftOffset +'px';
 		that.searchObj.style.top = topOffset+'px';
-		that.searchObj.style.width = (target.offsetWidth - 6) +'px';
+		that.searchObj.style.width = target.offsetWidth  +'px';
 
 		// if there's not enough space for the logo, hide it
 		var logo = that.searchObj.getElementsByClassName('c2a_logo');
