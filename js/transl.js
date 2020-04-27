@@ -1,8 +1,8 @@
 clickToAddress.prototype.addTransl = function(){
 	var that = this;
 	try {
-		if("function" != typeof define && define.amd){
-			var transl_url = 'https://cc-cdn.com/utils/transl/v1.6.2/transliteration.min.js';
+		/*if("function" == typeof define && define.amd){
+			var transl_url = 'https://cc-cdn.com/utils/transl/v1.6.2/transliteration.min';
 			requirejs.config({
 				paths: {
 					'transliterate': [transl_url]
@@ -11,7 +11,7 @@ clickToAddress.prototype.addTransl = function(){
 			require(['transliterate'], function(transl){
 				that.transl = transl;
 			});
-		} else {
+		} else {*/
 			var transl_url = 'https://cc-cdn.com/utils/transl/v1.6.2/transliteration.min.js';
 			var jsId = 'crafty_transliterate';
 			if(document.getElementById('crafty_transliterate') === null){
@@ -32,7 +32,7 @@ clickToAddress.prototype.addTransl = function(){
 				}
 				var transl_loading = setInterval(waitForLib,250);
 			}
-		}
+		//}
 	} catch(e){
 		// failed to add transl
 	}
