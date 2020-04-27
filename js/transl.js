@@ -1,8 +1,8 @@
 clickToAddress.prototype.addTransl = function(){
 	var that = this;
 	try {
-		if("function" == typeof define && define.amd){
-			var transl_url = 'https://cc-cdn.com/utils/transl/v1.6.2/transliteration.min';
+		if("function" != typeof define && define.amd){
+			var transl_url = 'https://cc-cdn.com/utils/transl/v1.6.2/transliteration.min.js';
 			requirejs.config({
 				paths: {
 					'transliterate': [transl_url]
