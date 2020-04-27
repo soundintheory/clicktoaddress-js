@@ -8,577 +8,6 @@
  * @version     1.1.18
  */
 
-clickToAddress.prototype.search = function(searchText, id, sequence){
-	'use strict';
-	/*
-		sequence:
-			-1	: history action (will not be stored in cache)
-			0	: missing
-			1+	: standard search
-		type:
-			0	: find
-			1	: retrieve
-			2	: find (from history, do not cache)
-	*/
-	var that = this;
-	if(searchText === ''){
-		return;
-	}
-	this.setProgressBar(0);
-	var parameters = {
-		key: this.key,
-		query: searchText,
-		id: id,
-		country: this.activeCountry,
-		fingerprint: this.fingerprint,
-		integration: this.tag,
-		js_version: this.jsVersion,
-		sequence: sequence,
-		type: 0
-	};
-	if(sequence == -1){
-		parameters.type = 2;
-	}
-	if(typeof this.accessTokenOverride[this.activeCountry] != 'undefined'){
-		parameters.key = this.accessTokenOverride[this.activeCountry];
-	}
-	if(this.coords != {}){
-		parameters.coords = {};
-		parameters.coords.lat = this.coords.latitude;
-		parameters.coords.lng = this.coords.longitude;
-	}
-
-	// first check cache
-	try{
-		var data = this.cacheRetrieve(parameters);
-
-		that.setProgressBar(1);
-		that.clear();
-		that.hideErrors();
-		// return data
-		that.searchResults = data;
-		that.showResults();
-		if(!that.focused){
-			that.activeInput.focus();
-		}
-		that.searchStatus.lastResponseId = sequence || 0;
-		// store in cache
-		that.cacheStore(parameters, data, sequence);
-		return;
-	} catch (err) {
-		if(['cc/cr/01', 'cc/cr/02'].indexOf(err) == -1){
-			throw err;
-		}
-	}
-
-	// Set up the URL
-	var url = this.baseURL + 'find';
-	this.apiRequest('find', parameters, function(data){
-		if(that.searchStatus.lastResponseId <= sequence){
-			that.setProgressBar(1);
-			that.clear();
-			that.hideErrors();
-			// return data
-			that.searchResults = data;
-			that.showResults();
-			if(!that.focused){
-				that.activeInput.focus();
-			}
-			that.searchStatus.lastResponseId = sequence || 0;
-			// store in cache
-			that.cacheStore(parameters, data, sequence);
-		}
-	});
-};
-clickToAddress.prototype.getAddressDetails = function(id){
-	'use strict';
-	var that = this;
-	var parameters = {
-		id: id,
-		country: this.activeCountry,
-		key: this.key,
-		fingerprint: this.fingerprint,
-		js_version: this.jsVersion,
-		integration: this.tag,
-		type: 1
-	};
-	if(typeof this.accessTokenOverride[this.activeCountry] != 'undefined'){
-		parameters.key = this.accessTokenOverride[this.activeCountry];
-	}
-	if(this.coords != {}){
-		parameters.coords = this.coords;
-	}
-
-	// first check cache
-	try{
-		var data = this.cacheRetrieve(parameters);
-		that.fillData(data.result);
-		that.hideErrors();
-		that.cleanHistory();
-		that.cacheStore(parameters, data);
-		return;
-	} catch (err) {
-		if(['cc/cr/01', 'cc/cr/02'].indexOf(err) == -1){
-			throw err;
-		}
-	}
-
-	// Set up the URL
-	var url = this.baseURL + 'retrieve';
-	this.apiRequest('retrieve', parameters, function(data){
-		try{
-			that.fillData(data.result);
-			that.hideErrors();
-			that.cleanHistory();
-			that.cacheStore(parameters, data);
-		} catch(e){
-			that.error('JS503',e);
-		}
-	});
-};
-
-clickToAddress.prototype.getAvailableCountries = function(success_function){
-	'use strict';
-	var that = this;
-	var parameters = {
-		key: this.key,
-		fingerprint: this.fingerprint,
-		js_version: this.jsVersion,
-		integration: this.tag,
-		language: this.countryLanguage
-	};
-	this.apiRequest('countries', parameters, function(data){
-		try{
-			that.serviceReady = 1;
-			that.validCountries = data.countries;
-			that.ipLocation = data.ip_location;
-			that.hideErrors();
-			try{
-				success_function();
-			} catch(e){
-				that.error('JS515',e);
-			}
-		} catch(e){
-			that.error('JS505',e);
-		}
-	});
-
-};
-
-clickToAddress.prototype.handleApiError = function(ajax){
-	'use strict';
-	if([401, 402].indexOf(ajax.status) != -1){
-		this.serviceReady = -1;
-		this.error('API401');
-		return;
-	}
-	var data = {};
-	try{
-		data = JSON.parse(ajax.responseText);
-	}
-	catch(e){
-		data = {};
-	}
-	if( typeof data.error != 'undefined' && typeof data.error.status == "string" ){
-		this.error('API500','API error: ['+data.error.status+']'+data.error.message);
-	} else {
-		this.error('API500');
-	}
-};
-
-clickToAddress.prototype.apiRequest = function(action, parameters, callback){
-	// Set up the URL
-	var url = this.baseURL + action;
-
-	var keys = Object.keys(this.customParameters);
-	for(var i=0; i<keys.length; i++){
-		parameters[keys[i]] = this.customParameters[keys[i]];
-	}
-
-	// Create new XMLHttpRequest
-	var request = new XMLHttpRequest();
-	request.open('POST', url, true);
-	request.setRequestHeader('Content-Type', 'application/json');
-	request.setRequestHeader('Accept', 'application/json');
-	// Wait for change and then either JSON parse response text or throw exception for HTTP error
-	var that = this;
-	request.onreadystatechange = function() {
-		if (this.readyState === 4){
-			if(this.status == 401){
-				// unauthorized access token
-				return;
-			}
-			if (this.status >= 200 && this.status < 400){
-				try{
-					var data = JSON.parse(this.responseText);
-					callback(data);
-				} catch(e){
-					that.error('JS506',e);
-				}
-			} else {
-				that.handleApiError(this);
-			}
-		}
-	};
-	// Send request
-	request.send(JSON.stringify(parameters));
-	// Set timeout
-	var xmlHttpTimeout = setTimeout(function(){
-		if(request !== null && request.readyState !== 4){
-			request.abort();
-			that.error('JS501');
-		}
-	},10000);
-	// Nullify request object
-	request = null;
-};
-
-clickToAddress.prototype.cacheRetrieve = function(search){
-	'use strict';
-	if(search.type == 0 || search.type == 2){
-		if(typeof this.cache.finds[search.country] == 'undefined'){
-			throw 'cc/cr/01';
-		}
-		for(var i=0; i < this.cache.finds[search.country].length; i++){
-			if(	this.cache.finds[search.country][i].query == search.query &&
-				this.cache.finds[search.country][i].id == search.id
-			){
-				return this.cache.finds[search.country][i].response;
-			}
-		}
-		throw 'cc/cr/02';
-	}
-	if(search.type == 1){
-		if(typeof this.cache.retrieves[search.country] == 'undefined'){
-			throw 'cc/cr/01';
-		}
-		for(var i=0; i < this.cache.retrieves[search.country].length; i++){
-			if( this.cache.retrieves[search.country][i].id == search.id ){
-				return this.cache.retrieves[search.country][i].response;
-			}
-		}
-		throw 'cc/cr/02';
-	}
-	throw 'cc/cr/03';
-};
-clickToAddress.prototype.cacheStore = function(search, obj, sequence){
-	'use strict';
-	var sequence = sequence || 0;
-	if(search.type === 0){
-		if(typeof this.cache.finds[search.country] == 'undefined'){
-			this.cache.finds[search.country] = [];
-		}
-		var splice_pos = Math.abs(this.tools.binaryIndexOf(this.cache.finds[search.country], sequence));
-		this.cache.finds[search.country].splice(splice_pos, 0, {
-			query: search.query,
-			id: search.id,
-			response: obj,
-			sequence: sequence
-		});
-		if(this.cache.finds[search.country].length > 100){
-			this.cache.finds[search.country].shift();
-		}
-		this.setHistoryStep();
-		return;
-	}
-
-	if(search.type == 1){
-		if(typeof this.cache.retrieves[search.country] == 'undefined'){
-			this.cache.retrieves[search.country] = [];
-		}
-		for(var i=0; i < this.cache.retrieves[search.country].length; i++){
-			if( this.cache.retrieves[search.country][i].id == search.id ){
-				return;
-			}
-		}
-		this.cache.retrieves[search.country].push({
-			id: search.id,
-			response: obj
-		});
-		return;
-	}
-	// this was a history search, do not store (already stored)
-	if(search.type == 2){
-		return;
-	}
-};
-clickToAddress.prototype.history = function(dir){
-	'use strict';
-	if(!this.historyTools)
-		return;
-	if(this.cachePos <= -1){
-		this.cachePos = 0;
-	}
-	var searchParams = {};
-	var cacheLength = Object.keys(this.cache.finds[this.activeCountry]).length - 1;
-	if(dir === 0){
-		this.cachePos++;
-		searchParams = this.cache.finds[this.activeCountry][cacheLength - this.cachePos];
-	} else {
-		this.cachePos--;
-		searchParams = this.cache.finds[this.activeCountry][cacheLength - this.cachePos];
-	}
-	this.setHistoryStep();
-	this.activeInput.value = searchParams.query;
-	// let the cache know that this request shouldn't be re-stored (-1)
-	this.search(searchParams.query, searchParams.id, -1);
-
-};
-clickToAddress.prototype.setHistoryActions = function(){
-	'use strict';
-	if(!this.historyTools)
-		return;
-	var that = this;
-	var backBtn = this.searchObj.getElementsByClassName('cc-back')[0];
-	var forwardBtn = this.searchObj.getElementsByClassName('cc-forward')[0];
-	this.tools.ccEvent(backBtn, 'click', function(){
-		if(backBtn.className == 'cc-back'){
-			that.history(0);
-		}
-	});
-	this.tools.ccEvent(forwardBtn, 'click', function(){
-		if(forwardBtn.className == 'cc-forward'){
-			that.history(1);
-		}
-	});
-};
-clickToAddress.prototype.setHistoryStep = function(){
-	'use strict';
-	if(!this.historyTools)
-		return;
-	var backBtn = this.searchObj.getElementsByClassName('cc-back')[0];
-	var forwardBtn = this.searchObj.getElementsByClassName('cc-forward')[0];
-
-	backBtn.className = 'cc-back';
-	forwardBtn.className = 'cc-forward';
-	var logo_visible = 0;
-
-	if(	typeof this.cache.finds[this.activeCountry] == 'undefined' ||
-		this.cachePos >= Object.keys(this.cache.finds[this.activeCountry]).length - 1 ||
-		Object.keys(this.cache.finds[this.activeCountry]).length <= 1
-	){
-		backBtn.className = 'cc-back cc-disabled';
-		logo_visible++;
-	}
-	if(	typeof this.cache.finds[this.activeCountry] == 'undefined' ||
-		this.cachePos <= 0 ||
-		Object.keys(this.cache.finds[this.activeCountry]).length <= 1
-	){
-		forwardBtn.className = 'cc-forward cc-disabled';
-		logo_visible++;
-	}
-	var logo = this.searchObj.getElementsByClassName('c2a_logo');
-	if(logo.length){
-		if(logo_visible == 2){
-			this.tools.removeClass(logo[0],'hidden');
-			this.tools.removeClass(logo[0],'tools_in_use');
-			//logo[0].className = 'c2a_logo';
-		} else {
-			this.tools.addClass(logo[0],'hidden');
-			this.tools.addClass(logo[0],'tools_in_use');
-			//logo[0].className = 'c2a_logo hidden';
-		}
-	}
-};
-
-clickToAddress.prototype.hideHistory = function(){
-	'use strict';
-	if(!this.historyTools)
-		return;
-	var backBtn = this.searchObj.getElementsByClassName('cc-back')[0];
-	var forwardBtn = this.searchObj.getElementsByClassName('cc-forward')[0];
-	backBtn.className = 'cc-back cc-disabled';
-	forwardBtn.className = 'cc-forward cc-disabled';
-};
-
-clickToAddress.prototype.cleanHistory = function(){
-	'use strict';
-	if(this.cachePos <= 0 || typeof this.cache.finds[this.activeCountry] == 'undefined'){
-		return;
-	}
-	var removeAt = Object.keys(this.cache.finds[this.activeCountry]).length - this.cachePos;
-	this.cache.finds[this.activeCountry].splice(removeAt, this.cachePos);
-	this.cachePos = -1;
-	var keys_length = Object.keys(this.cache.finds[this.activeCountry]).length;
-	if(keys_length > 0){
-		this.activeId = this.cache.finds[this.activeCountry][keys_length - 1].id;
-	} else {
-		this.activeId = '';
-	}
-	this.setHistoryStep();
-};
-
-clickToAddress.prototype.error = function(code, message){
-	'use strict';
-	var errors = {
-		// js errors
-		'JS500': {
-			default_message: 'Unknown Server Error',
-			level: 0
-		},
-		'JS501': {
-			default_message: 'API server seems unreachable',
-			level: 0
-		},
-		'JS502': {
-			default_message: 'API search request resulted in a JS error.',
-			level: 0
-		},
-		'JS503': {
-			default_message: 'API address retrieve request resulted in a JS error.',
-			level: 0
-		},
-		'JS504': {
-			default_message: 'onResultSelected callback function resulted in a JS error.',
-			level: 0
-		},
-		'JS505': {
-			default_message: 'API countrylist retrieve request resulted in a JS error.',
-			level: 0
-		},
-		'JS515': {
-			default_message: 'Country list retrieve callback function resulted in an error.',
-			level: 0
-		},
-		'JS506': {
-			default_message: 'JSON parsing error',
-			level: 0
-		},
-		'JS401': {
-			default_message: 'Invalid value for countryMatchWith. Fallback to "text"',
-			level: 0
-		},
-		'API401': {
-			default_message: 'Please review your account; access token restricted from accessing the service.',
-			level: 1
-		},
-		'API500': {
-			default_message: 'API error occured',
-			level: 1
-		},
-	};
-	console.warn('CraftyClicks Debug Error Message');
-	var c = '['+code+']';
-	if(typeof message == 'undefined' || !this.debug){
-		if(typeof errors[code] !== 'undefined'){
-			console.warn(c+errors[code].default_message);
-		} else {
-			console.warn(c);
-		}
-	} else {
-		if(typeof message.stack != 'undefined'){
-			console.warn(c+message.stack);
-		} else {
-			console.warn(c+message);
-		}
-	}
-	if(errors[code].level == 1){
-		this.info('error');
-	}
-
-	if(typeof this.onError == 'function'){
-		this.onError(code, message);
-	}
-};
-
-clickToAddress.prototype.hideErrors = function(){
-	'use strict';
-	if(this.serviceReady != -1){
-		this.errorObj.innerHTML = '';
-		this.errorObj.className = 'c2a_error c2a_error_hidden';
-	}
-};
-clickToAddress.prototype.start_debug = function(){
-	'use strict';
-	var that = this;
-	var css = document.createElement('style');
-	css.type = 'text/css';
-	var styles = '#cc_c2a_debug { '+[
-		'position: fixed;',
-		'right: 0px;',
-		'background-color: white;',
-		'top: 50px;',
-		'border: 1px solid black;',
-		'border-top-left-radius: 5px;',
-		'border-bottom-left-radius: 5px;',
-		'padding: 5px;',
-		'text-align: center;',
-		'border-right: none;'
-	].join(' ')+' }';
-	styles += ' #cc_c2a_debug > div{'+
-		['border-radius: 5px;',
-			'padding: 5px;',
-			'border: 1px solid black;',
-			'margin-bottom: 5px;'
-		].join(' ')
-	+'}';
-	styles += ' #cc_c2a_debug .c2a_toggle.c2a_toggle_on{ background-color: #87D37C; color: white; }'
-	styles += ' #cc_c2a_debug .c2a_toggle{ cursor: pointer; }';
-	this.tools.__$styleInject(styles);
-
-	var cc_debug = document.createElement('DIV');
-	cc_debug.id = 'cc_c2a_debug';
-	var html =	[
-		'<div><img style="width: 40px;" src="https://craftyclicks.co.uk/wp-content/themes/craftyclicks_wp_theme/assets/images/product/prod_gl.png"/></div>',
-		'<div id="toggl_transl" class="c2a_toggle">Toggle Transl</div>'
-	].join('');
-	cc_debug.innerHTML = html;
-	document.body.appendChild(cc_debug);
-	var btn1 = document.getElementById('toggl_transl');
-	this.tools.ccEvent(btn1, 'click', function(){
-		that.transliterate = !that.transliterate;
-		if(that.transliterate){
-			btn1.className = 'c2a_toggle c2a_toggle_on';
-			that.addTransl();
-		} else {
-			btn1.className = 'c2a_toggle';
-		}
-	});
-};
-
-clickToAddress.prototype.info = function(state, count){
-	'use strict';
-	var infoBar = this.searchObj.getElementsByClassName('infoBar')[0];
-
-	switch(state){
-		case 'pre-trial':
-			infoBar.className += ' infoActive infoTrial';
-			infoBar.innerHTML = '<h5>Access token is needed!</h5><p>To get a trial token, sign up for a <a href="https://account.craftyclicks.co.uk/login/signup">free trial</a>.</p><p>Then find the placeholder accessToken xxxxx-xxxxx-xxxxx-xxxxx in your HTML and replace it with a your own token.</p>';
-			break;
-			/*
-		case 'too-many-results':
-			infoBar.className += ' infoActive infoWarning';
-			infoBar.innerHTML = count+ ' results found. Please provide more address details.';
-			break;
-		*/
-		case 'no-results':
-			infoBar.className += ' infoActive infoWarning';
-			infoBar.innerHTML = this.texts.no_results;
-			break;
-		case 'error':
-			infoBar.className += ' infoActive infoWarning';
-			infoBar.innerHTML = this.texts.generic_error;
-			break;
-		default:
-			infoBar.className = 'infoBar';
-			infoBar.innerHTML = '';
-			break;
-	}
-};
-
-
-clickToAddress.prototype.setFingerPrint = function(){
-	'use strict';
-	var low = 1000000000000000;
-	var high = 9999999999999999;
-	var value = Math.floor(Math.random() * (high - low + 1) + low);
-	this.fingerprint = value.toString(16);
-};
-clickToAddress.prototype.getFingerPrint = function(){
-	'use strict';
-	return this.fingerprint;
-};
-
 function clickToAddress(config){
 	'use strict';
 	var that = this;
@@ -1317,6 +746,577 @@ clickToAddress.prototype.setCountryChange = function(){
 			}
 		});
 	}
+};
+
+clickToAddress.prototype.search = function(searchText, id, sequence){
+	'use strict';
+	/*
+		sequence:
+			-1	: history action (will not be stored in cache)
+			0	: missing
+			1+	: standard search
+		type:
+			0	: find
+			1	: retrieve
+			2	: find (from history, do not cache)
+	*/
+	var that = this;
+	if(searchText === ''){
+		return;
+	}
+	this.setProgressBar(0);
+	var parameters = {
+		key: this.key,
+		query: searchText,
+		id: id,
+		country: this.activeCountry,
+		fingerprint: this.fingerprint,
+		integration: this.tag,
+		js_version: this.jsVersion,
+		sequence: sequence,
+		type: 0
+	};
+	if(sequence == -1){
+		parameters.type = 2;
+	}
+	if(typeof this.accessTokenOverride[this.activeCountry] != 'undefined'){
+		parameters.key = this.accessTokenOverride[this.activeCountry];
+	}
+	if(this.coords != {}){
+		parameters.coords = {};
+		parameters.coords.lat = this.coords.latitude;
+		parameters.coords.lng = this.coords.longitude;
+	}
+
+	// first check cache
+	try{
+		var data = this.cacheRetrieve(parameters);
+
+		that.setProgressBar(1);
+		that.clear();
+		that.hideErrors();
+		// return data
+		that.searchResults = data;
+		that.showResults();
+		if(!that.focused){
+			that.activeInput.focus();
+		}
+		that.searchStatus.lastResponseId = sequence || 0;
+		// store in cache
+		that.cacheStore(parameters, data, sequence);
+		return;
+	} catch (err) {
+		if(['cc/cr/01', 'cc/cr/02'].indexOf(err) == -1){
+			throw err;
+		}
+	}
+
+	// Set up the URL
+	var url = this.baseURL + 'find';
+	this.apiRequest('find', parameters, function(data){
+		if(that.searchStatus.lastResponseId <= sequence){
+			that.setProgressBar(1);
+			that.clear();
+			that.hideErrors();
+			// return data
+			that.searchResults = data;
+			that.showResults();
+			if(!that.focused){
+				that.activeInput.focus();
+			}
+			that.searchStatus.lastResponseId = sequence || 0;
+			// store in cache
+			that.cacheStore(parameters, data, sequence);
+		}
+	});
+};
+clickToAddress.prototype.getAddressDetails = function(id){
+	'use strict';
+	var that = this;
+	var parameters = {
+		id: id,
+		country: this.activeCountry,
+		key: this.key,
+		fingerprint: this.fingerprint,
+		js_version: this.jsVersion,
+		integration: this.tag,
+		type: 1
+	};
+	if(typeof this.accessTokenOverride[this.activeCountry] != 'undefined'){
+		parameters.key = this.accessTokenOverride[this.activeCountry];
+	}
+	if(this.coords != {}){
+		parameters.coords = this.coords;
+	}
+
+	// first check cache
+	try{
+		var data = this.cacheRetrieve(parameters);
+		that.fillData(data.result);
+		that.hideErrors();
+		that.cleanHistory();
+		that.cacheStore(parameters, data);
+		return;
+	} catch (err) {
+		if(['cc/cr/01', 'cc/cr/02'].indexOf(err) == -1){
+			throw err;
+		}
+	}
+
+	// Set up the URL
+	var url = this.baseURL + 'retrieve';
+	this.apiRequest('retrieve', parameters, function(data){
+		try{
+			that.fillData(data.result);
+			that.hideErrors();
+			that.cleanHistory();
+			that.cacheStore(parameters, data);
+		} catch(e){
+			that.error('JS503',e);
+		}
+	});
+};
+
+clickToAddress.prototype.getAvailableCountries = function(success_function){
+	'use strict';
+	var that = this;
+	var parameters = {
+		key: this.key,
+		fingerprint: this.fingerprint,
+		js_version: this.jsVersion,
+		integration: this.tag,
+		language: this.countryLanguage
+	};
+	this.apiRequest('countries', parameters, function(data){
+		try{
+			that.serviceReady = 1;
+			that.validCountries = data.countries;
+			that.ipLocation = data.ip_location;
+			that.hideErrors();
+			try{
+				success_function();
+			} catch(e){
+				that.error('JS515',e);
+			}
+		} catch(e){
+			that.error('JS505',e);
+		}
+	});
+
+};
+
+clickToAddress.prototype.handleApiError = function(ajax){
+	'use strict';
+	if([401, 402].indexOf(ajax.status) != -1){
+		this.serviceReady = -1;
+		this.error('API401');
+		return;
+	}
+	var data = {};
+	try{
+		data = JSON.parse(ajax.responseText);
+	}
+	catch(e){
+		data = {};
+	}
+	if( typeof data.error != 'undefined' && typeof data.error.status == "string" ){
+		this.error('API500','API error: ['+data.error.status+']'+data.error.message);
+	} else {
+		this.error('API500');
+	}
+};
+
+clickToAddress.prototype.apiRequest = function(action, parameters, callback){
+	// Set up the URL
+	var url = this.baseURL + action;
+
+	var keys = Object.keys(this.customParameters);
+	for(var i=0; i<keys.length; i++){
+		parameters[keys[i]] = this.customParameters[keys[i]];
+	}
+
+	// Create new XMLHttpRequest
+	var request = new XMLHttpRequest();
+	request.open('POST', url, true);
+	request.setRequestHeader('Content-Type', 'application/json');
+	request.setRequestHeader('Accept', 'application/json');
+	// Wait for change and then either JSON parse response text or throw exception for HTTP error
+	var that = this;
+	request.onreadystatechange = function() {
+		if (this.readyState === 4){
+			if(this.status == 401){
+				// unauthorized access token
+				return;
+			}
+			if (this.status >= 200 && this.status < 400){
+				try{
+					var data = JSON.parse(this.responseText);
+					callback(data);
+				} catch(e){
+					that.error('JS506',e);
+				}
+			} else {
+				that.handleApiError(this);
+			}
+		}
+	};
+	// Send request
+	request.send(JSON.stringify(parameters));
+	// Set timeout
+	var xmlHttpTimeout = setTimeout(function(){
+		if(request !== null && request.readyState !== 4){
+			request.abort();
+			that.error('JS501');
+		}
+	},10000);
+	// Nullify request object
+	request = null;
+};
+
+clickToAddress.prototype.cacheRetrieve = function(search){
+	'use strict';
+	if(search.type == 0 || search.type == 2){
+		if(typeof this.cache.finds[search.country] == 'undefined'){
+			throw 'cc/cr/01';
+		}
+		for(var i=0; i < this.cache.finds[search.country].length; i++){
+			if(	this.cache.finds[search.country][i].query == search.query &&
+				this.cache.finds[search.country][i].id == search.id
+			){
+				return this.cache.finds[search.country][i].response;
+			}
+		}
+		throw 'cc/cr/02';
+	}
+	if(search.type == 1){
+		if(typeof this.cache.retrieves[search.country] == 'undefined'){
+			throw 'cc/cr/01';
+		}
+		for(var i=0; i < this.cache.retrieves[search.country].length; i++){
+			if( this.cache.retrieves[search.country][i].id == search.id ){
+				return this.cache.retrieves[search.country][i].response;
+			}
+		}
+		throw 'cc/cr/02';
+	}
+	throw 'cc/cr/03';
+};
+clickToAddress.prototype.cacheStore = function(search, obj, sequence){
+	'use strict';
+	var sequence = sequence || 0;
+	if(search.type === 0){
+		if(typeof this.cache.finds[search.country] == 'undefined'){
+			this.cache.finds[search.country] = [];
+		}
+		var splice_pos = Math.abs(this.tools.binaryIndexOf(this.cache.finds[search.country], sequence));
+		this.cache.finds[search.country].splice(splice_pos, 0, {
+			query: search.query,
+			id: search.id,
+			response: obj,
+			sequence: sequence
+		});
+		if(this.cache.finds[search.country].length > 100){
+			this.cache.finds[search.country].shift();
+		}
+		this.setHistoryStep();
+		return;
+	}
+
+	if(search.type == 1){
+		if(typeof this.cache.retrieves[search.country] == 'undefined'){
+			this.cache.retrieves[search.country] = [];
+		}
+		for(var i=0; i < this.cache.retrieves[search.country].length; i++){
+			if( this.cache.retrieves[search.country][i].id == search.id ){
+				return;
+			}
+		}
+		this.cache.retrieves[search.country].push({
+			id: search.id,
+			response: obj
+		});
+		return;
+	}
+	// this was a history search, do not store (already stored)
+	if(search.type == 2){
+		return;
+	}
+};
+clickToAddress.prototype.history = function(dir){
+	'use strict';
+	if(!this.historyTools)
+		return;
+	if(this.cachePos <= -1){
+		this.cachePos = 0;
+	}
+	var searchParams = {};
+	var cacheLength = Object.keys(this.cache.finds[this.activeCountry]).length - 1;
+	if(dir === 0){
+		this.cachePos++;
+		searchParams = this.cache.finds[this.activeCountry][cacheLength - this.cachePos];
+	} else {
+		this.cachePos--;
+		searchParams = this.cache.finds[this.activeCountry][cacheLength - this.cachePos];
+	}
+	this.setHistoryStep();
+	this.activeInput.value = searchParams.query;
+	// let the cache know that this request shouldn't be re-stored (-1)
+	this.search(searchParams.query, searchParams.id, -1);
+
+};
+clickToAddress.prototype.setHistoryActions = function(){
+	'use strict';
+	if(!this.historyTools)
+		return;
+	var that = this;
+	var backBtn = this.searchObj.getElementsByClassName('cc-back')[0];
+	var forwardBtn = this.searchObj.getElementsByClassName('cc-forward')[0];
+	this.tools.ccEvent(backBtn, 'click', function(){
+		if(backBtn.className == 'cc-back'){
+			that.history(0);
+		}
+	});
+	this.tools.ccEvent(forwardBtn, 'click', function(){
+		if(forwardBtn.className == 'cc-forward'){
+			that.history(1);
+		}
+	});
+};
+clickToAddress.prototype.setHistoryStep = function(){
+	'use strict';
+	if(!this.historyTools)
+		return;
+	var backBtn = this.searchObj.getElementsByClassName('cc-back')[0];
+	var forwardBtn = this.searchObj.getElementsByClassName('cc-forward')[0];
+
+	backBtn.className = 'cc-back';
+	forwardBtn.className = 'cc-forward';
+	var logo_visible = 0;
+
+	if(	typeof this.cache.finds[this.activeCountry] == 'undefined' ||
+		this.cachePos >= Object.keys(this.cache.finds[this.activeCountry]).length - 1 ||
+		Object.keys(this.cache.finds[this.activeCountry]).length <= 1
+	){
+		backBtn.className = 'cc-back cc-disabled';
+		logo_visible++;
+	}
+	if(	typeof this.cache.finds[this.activeCountry] == 'undefined' ||
+		this.cachePos <= 0 ||
+		Object.keys(this.cache.finds[this.activeCountry]).length <= 1
+	){
+		forwardBtn.className = 'cc-forward cc-disabled';
+		logo_visible++;
+	}
+	var logo = this.searchObj.getElementsByClassName('c2a_logo');
+	if(logo.length){
+		if(logo_visible == 2){
+			this.tools.removeClass(logo[0],'hidden');
+			this.tools.removeClass(logo[0],'tools_in_use');
+			//logo[0].className = 'c2a_logo';
+		} else {
+			this.tools.addClass(logo[0],'hidden');
+			this.tools.addClass(logo[0],'tools_in_use');
+			//logo[0].className = 'c2a_logo hidden';
+		}
+	}
+};
+
+clickToAddress.prototype.hideHistory = function(){
+	'use strict';
+	if(!this.historyTools)
+		return;
+	var backBtn = this.searchObj.getElementsByClassName('cc-back')[0];
+	var forwardBtn = this.searchObj.getElementsByClassName('cc-forward')[0];
+	backBtn.className = 'cc-back cc-disabled';
+	forwardBtn.className = 'cc-forward cc-disabled';
+};
+
+clickToAddress.prototype.cleanHistory = function(){
+	'use strict';
+	if(this.cachePos <= 0 || typeof this.cache.finds[this.activeCountry] == 'undefined'){
+		return;
+	}
+	var removeAt = Object.keys(this.cache.finds[this.activeCountry]).length - this.cachePos;
+	this.cache.finds[this.activeCountry].splice(removeAt, this.cachePos);
+	this.cachePos = -1;
+	var keys_length = Object.keys(this.cache.finds[this.activeCountry]).length;
+	if(keys_length > 0){
+		this.activeId = this.cache.finds[this.activeCountry][keys_length - 1].id;
+	} else {
+		this.activeId = '';
+	}
+	this.setHistoryStep();
+};
+
+clickToAddress.prototype.error = function(code, message){
+	'use strict';
+	var errors = {
+		// js errors
+		'JS500': {
+			default_message: 'Unknown Server Error',
+			level: 0
+		},
+		'JS501': {
+			default_message: 'API server seems unreachable',
+			level: 0
+		},
+		'JS502': {
+			default_message: 'API search request resulted in a JS error.',
+			level: 0
+		},
+		'JS503': {
+			default_message: 'API address retrieve request resulted in a JS error.',
+			level: 0
+		},
+		'JS504': {
+			default_message: 'onResultSelected callback function resulted in a JS error.',
+			level: 0
+		},
+		'JS505': {
+			default_message: 'API countrylist retrieve request resulted in a JS error.',
+			level: 0
+		},
+		'JS515': {
+			default_message: 'Country list retrieve callback function resulted in an error.',
+			level: 0
+		},
+		'JS506': {
+			default_message: 'JSON parsing error',
+			level: 0
+		},
+		'JS401': {
+			default_message: 'Invalid value for countryMatchWith. Fallback to "text"',
+			level: 0
+		},
+		'API401': {
+			default_message: 'Please review your account; access token restricted from accessing the service.',
+			level: 1
+		},
+		'API500': {
+			default_message: 'API error occured',
+			level: 1
+		},
+	};
+	console.warn('CraftyClicks Debug Error Message');
+	var c = '['+code+']';
+	if(typeof message == 'undefined' || !this.debug){
+		if(typeof errors[code] !== 'undefined'){
+			console.warn(c+errors[code].default_message);
+		} else {
+			console.warn(c);
+		}
+	} else {
+		if(typeof message.stack != 'undefined'){
+			console.warn(c+message.stack);
+		} else {
+			console.warn(c+message);
+		}
+	}
+	if(errors[code].level == 1){
+		this.info('error');
+	}
+
+	if(typeof this.onError == 'function'){
+		this.onError(code, message);
+	}
+};
+
+clickToAddress.prototype.hideErrors = function(){
+	'use strict';
+	if(this.serviceReady != -1){
+		this.errorObj.innerHTML = '';
+		this.errorObj.className = 'c2a_error c2a_error_hidden';
+	}
+};
+clickToAddress.prototype.start_debug = function(){
+	'use strict';
+	var that = this;
+	var css = document.createElement('style');
+	css.type = 'text/css';
+	var styles = '#cc_c2a_debug { '+[
+		'position: fixed;',
+		'right: 0px;',
+		'background-color: white;',
+		'top: 50px;',
+		'border: 1px solid black;',
+		'border-top-left-radius: 5px;',
+		'border-bottom-left-radius: 5px;',
+		'padding: 5px;',
+		'text-align: center;',
+		'border-right: none;'
+	].join(' ')+' }';
+	styles += ' #cc_c2a_debug > div{'+
+		['border-radius: 5px;',
+			'padding: 5px;',
+			'border: 1px solid black;',
+			'margin-bottom: 5px;'
+		].join(' ')
+	+'}';
+	styles += ' #cc_c2a_debug .c2a_toggle.c2a_toggle_on{ background-color: #87D37C; color: white; }'
+	styles += ' #cc_c2a_debug .c2a_toggle{ cursor: pointer; }';
+	this.tools.__$styleInject(styles);
+
+	var cc_debug = document.createElement('DIV');
+	cc_debug.id = 'cc_c2a_debug';
+	var html =	[
+		'<div><img style="width: 40px;" src="https://craftyclicks.co.uk/wp-content/themes/craftyclicks_wp_theme/assets/images/product/prod_gl.png"/></div>',
+		'<div id="toggl_transl" class="c2a_toggle">Toggle Transl</div>'
+	].join('');
+	cc_debug.innerHTML = html;
+	document.body.appendChild(cc_debug);
+	var btn1 = document.getElementById('toggl_transl');
+	this.tools.ccEvent(btn1, 'click', function(){
+		that.transliterate = !that.transliterate;
+		if(that.transliterate){
+			btn1.className = 'c2a_toggle c2a_toggle_on';
+			that.addTransl();
+		} else {
+			btn1.className = 'c2a_toggle';
+		}
+	});
+};
+
+clickToAddress.prototype.info = function(state, count){
+	'use strict';
+	var infoBar = this.searchObj.getElementsByClassName('infoBar')[0];
+
+	switch(state){
+		case 'pre-trial':
+			infoBar.className += ' infoActive infoTrial';
+			infoBar.innerHTML = '<h5>Access token is needed!</h5><p>To get a trial token, sign up for a <a href="https://account.craftyclicks.co.uk/login/signup">free trial</a>.</p><p>Then find the placeholder accessToken xxxxx-xxxxx-xxxxx-xxxxx in your HTML and replace it with a your own token.</p>';
+			break;
+			/*
+		case 'too-many-results':
+			infoBar.className += ' infoActive infoWarning';
+			infoBar.innerHTML = count+ ' results found. Please provide more address details.';
+			break;
+		*/
+		case 'no-results':
+			infoBar.className += ' infoActive infoWarning';
+			infoBar.innerHTML = this.texts.no_results;
+			break;
+		case 'error':
+			infoBar.className += ' infoActive infoWarning';
+			infoBar.innerHTML = this.texts.generic_error;
+			break;
+		default:
+			infoBar.className = 'infoBar';
+			infoBar.innerHTML = '';
+			break;
+	}
+};
+
+
+clickToAddress.prototype.setFingerPrint = function(){
+	'use strict';
+	var low = 1000000000000000;
+	var high = 9999999999999999;
+	var value = Math.floor(Math.random() * (high - low + 1) + low);
+	this.fingerprint = value.toString(16);
+};
+clickToAddress.prototype.getFingerPrint = function(){
+	'use strict';
+	return this.fingerprint;
 };
 
 if(typeof c2a_gfx_modes == 'undefined'){
