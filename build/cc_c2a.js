@@ -8,7 +8,7 @@
  * @version     1.1.18
  */
 
-function clickToAddress(config){
+var clickToAddress = function(config){
 	'use strict';
 	var that = this;
 	if(document.getElementById('cc_c2a') !== null){
